@@ -236,7 +236,7 @@ export class GameState {
    * sem sair do tabuleiro e sem atravessar ou parar em casas ocupadas/obstáculos.
    */
   getValidMoves(unit: Unit): Position[] {
-    if (!isAlive(unit)) return [];
+    if (!isAlive(unit) || unit.petrified) return [];
     return this.findMoves(unit).map((option) => option.position);
   }
 
