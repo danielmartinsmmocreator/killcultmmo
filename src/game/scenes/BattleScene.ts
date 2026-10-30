@@ -162,7 +162,7 @@ export class BattleScene extends Phaser.Scene {
     }
     for (const [path, url] of Object.entries(optionalRegionBackgrounds)) {
       const filename = path.split('/').pop()?.replace(/\.(png|jpe?g|jfif)$/i, '').toLowerCase();
-      if (filename === 'faixa-1' || filename === 'faixa-2') {
+      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3') {
         this.load.image(`background-${filename}`, url);
       }
     }
@@ -231,10 +231,14 @@ export class BattleScene extends Phaser.Scene {
       for (let col = 0; col < BOARD_COLS; col++) {
         const cell: Position = { col, row };
         const { x, y } = cellToPixel(cell);
-        const regionTwo = this.campaign.floorNumber >= 11 && this.campaign.floorNumber <= 20;
+        const floor = this.campaign.floorNumber;
+        const regionTwo = floor >= 11 && floor <= 20;
+        const regionThree = floor >= 21 && floor <= 30;
         const color = regionTwo
           ? ((col + row) % 2 === 0 ? 0x171717 : 0x7f1d1d)
-          : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+          : regionThree
+            ? ((col + row) % 2 === 0 ? 0xffffff : 0xe5e7eb)
+            : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
 
         const tile = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, color, 0.3);
         this.boardTiles.push({ tile, col, row });
@@ -267,7 +271,7 @@ export class BattleScene extends Phaser.Scene {
 
   private refreshBoardBackground(): void {
     const floor = this.campaign.floorNumber;
-    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : null;
+    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : null;
     if (this.boardBackground) {
       this.boardBackground.destroy();
       this.boardBackground = null;
@@ -289,11 +293,15 @@ export class BattleScene extends Phaser.Scene {
   }
 
   private refreshBoardPalette(): void {
-    const regionTwo = this.campaign.floorNumber >= 11 && this.campaign.floorNumber <= 20;
+    const floor = this.campaign.floorNumber;
+    const regionTwo = floor >= 11 && floor <= 20;
+    const regionThree = floor >= 21 && floor <= 30;
     for (const { tile, col, row } of this.boardTiles) {
       const color = regionTwo
         ? ((col + row) % 2 === 0 ? 0x090909 : 0x8b0000)
-        : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+        : regionThree
+          ? ((col + row) % 2 === 0 ? 0xffffff : 0xe5e7eb)
+          : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
       tile.setFillStyle(color, 0.3);
     }
   }
