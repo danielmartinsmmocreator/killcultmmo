@@ -297,4 +297,6 @@ export interface ItemDefinition {
 export interface InventoryItem {
   readonly instanceId: string;
   readonly definitionId: string;
+  /** Andar em que o item foi obtido; ausente apenas em itens legados/criados sem contexto. */
+  readonly obtainedAtFloor?: number;
 }
