@@ -739,33 +739,56 @@ export class GameState {
       return true;
     }
 
-    // A Medusa alterna a direção do olhar e petrifica a linha à frente a cada duas ações.
+    // A cada duas ações, a Medusa usa o olhar petrificante. Esse golpe substitui
+    // o movimento e o ataque comum, para que a direção do olhar não seja sobrescrita
+    // pela movimentação da IA antes de o jogador poder perceber o efeito.
     if (monster.definition.id === 'medusa') {
       monster.medusaCycle = (monster.medusaCycle ?? 0) + 1;
       if (monster.medusaCycle % 2 === 0) {
-        const directions = [{ col: 0, row: -1 }, { col: 1, row: 0 }, { col: 0, row: 1 }, { col: -1, row: 0 }];
-        const current = directions.findIndex((dir) => dir.col === monster.facing.col && dir.row === monster.facing.row);
+        const directions = [
+          { col: 0, row: -1 },
+          { col: 1, row: 0 },
+          { col: 0, row: 1 },
+          { col: -1, row: 0 },
+        ];
+        const current = directions.findIndex(
+          (dir) => dir.col === monster.facing.col && dir.row === monster.facing.row,
+        );
         monster.facing = directions[(current + 1 + directions.length) % directions.length];
-        // O olhar parte de toda a borda frontal da Medusa (ela ocupa 2×2 casas).
-        // Assim, qualquer herói alinhado com uma das casas da borda pode ser petrificado.
-        const medusaCells = unitCells(monster);
+
+        const body = unitCells(monster);
         const affected = this.heroes.filter((hero) =>
           unitCells(hero).some((heroCell) =>
-            medusaCells.some((bodyCell) => {
+            body.some((bodyCell) => {
               const dx = heroCell.col - bodyCell.col;
               const dy = heroCell.row - bodyCell.row;
-              return monster.facing.col !== 0
-                ? dy === 0 && dx * monster.facing.col > 0
-                : dx === 0 && dy * monster.facing.row > 0;
+              if (monster.facing.col === 1) return dy === 0 && dx > 0;
+              if (monster.facing.col === -1) return dy === 0 && dx < 0;
+              if (monster.facing.row === 1) return dx === 0 && dy > 0;
+              return dx === 0 && dy < 0;
             }),
           ),
         );
+
         for (const hero of affected) {
           hero.petrified = true;
-          this.addLog(`${hero.definition.name} foi petrificado pelo olhar da Medusa!`, 'monster');
+          this.addLog(`${hero.definition.name} foi petrificado pelo olhar da Medusa e perderá sua próxima ação!`, 'monster');
         }
-        if (affected.length) this.effect = { id: 'telegraph', cells: affected.flatMap((hero) => unitCells(hero)) };
-        this.addLog(`Medusa voltou seu olhar para ${monster.facing.col === 1 ? 'leste' : monster.facing.col === -1 ? 'oeste' : monster.facing.row === 1 ? 'sul' : 'norte'}.`, 'monster');
+        this.effect = { id: 'telegraph', cells: affected.flatMap((hero) => unitCells(hero)) };
+        const directionName = monster.facing.col === 1
+          ? 'leste'
+          : monster.facing.col === -1
+            ? 'oeste'
+            : monster.facing.row === 1
+              ? 'sul'
+              : 'norte';
+        this.addLog(
+          affected.length
+            ? `Medusa lançou seu olhar petrificante para ${directionName}!`
+            : `Medusa lançou seu olhar petrificante para ${directionName}, mas não atingiu ninguém.`,
+          'monster',
+        );
+        return true;
       }
     }
 
