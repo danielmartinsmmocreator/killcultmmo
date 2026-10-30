@@ -162,3 +162,13 @@ export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
   ABYSSAL_SCALED, SCALED_GUARDIAN, RLYEH_HORROR,
   VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT, WEREWOLF,
 ];
+
+
+// Região 3 — Mitologia.
+export const HARPY: UnitDefinition = { id:'harpy', name:'Harpia', team:'monster', symbol:'H', color:0x7c3aed, maxHp:118, damage:26, movement:2, attack:{directions:'diagonal',range:2} };
+export const SATYR: UnitDefinition = { id:'satyr', name:'Sátiro', team:'monster', symbol:'S', color:0x15803d, maxHp:145, damage:28, movement:2, attack:{directions:'orthogonal',range:1} };
+export const CYCLOPS: UnitDefinition = { id:'cyclops', name:'Ciclope', team:'monster', symbol:'C', color:0x92400e, maxHp:230, damage:30, movement:1, attack:{directions:'orthogonal',range:2} };
+export const GORGON: UnitDefinition = { id:'gorgon', name:'Górgona', team:'monster', symbol:'G', color:0x0f766e, maxHp:175, damage:27, movement:1, attack:{directions:'diagonal',range:2} };
+export const MINOTAUR: UnitDefinition = { id:'minotaur', name:'Minotauro', team:'monster', symbol:'M', color:0x991b1b, maxHp:260, damage:32, movement:1, attack:{directions:'orthogonal',range:1} };
+export const UNDERWORLD_HOUND: UnitDefinition = { id:'underworld-hound', name:'Cão do Submundo', team:'monster', symbol:'U', color:0x7f1d1d, maxHp:190, damage:29, movement:2, attack:{directions:'orthogonal',range:1} };
+export const UNDERWORLD_WRAITH: UnitDefinition = { id:'underworld-wraith', name:'Espectro do Submundo', team:'monster', symbol:'W', color:0x64748b, maxHp:180, damage:28, movement:1, attack:{directions:'facing',range:3} };
