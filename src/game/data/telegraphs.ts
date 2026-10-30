@@ -52,6 +52,16 @@ export const DRACULA_TELEGRAPH: TelegraphConfig = {
   cooldownTurns: 1,
 };
 
+/** A Rainha alterna uma fileira de cartas cortantes e uma coluna de espinhos de rosas. */
+export const QUEEN_OF_HEARTS_TELEGRAPH: TelegraphConfig = {
+  attacks: [
+    { id: 'royal-card-sweep', name: 'Baralho Decapitante', pattern: 'row', targeting: 'nearest-hero', damage: 48 },
+    { id: 'thorned-column', name: 'Jardim de Espinhos', pattern: 'column', targeting: 'lowest-hp-hero', damage: 55 },
+    { id: 'queen-verdict', name: 'Decreto da Rainha', pattern: 'cross', targeting: 'nearest-hero', damage: 62 },
+  ],
+  cooldownTurns: 1,
+};
+
 export const CRIMSON_COUNTESS_TELEGRAPH: TelegraphConfig = {
   attacks: [
     { id: 'blood-pulse', name: 'Pulso de Sangue', pattern: 'cross', targeting: 'nearest-hero', damage: 13 },
