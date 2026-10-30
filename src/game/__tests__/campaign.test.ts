@@ -530,3 +530,32 @@ describe('Drops da faixa 3 — mitologia', () => {
     expect(ITEM_DEFINITIONS['greaves'].slot).toBe('boots');
   });
 });
+
+
+describe('Drops da faixa 4 — País das Maravilhas', () => {
+  it('o Gato de Cheshire tem 5% de chance de soltar seu amuleto', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.01);
+    const campaign = new Campaign();
+    goToFloor(campaign, 35);
+    winFloor(campaign);
+    const item = campaign.inventory.items.find((entry) => campaign.inventory.definitionOf(entry.instanceId) === 'cheshire-grin');
+    expect(item?.obtainedAtFloor).toBe(35);
+    vi.restoreAllMocks();
+  });
+
+  it('a Rainha de Copas tem 5% de chance de soltar o Coração da Rainha', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.01);
+    const campaign = new Campaign();
+    goToFloor(campaign, 40);
+    winFloor(campaign);
+    const item = campaign.inventory.items.find((entry) => campaign.inventory.definitionOf(entry.instanceId) === 'queen-heart');
+    expect(item?.obtainedAtFloor).toBe(40);
+    vi.restoreAllMocks();
+  });
+
+  it('os equipamentos da faixa 4 exigem nível 31', () => {
+    expect(ITEM_DEFINITIONS['queen-rapier'].minLevel).toBe(31);
+    expect(ITEM_DEFINITIONS['rose-armor'].minLevel).toBe(31);
+    expect(ITEM_DEFINITIONS['queen-heart'].minLevel).toBe(31);
+  });
+});
