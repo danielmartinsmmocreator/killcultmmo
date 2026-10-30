@@ -127,6 +127,10 @@ export interface Unit {
   abilityUsed: boolean;
   /** Atordoada: perde a próxima ação na fase dos monstros e então se recupera. */
   stunned: boolean;
+  /** Petrificada pela Medusa: perde o próximo turno inteiro. */
+  petrified?: boolean;
+  /** Contador de ações da Medusa para petrificar a cada duas rodadas. */
+  medusaCycle?: number;
   /** Estado do rodízio de ataques telegrafados (só existe se a definição tiver `telegraph`). */
   telegraph?: { cooldown: number; nextAttack: number };
 }
