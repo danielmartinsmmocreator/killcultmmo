@@ -1206,3 +1206,23 @@ button.unit-card:disabled:hover {
 }
 .inventory-window-content { margin: 0 !important; }
 .inventory-window-content .inventory-window-content { max-width: 100%; }
+
+
+/* Mobile: o espaço da lista de monstros vira o controle de passar a vez. */
+@media (max-width: 560px) {
+  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section > h2,
+  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section .unit-list {
+    display: none;
+  }
+  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section .actions {
+    display: flex;
+    width: 100%;
+    margin: 0;
+  }
+  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section .btn-pass {
+    width: 100%;
+    min-height: 42px;
+    font-size: .82rem;
+    font-weight: 800;
+  }
+}
