@@ -61,6 +61,14 @@ export class PlayerInventory {
   private readonly available = new Set<string>();
   private nextId = 1;
   get items(): readonly InventoryItem[] { return [...this.available].map((id) => this.itemsByInstance.get(id)!).filter(Boolean); }
+  /** Filtra itens disponíveis pela faixa de andares em que foram obtidos (1–10, 11–20, 21–30). */
+  filterByRange(range: 1 | 2 | 3 | null): readonly InventoryItem[] {
+    if (range === null) return this.items;
+    const firstFloor = (range - 1) * 10 + 1;
+    const lastFloor = range * 10;
+    return this.items.filter((item) => item.obtainedAtFloor !== undefined
+      && item.obtainedAtFloor >= firstFloor && item.obtainedAtFloor <= lastFloor);
+  }
   /** IDs de todos os itens, inclusive os que estão equipados. */
   get instanceIds(): readonly string[] { return [...this.itemsByInstance.keys()]; }
   /**
@@ -79,8 +87,8 @@ export class PlayerInventory {
       this.itemsByInstance.delete(instanceId);
     }
   }
-  add(definitionId: string): InventoryItem {
-    const item = { instanceId: `item-${this.nextId++}`, definitionId };
+  add(definitionId: string, obtainedAtFloor?: number): InventoryItem {
+    const item: InventoryItem = { instanceId: `item-${this.nextId++}`, definitionId, ...(obtainedAtFloor === undefined ? {} : { obtainedAtFloor }) };
     this.itemsByInstance.set(item.instanceId, item);
     this.available.add(item.instanceId);
     return item;
