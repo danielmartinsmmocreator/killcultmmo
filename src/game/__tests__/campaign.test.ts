@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { Campaign } from '../core/Campaign';
 import { findAttackTargets } from '../core/combat';
 import { HERO_FORMATION } from '../data/battleSetup';
@@ -500,21 +500,27 @@ describe('Campanhas simuladas', () => {
 
 
 describe('Drops da faixa 3 — mitologia', () => {
-  it('Medusa entrega o Olho de Medusa garantidamente ao ser derrotada', () => {
+  it('Medusa tem 5% de chance de entregar o Olho de Medusa', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.01);
     const campaign = new Campaign();
     goToFloor(campaign, 25);
     winFloor(campaign);
     const eye = campaign.inventory.items.find((item) => campaign.inventory.definitionOf(item.instanceId) === 'medusa-eye');
     expect(eye).toBeDefined();
+    expect(eye?.obtainedAtFloor).toBe(25);
+    vi.restoreAllMocks();
   });
 
-  it('Hades entrega o Pingente de Hades garantidamente ao ser derrotado', () => {
+  it('Hades tem 5% de chance de entregar o Pingente de Hades', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.01);
     const campaign = new Campaign();
     goToFloor(campaign, 30);
     winFloor(campaign);
     const pendant = campaign.inventory.items.find((item) => campaign.inventory.definitionOf(item.instanceId) === 'hades-pendant');
     expect(pendant).toBeDefined();
+    expect(pendant?.obtainedAtFloor).toBe(30);
     expect(ITEM_DEFINITIONS['hades-pendant'].bonuses.strength).toBe(20);
+    vi.restoreAllMocks();
   });
 
   it('itens da faixa 3 exigem nível 21 e armaduras usam slots existentes', () => {
