@@ -52,6 +52,16 @@ export const DRACULA_TELEGRAPH: TelegraphConfig = {
   cooldownTurns: 1,
 };
 
+/** Hades alterna ataques de área do Submundo, anunciados um turno antes. */
+export const HADES_TELEGRAPH: TelegraphConfig = {
+  attacks: [
+    { id: 'tartarus-flames', name: 'Chamas do Tártaro', pattern: 'cross', targeting: 'lowest-hp-hero', damage: 42 },
+    { id: 'underworld-wave', name: 'Onda do Estige', pattern: 'row', targeting: 'nearest-hero', damage: 38 },
+    { id: 'kingdom-collapse', name: 'Decreto do Submundo', pattern: 'column', targeting: 'nearest-hero', damage: 48 },
+  ],
+  cooldownTurns: 1,
+};
+
 /** A Rainha alterna uma fileira de cartas cortantes e uma coluna de espinhos de rosas. */
 export const QUEEN_OF_HEARTS_TELEGRAPH: TelegraphConfig = {
   attacks: [
