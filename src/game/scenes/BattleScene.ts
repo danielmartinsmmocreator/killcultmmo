@@ -323,6 +323,7 @@ export class BattleScene extends Phaser.Scene {
    */
   private rebuildUnits(): void {
     this.cancelStep();
+    this.threatPreviewUid = null;
     for (const view of this.unitViews.values()) {
       this.tweens.killTweensOf(view.container);
       view.container.destroy();
@@ -376,6 +377,7 @@ export class BattleScene extends Phaser.Scene {
     }
 
     this.gameState.clearSelection();
+    this.drawOverlay();
   }
 
   private onStateChange(event: GameEvent): void {
@@ -799,9 +801,6 @@ export class BattleScene extends Phaser.Scene {
         : [{ col:0,row:1 }, { col:0,row:-1 }, { col:1,row:0 }, { col:-1,row:0 }];
     const result = new Map<string, Position>();
     const body = unitCells(monster);
-    const origins = body.filter((cell) => !body.some((other) =>
-      other.col === cell.col + (dirs[0]?.col ?? 0) && other.row === cell.row + (dirs[0]?.row ?? 0),
-    ));
     for (const dir of dirs) {
       const edges = body.filter((cell) => !body.some((other) =>
         other.col === cell.col + dir.col && other.row === cell.row + dir.row,
