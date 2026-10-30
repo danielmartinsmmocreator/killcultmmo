@@ -3,6 +3,7 @@ import type { ItemDefinition } from '../types';
 const F1 = 1;
 const F2 = 11;
 const F3 = 21;
+const F4 = 31;
 const W = ['warrior'] as const;
 const A = ['assassin'] as const;
 const M = ['mage'] as const;
@@ -82,6 +83,28 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   // Itens especiais garantidos pelos chefes da faixa 3.
   'medusa-eye': { id: 'medusa-eye', name: 'Olho de Medusa', slot: 'amulet', minLevel: F3, sellPrice: 120, bonuses: {}, ignoreFirstHitPerEncounter: true },
   'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20 } },
+
+  // Faixa 4 — equipamentos do País das Maravilhas (andares 31–40).
+  'queen-rapier': { id: 'queen-rapier', name: 'Florete da Rainha', slot: 'weapon', minLevel: F4, allowedClasses: W, sellPrice: 100, bonuses: { strength: 30 } },
+  'crooked-axe': { id: 'crooked-axe', name: 'Machado Torto', slot: 'weapon', minLevel: F4, allowedClasses: W, sellPrice: 105, bonuses: { strength: 32 } },
+  'card-shield': { id: 'card-shield', name: 'Escudo de Cartas', slot: 'off-hand', minLevel: F4, allowedClasses: W, sellPrice: 90, bonuses: { defense: 14 } },
+  'cheshire-daggers': { id: 'cheshire-daggers', name: 'Adagas do Gato', slot: 'weapon', minLevel: F4, allowedClasses: A, sellPrice: 105, bonuses: { strength: 32 } },
+  'rabbit-fang': { id: 'rabbit-fang', name: 'Presa do Coelho', slot: 'weapon', minLevel: F4, allowedClasses: A, sellPrice: 95, bonuses: { strength: 29 } },
+  'mad-tea-wand': { id: 'mad-tea-wand', name: 'Varinha do Chá Maluco', slot: 'weapon', minLevel: F4, allowedClasses: M, sellPrice: 105, bonuses: { strength: 32 } },
+  'caterpillar-staff': { id: 'caterpillar-staff', name: 'Cajado da Lagarta', slot: 'weapon', minLevel: F4, allowedClasses: M, sellPrice: 110, bonuses: { strength: 34 } },
+  'mushroom-grimoire': { id: 'mushroom-grimoire', name: 'Grimório dos Cogumelos', slot: 'off-hand', allowedClasses: M, minLevel: F4, sellPrice: 95, bonuses: { strength: 28 } },
+  'rose-scepter': { id: 'rose-scepter', name: 'Cetro das Rosas', slot: 'weapon', minLevel: F4, allowedClasses: C, sellPrice: 105, bonuses: { strength: 30 } },
+  'looking-glass': { id: 'looking-glass', name: 'Espelho Curativo', slot: 'off-hand', minLevel: F4, allowedClasses: C, sellPrice: 95, bonuses: { vitality: 32 } },
+  'queen-guard-staff': { id: 'queen-guard-staff', name: 'Bastão da Guarda Real', slot: 'weapon', minLevel: F4, allowedClasses: C, sellPrice: 110, bonuses: { strength: 33 } },
+  'playing-card-bow': { id: 'playing-card-bow', name: 'Arco de Cartas', slot: 'weapon', minLevel: F4, allowedClasses: R, sellPrice: 115, bonuses: { strength: 35 } },
+  'rabbit-ear-bow': { id: 'rabbit-ear-bow', name: 'Arco das Orelhas Brancas', slot: 'weapon', minLevel: F4, allowedClasses: R, sellPrice: 120, bonuses: { strength: 37 } },
+  'rose-armor': { id: 'rose-armor', name: 'Armadura de Espinhos', slot: 'chest', minLevel: F4, sellPrice: 115, bonuses: { vitality: 42, defense: 8 } },
+  'mushroom-cap': { id: 'mushroom-cap', name: 'Chapéu de Cogumelo', slot: 'helmet', minLevel: F4, sellPrice: 80, bonuses: { defense: 12 } },
+  'rabbit-boots': { id: 'rabbit-boots', name: 'Botas do Coelho', slot: 'boots', minLevel: F4, sellPrice: 90, bonuses: { vitality: 28, defense: 4 } },
+
+  // Itens especiais raros da faixa 4 (5% de chance nos encontros de marco).
+  'cheshire-grin': { id: 'cheshire-grin', name: 'Sorriso de Cheshire', slot: 'amulet', minLevel: F4, sellPrice: 180, bonuses: {}, lifestealPercent: 8 },
+  'queen-heart': { id: 'queen-heart', name: 'Coração da Rainha', slot: 'amulet', minLevel: F4, sellPrice: 220, bonuses: { strength: 30 }, defensePercent: 8 },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },
