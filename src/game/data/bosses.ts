@@ -1,6 +1,6 @@
 import type { UnitDefinition } from '../types';
 import { SIZE_2X2 } from './sizes';
-import { ABYSS_IDOL_TELEGRAPH, CRIMSON_COUNTESS_TELEGRAPH, DRACULA_TELEGRAPH } from './telegraphs';
+import { ABYSS_IDOL_TELEGRAPH, CRIMSON_COUNTESS_TELEGRAPH, DRACULA_TELEGRAPH, QUEEN_OF_HEARTS_TELEGRAPH } from './telegraphs';
 
 /**
  * Mini-chefe e chefe principal: usam a lógica de combate comum (movimento ortogonal e ataque
@@ -51,3 +51,18 @@ export const DRACULA: UnitDefinition = {
 
 export const MEDUSA: UnitDefinition = { id:'medusa', name:'Medusa', team:'monster', symbol:'♛', color:0x0f766e, maxHp:520, damage:28, movement:1, attack:{directions:'orthogonal',range:1}, rank:'mini-boss', size: SIZE_2X2 };
 export const HADES: UnitDefinition = { id:'hades', name:'Hades', team:'monster', symbol:'♚', color:0x581c87, maxHp:1250, damage:34, movement:1, attack:{directions:'orthogonal',range:1}, rank:'boss' };
+
+export const CHESHIRE_CAT: UnitDefinition = {
+  id: 'cheshire-cat', name: 'Gato de Cheshire', team: 'monster', symbol: 'C', color: 0xc084fc,
+  maxHp: 880, damage: 43, movement: 2,
+  attack: { directions: 'diagonal', range: 2 },
+  rank: 'mini-boss',
+};
+
+export const QUEEN_OF_HEARTS: UnitDefinition = {
+  id: 'queen-of-hearts', name: 'Rainha de Copas', team: 'monster', symbol: 'Q', color: 0xbe123c,
+  maxHp: 2350, damage: 48, movement: 1,
+  attack: { directions: 'orthogonal', range: 1 },
+  rank: 'boss',
+  telegraph: QUEEN_OF_HEARTS_TELEGRAPH,
+};
