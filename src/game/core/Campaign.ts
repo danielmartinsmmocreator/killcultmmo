@@ -225,6 +225,14 @@ export class Campaign {
         archer: ['centaur-bow', 'composite-bow'],
       };
       const tierThreeArmor = ['hoplite-armor', 'bronze-helmet', 'greaves'];
+      const tierFourWeapons: Record<string, string[]> = {
+        warrior: ['queen-rapier', 'crooked-axe', 'card-shield'],
+        assassin: ['cheshire-daggers', 'rabbit-fang'],
+        mage: ['mad-tea-wand', 'caterpillar-staff', 'mushroom-grimoire'],
+        cleric: ['rose-scepter', 'looking-glass', 'queen-guard-staff'],
+        archer: ['playing-card-bow', 'rabbit-ear-bow'],
+      };
+      const tierFourArmor = ['rose-armor', 'mushroom-cap', 'rabbit-boots'];
       if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 1 && this.floorNumber <= 9 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierOneWeapons);
         const pool = [...classes.flatMap((id) => tierOneWeapons[id] ?? []), ...basicArmor];
@@ -240,6 +248,12 @@ export class Campaign {
       } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 21 && this.floorNumber <= 29 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierThreeWeapons);
         const pool = [...classes.flatMap((id) => tierThreeWeapons[id] ?? []), ...tierThreeArmor];
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
+        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
+        this.normalItemDroppedThisFloor = true;
+      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 31 && this.floorNumber <= 39 && roll < 0.10) {
+        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierFourWeapons);
+        const pool = [...classes.flatMap((id) => tierFourWeapons[id] ?? []), ...tierFourArmor];
         const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
         drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
         this.normalItemDroppedThisFloor = true;
@@ -264,6 +278,12 @@ export class Campaign {
       } else if (this.floorNumber === 30 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('hades-pendant', this.floorNumber);
         drops.push('Pingente de Hades');
+      } else if (this.floorNumber === 35 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('cheshire-grin', this.floorNumber);
+        drops.push('Sorriso de Cheshire');
+      } else if (this.floorNumber === 40 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('queen-heart', this.floorNumber);
+        drops.push('Coração da Rainha');
       }
 
       // Recompensas garantidas de marcos da campanha.
