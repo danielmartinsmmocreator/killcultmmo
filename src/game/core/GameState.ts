@@ -252,7 +252,8 @@ export class GameState {
       unit.definition.team === 'hero' &&
       isAlive(unit) &&
       unit.definition.ability !== undefined &&
-      !unit.abilityUsed
+      !unit.abilityUsed &&
+      !unit.petrified
     );
   }
 
@@ -411,7 +412,10 @@ export class GameState {
     if (this.currentPhase !== 'player') return false;
     if (this.targetingState) return false; // escolhendo alvo de habilidade: nada de mover
     const unit = this.selectedUnit;
-    if (!unit) return false;
+    if (!unit || unit.petrified) {
+      if (unit?.petrified) this.setNotice(`${unit.definition.name} está petrificado e não pode agir neste turno.`);
+      return false;
+    }
 
     const option = this.findMoves(unit).find((move) => positionsEqual(move.position, destination));
     if (!option) return false;
@@ -469,6 +473,11 @@ export class GameState {
     const hero = this.selectedUnit;
     const ability = hero?.definition.ability;
     if (!hero || !ability) return false;
+    if (hero.petrified) {
+      this.setNotice(`${hero.definition.name} está petrificado e não pode usar habilidades neste turno.`);
+      this.emit('targeting');
+      return false;
+    }
 
     if (hero.abilityUsed) {
       this.setNotice(`${ability.name} já foi usada neste combate.`);
@@ -707,6 +716,11 @@ export class GameState {
   }
 
   private heroAct(hero: Unit): boolean {
+    if (hero.petrified) {
+      hero.petrified = false;
+      this.addLog(`${hero.definition.name} se liberta da petrificação e perde sua ação neste turno.`, 'monster');
+      return true;
+    }
     return this.performAttack(hero) > 0;
   }
 
@@ -721,6 +735,29 @@ export class GameState {
       monster.stunned = false;
       this.addLog(`${monster.definition.name} está atordoado e perde a ação. Já se recuperou.`, 'monster');
       return true;
+    }
+
+    // A Medusa alterna a direção do olhar e petrifica a linha à frente a cada duas ações.
+    if (monster.definition.id === 'medusa') {
+      monster.medusaCycle = (monster.medusaCycle ?? 0) + 1;
+      if (monster.medusaCycle % 2 === 0) {
+        const directions = [{ col: 0, row: -1 }, { col: 1, row: 0 }, { col: 0, row: 1 }, { col: -1, row: 0 }];
+        const current = directions.findIndex((dir) => dir.col === monster.facing.col && dir.row === monster.facing.row);
+        monster.facing = directions[(current + 1 + directions.length) % directions.length];
+        const affected = this.heroes.filter((hero) => {
+          const dx = hero.position.col - monster.position.col;
+          const dy = hero.position.row - monster.position.row;
+          return monster.facing.col !== 0
+            ? dy === 0 && dx * monster.facing.col > 0
+            : dx === 0 && dy * monster.facing.row > 0;
+        });
+        for (const hero of affected) {
+          hero.petrified = true;
+          this.addLog(`${hero.definition.name} foi petrificado pelo olhar da Medusa!`, 'monster');
+        }
+        if (affected.length) this.effect = { id: 'telegraph', cells: affected.flatMap((hero) => unitCells(hero)) };
+        this.addLog(`Medusa voltou seu olhar para ${monster.facing.col === 1 ? 'leste' : monster.facing.col === -1 ? 'oeste' : monster.facing.row === 1 ? 'sul' : 'norte'}.`, 'monster');
+      }
     }
 
     // Chefe com ataques telegrafados: anunciar o golpe é a ação dele neste turno.
