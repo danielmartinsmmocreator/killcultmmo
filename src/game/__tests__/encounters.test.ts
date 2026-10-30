@@ -159,6 +159,25 @@ describe('Preparação do grupo e do encontro', () => {
     expect(assassin.hp).toBe(0); // quem morreu continua morto
   });
 
+  it('remove do encontro obstáculos que coincidam com posições personalizadas dos heróis', () => {
+    const party = createParty();
+    party[0].position = cell(3, 2);
+    party[1].position = cell(2, 3);
+    party[2].position = cell(5, 3);
+    const config: FloorConfig = {
+      ...BASE,
+      obstacles: [cell(3, 2), cell(2, 3), cell(5, 3), cell(1, 2)],
+    };
+
+    const setup = buildEncounter(config, party);
+    const obstacleKeys = setup.obstacles.map(positionKey);
+
+    expect(obstacleKeys).toEqual(['1,2']);
+    for (const hero of party.slice(0, 3)) {
+      expect(setup.obstacles).not.toContainEqual(hero.position);
+    }
+  });
+
   it('buildEncounter reaproveita os mesmos heróis e cria monstros novos com PV cheio e uids do andar', () => {
     const party = createParty();
     const config = CAMPAIGN_FLOORS[2];
