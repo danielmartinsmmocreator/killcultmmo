@@ -62,16 +62,6 @@ export const QUEEN_OF_HEARTS_TELEGRAPH: TelegraphConfig = {
   cooldownTurns: 1,
 };
 
-/** Ataques da Rainha: fileira de cartas, coluna de espinhos e uma cruz de execução. */
-export const QUEEN_OF_HEARTS_TELEGRAPH: TelegraphConfig = {
-  attacks: [
-    { id: 'royal-card-sweep', name: 'Baralho Decapitante', pattern: 'row', targeting: 'nearest-hero', damage: 48 },
-    { id: 'thorned-column', name: 'Jardim de Espinhos', pattern: 'column', targeting: 'lowest-hp-hero', damage: 55 },
-    { id: 'queen-verdict', name: 'Decreto da Rainha', pattern: 'cross', targeting: 'nearest-hero', damage: 62 },
-  ],
-  cooldownTurns: 1,
-};
-
 export const CRIMSON_COUNTESS_TELEGRAPH: TelegraphConfig = {
   attacks: [
     { id: 'blood-pulse', name: 'Pulso de Sangue', pattern: 'cross', targeting: 'nearest-hero', damage: 13 },
