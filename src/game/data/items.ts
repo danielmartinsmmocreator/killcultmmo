@@ -2,6 +2,7 @@ import type { ItemDefinition } from '../types';
 
 const F1 = 1;
 const F2 = 11;
+const F3 = 21;
 const W = ['warrior'] as const;
 const A = ['assassin'] as const;
 const M = ['mage'] as const;
@@ -60,6 +61,27 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   // Amuletos especiais da faixa 2.
   'winter-cloak': { id: 'winter-cloak', name: 'Capa do Inverno', slot: 'amulet', minLevel: F2, sellPrice: 45, bonuses: {}, defensePercent: 10 },
   'seventh-fang': { id: 'seventh-fang', name: 'Dente do Sétimo', slot: 'amulet', minLevel: F2, sellPrice: 45, bonuses: {}, lifestealPercent: 5 },
+
+  // Faixa 3 — armas e armaduras da região mitológica (andares 21–30).
+  'curved-sword': { id: 'curved-sword', name: 'Espada Encurvada', slot: 'weapon', minLevel: F3, allowedClasses: W, sellPrice: 65, bonuses: { strength: 20 } },
+  'bronze-spear': { id: 'bronze-spear', name: 'Lança de Bronze', slot: 'weapon', minLevel: F3, allowedClasses: W, sellPrice: 70, bonuses: { strength: 22 } },
+  'hoplite-shield': { id: 'hoplite-shield', name: 'Escudo Hoplita', slot: 'off-hand', minLevel: F3, allowedClasses: W, sellPrice: 60, bonuses: { defense: 10 } },
+  'bloodied-dagger': { id: 'bloodied-dagger', name: 'Adaga Ensanguentada', slot: 'weapon', minLevel: F3, allowedClasses: A, sellPrice: 65, bonuses: { strength: 20 } },
+  'curved-dagger': { id: 'curved-dagger', name: 'Adaga Curva', slot: 'weapon', minLevel: F3, allowedClasses: A, sellPrice: 70, bonuses: { strength: 22 } },
+  'offhand-curved-dagger': { id: 'offhand-curved-dagger', name: 'Adaga Curva Secundária', slot: 'off-hand', minLevel: F3, allowedClasses: A, sellPrice: 55, bonuses: { strength: 14 } },
+  'serpent-staff': { id: 'serpent-staff', name: 'Cajado da Serpente', slot: 'weapon', minLevel: F3, allowedClasses: M, sellPrice: 70, bonuses: { strength: 22 } },
+  'oracle-tome': { id: 'oracle-tome', name: 'Tomo do Oráculo', slot: 'off-hand', minLevel: F3, allowedClasses: M, sellPrice: 60, bonuses: { strength: 18 } },
+  'laurel-staff': { id: 'laurel-staff', name: 'Cajado de Louro', slot: 'weapon', minLevel: F3, allowedClasses: C, sellPrice: 65, bonuses: { strength: 20 } },
+  'sacred-sigil': { id: 'sacred-sigil', name: 'Símbolo Sagrado', slot: 'off-hand', minLevel: F3, allowedClasses: C, sellPrice: 55, bonuses: { vitality: 20 } },
+  'centaur-bow': { id: 'centaur-bow', name: 'Arco de Centauro', slot: 'weapon', minLevel: F3, allowedClasses: R, sellPrice: 75, bonuses: { strength: 24 } },
+  'composite-bow': { id: 'composite-bow', name: 'Arco Composto', slot: 'weapon', minLevel: F3, allowedClasses: R, sellPrice: 80, bonuses: { strength: 26 } },
+  'hoplite-armor': { id: 'hoplite-armor', name: 'Armadura Hoplita', slot: 'chest', minLevel: F3, sellPrice: 75, bonuses: { vitality: 30, defense: 5 } },
+  'bronze-helmet': { id: 'bronze-helmet', name: 'Elmo de Bronze', slot: 'helmet', minLevel: F3, sellPrice: 55, bonuses: { defense: 8 } },
+  'greaves': { id: 'greaves', name: 'Grevas de Bronze', slot: 'boots', minLevel: F3, sellPrice: 60, bonuses: { vitality: 20, defense: 3 } },
+
+  // Itens especiais garantidos pelos chefes da faixa 3.
+  'medusa-eye': { id: 'medusa-eye', name: 'Olho de Medusa', slot: 'amulet', minLevel: F3, sellPrice: 120, bonuses: {}, ignoreFirstHitPerEncounter: true },
+  'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20 } },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },

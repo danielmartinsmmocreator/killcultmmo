@@ -118,9 +118,10 @@ export class PlayerInventory {
     return true;
   }
   definitionOf(instanceId: string): string | null { return this.itemsByInstance.get(instanceId)?.definitionId ?? null; }
-  specialBonusesFor(hero: Unit): { defensePercent: number; lifestealPercent: number } {
+  specialBonusesFor(hero: Unit): { defensePercent: number; lifestealPercent: number; ignoreFirstHitPerEncounter: boolean } {
     let defensePercent = 0;
     let lifestealPercent = 0;
+    let ignoreFirstHitPerEncounter = false;
     for (const instanceId of Object.values(hero.equipment ?? {})) {
       if (!instanceId) continue;
       const item = this.itemsByInstance.get(instanceId);
@@ -128,8 +129,9 @@ export class PlayerInventory {
       if (!definition) continue;
       defensePercent += definition.defensePercent ?? 0;
       lifestealPercent += definition.lifestealPercent ?? 0;
+      ignoreFirstHitPerEncounter ||= definition.ignoreFirstHitPerEncounter ?? false;
     }
-    return { defensePercent: Math.min(100, defensePercent), lifestealPercent: Math.min(100, lifestealPercent) };
+    return { defensePercent: Math.min(100, defensePercent), lifestealPercent: Math.min(100, lifestealPercent), ignoreFirstHitPerEncounter };
   }
   sell(instanceId: string, definitions: Readonly<Record<string, ItemDefinition>> = ITEM_DEFINITIONS): number {
     if (!this.available.has(instanceId)) return 0;

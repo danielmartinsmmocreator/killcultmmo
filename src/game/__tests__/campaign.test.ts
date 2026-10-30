@@ -497,3 +497,30 @@ describe('Campanhas simuladas', () => {
     expect(results.completed + results.defeated).toBe(40);
   });
 });
+
+
+describe('Drops da faixa 3 — mitologia', () => {
+  it('Medusa entrega o Olho de Medusa garantidamente ao ser derrotada', () => {
+    const campaign = new Campaign();
+    goToFloor(campaign, 25);
+    winFloor(campaign);
+    const eye = campaign.inventory.items.find((item) => campaign.inventory.definitionOf(item.instanceId) === 'medusa-eye');
+    expect(eye).toBeDefined();
+  });
+
+  it('Hades entrega o Pingente de Hades garantidamente ao ser derrotado', () => {
+    const campaign = new Campaign();
+    goToFloor(campaign, 30);
+    winFloor(campaign);
+    const pendant = campaign.inventory.items.find((item) => campaign.inventory.definitionOf(item.instanceId) === 'hades-pendant');
+    expect(pendant).toBeDefined();
+    expect(ITEM_DEFINITIONS['hades-pendant'].bonuses.strength).toBe(20);
+  });
+
+  it('itens da faixa 3 exigem nível 21 e armaduras usam slots existentes', () => {
+    expect(ITEM_DEFINITIONS['bloodied-dagger'].minLevel).toBe(21);
+    expect(ITEM_DEFINITIONS['hoplite-armor'].slot).toBe('chest');
+    expect(ITEM_DEFINITIONS['bronze-helmet'].slot).toBe('helmet');
+    expect(ITEM_DEFINITIONS['greaves'].slot).toBe('boots');
+  });
+});

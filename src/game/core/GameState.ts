@@ -83,7 +83,9 @@ const MAX_LOG_ENTRIES = 200;
  */
 export class GameState {
   private readonly createBattle: BattleFactory;
-  private readonly specialBonusesFor: (hero: Unit) => { defensePercent: number; lifestealPercent: number };
+  private readonly specialBonusesFor: (hero: Unit) => { defensePercent: number; lifestealPercent: number; ignoreFirstHitPerEncounter?: boolean };
+  /** Heróis que já consumiram a proteção do Olho de Medusa neste encontro. */
+  private readonly medusaProtectionUsed = new Set<string>();
   /** Todas as unidades da batalha, inclusive as derrotadas (hp <= 0). */
   private allUnits: Unit[] = [];
   private obstacleList: Position[] = [];
@@ -107,7 +109,7 @@ export class GameState {
 
   constructor(
     createBattle: BattleFactory = createInitialBattle,
-    specialBonusesFor: (hero: Unit) => { defensePercent: number; lifestealPercent: number } = () => ({ defensePercent: 0, lifestealPercent: 0 }),
+    specialBonusesFor: (hero: Unit) => { defensePercent: number; lifestealPercent: number; ignoreFirstHitPerEncounter?: boolean } = () => ({ defensePercent: 0, lifestealPercent: 0 }),
   ) {
     this.createBattle = createBattle;
     this.specialBonusesFor = specialBonusesFor;
@@ -799,6 +801,11 @@ export class GameState {
     const cell = positionLabel(target.position);
     const defense = target.definition.team === 'hero' ? (target.progression?.attributes.defense ?? 0) : 0;
     const targetSpecial = target.definition.team === 'hero' ? this.specialBonusesFor(target) : { defensePercent: 0, lifestealPercent: 0 };
+    if (target.definition.team === 'hero' && targetSpecial.ignoreFirstHitPerEncounter && !this.medusaProtectionUsed.has(target.uid)) {
+      this.medusaProtectionUsed.add(target.uid);
+      this.addLog(`O Olho de Medusa anulou o primeiro golpe recebido por ${target.definition.name} nesta fase.`, 'ability');
+      return;
+    }
     const afterPercent = Math.floor(amount * (1 - targetSpecial.defensePercent / 100));
     const effectiveAmount = target.definition.team === 'hero' ? Math.max(1, afterPercent - defense) : amount;
     target.hp = Math.max(0, target.hp - effectiveAmount);
@@ -1215,6 +1222,7 @@ export class GameState {
     }
     this.allUnits = battle.units;
     this.obstacleList = battle.obstacles;
+    this.medusaProtectionUsed.clear();
     this.currentTurn = 1;
     this.currentPhase = 'player';
     this.currentOutcome = 'ongoing';

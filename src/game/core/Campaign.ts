@@ -215,6 +215,14 @@ export class Campaign {
         mage: ['magic-wand', 'magic-staff', 'damage-tome'], cleric: ['white-glove', 'superior-consecrated-staff', 'vitality-tome'],
         archer: ['expert-shortbow', 'expert-longbow'],
       };
+      const tierThreeWeapons: Record<string, string[]> = {
+        warrior: ['curved-sword', 'bronze-spear', 'hoplite-shield'],
+        assassin: ['bloodied-dagger', 'curved-dagger', 'offhand-curved-dagger'],
+        mage: ['serpent-staff', 'oracle-tome'],
+        cleric: ['laurel-staff', 'sacred-sigil'],
+        archer: ['centaur-bow', 'composite-bow'],
+      };
+      const tierThreeArmor = ['hoplite-armor', 'bronze-helmet', 'greaves'];
       if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 1 && this.floorNumber <= 9 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierOneWeapons);
         const pool = [...classes.flatMap((id) => tierOneWeapons[id] ?? []), ...basicArmor];
@@ -224,6 +232,12 @@ export class Campaign {
       } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 11 && this.floorNumber <= 19 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierTwoWeapons);
         const pool = [...classes.flatMap((id) => tierTwoWeapons[id] ?? []), ...basicArmor];
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)]);
+        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
+        this.normalItemDroppedThisFloor = true;
+      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 21 && this.floorNumber <= 29 && roll < 0.10) {
+        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierThreeWeapons);
+        const pool = [...classes.flatMap((id) => tierThreeWeapons[id] ?? []), ...tierThreeArmor];
         const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)]);
         drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
         this.normalItemDroppedThisFloor = true;
@@ -242,6 +256,12 @@ export class Campaign {
       } else if (this.floorNumber === 20 && rank === 'boss' && Math.random() < 0.25) {
         this.inventory.add('seventh-fang');
         drops.push('Dente do Sétimo');
+      } else if (this.floorNumber === 25 && rank === 'mini-boss') {
+        this.inventory.add('medusa-eye');
+        drops.push('Olho de Medusa');
+      } else if (this.floorNumber === 30 && rank === 'boss') {
+        this.inventory.add('hades-pendant');
+        drops.push('Pingente de Hades');
       }
 
       // Recompensas garantidas de marcos da campanha.

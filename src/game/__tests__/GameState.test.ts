@@ -378,3 +378,25 @@ describe('Partidas completas', () => {
     }
   });
 });
+
+describe('Olho de Medusa', () => {
+  it('anula somente o primeiro golpe recebido pelo herói durante o encontro', () => {
+    const protectedState = new GameState(
+      () => ({
+        units: [unit(WARRIOR, 2, 4), unit(GOBLIN, 2, 3)],
+        obstacles: [],
+      }),
+      () => ({ defensePercent: 0, lifestealPercent: 0, ignoreFirstHitPerEncounter: true }),
+    );
+    const warrior = protectedState.heroes[0];
+    const initialHp = warrior.hp;
+
+    protectedState.passTurn();
+    protectedState.resolveAll();
+    expect(warrior.hp).toBe(initialHp); // primeiro golpe anulado
+
+    protectedState.passTurn();
+    protectedState.resolveAll();
+    expect(warrior.hp).toBeLessThan(initialHp); // golpes seguintes causam dano normalmente
+  });
+});

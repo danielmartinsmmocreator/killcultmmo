@@ -291,6 +291,8 @@ export interface ItemDefinition {
   readonly bonuses: Partial<{ strength: number; vitality: number; defense: number }>;
   readonly defensePercent?: number;
   readonly lifestealPercent?: number;
+  /** Anula completamente o primeiro golpe recebido em cada encontro. */
+  readonly ignoreFirstHitPerEncounter?: boolean;
 }
 export interface InventoryItem {
   readonly instanceId: string;
