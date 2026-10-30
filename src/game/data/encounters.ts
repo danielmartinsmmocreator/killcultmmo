@@ -1,5 +1,5 @@
 import type { EncounterType, Position, UnitDefinition } from '../types';
-import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA } from './bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES } from './bosses';
 import {
   CULTIST,
   INSANE,
@@ -8,6 +8,7 @@ import {
   ABYSSAL_SCALED,
   SCALED_GUARDIAN,
   RLYEH_HORROR,
+  HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, SKELETON,
   VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT, WEREWOLF,
 } from './monsters';
 
@@ -42,6 +43,16 @@ export const SPAWN_SLOTS: readonly Position[] = [
   { col: 5, row: 0 },
   { col: 0, row: 1 },
   { col: 5, row: 1 },
+  floor(21, 'Penhascos das Harpias', [HARPY, SKELETON, SATYR]),
+  floor(22, 'Templo dos Ossos', [SKELETON, HARPY, SKELETON, SATYR]),
+  floor(23, 'Bosque dos Sátiros', [SATYR, SATYR, HARPY, SKELETON], [{ col:1,row:2 }, { col:4,row:3 }]),
+  floor(24, 'Entrada do Labirinto', [MINOTAUR, HARPY, SATYR, SKELETON]),
+  floor(25, 'Jardim das Serpentes', [MEDUSA, GORGON, SKELETON], [], 'mini-boss'),
+  floor(26, 'Salões do Labirinto', [CYCLOPS, GORGON, SATYR]),
+  floor(27, 'Pátio dos Ciclopes', [CYCLOPS, CYCLOPS, HARPY]),
+  floor(28, 'Câmara das Górgonas', [GORGON, GORGON, MINOTAUR]),
+  floor(29, 'Último Portão', [MINOTAUR, CYCLOPS, GORGON, HARPY]),
+  floor(30, 'Trono do Submundo', [HADES, UNDERWORLD_HOUND, UNDERWORLD_WRAITH], [], 'boss'),
 ];
 
 /** Reforça um tipo de monstro sem alterar sua identidade ou comportamento. */
