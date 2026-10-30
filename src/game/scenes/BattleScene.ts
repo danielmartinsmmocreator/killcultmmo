@@ -128,6 +128,8 @@ export class BattleScene extends Phaser.Scene {
   /** Aviso fixo abaixo do tabuleiro enquanto houver golpe de chefe anunciado. */
   private threatText!: Phaser.GameObjects.Text;
   private hoverCell: Position | null = null;
+  /** Monstro selecionado para consultar a área do próximo ataque normal. */
+  private threatPreviewUid: string | null = null;
   private unsubscribe: (() => void) | null = null;
   /** Temporizador do próximo passo da resolução do turno (null quando não há resolução). */
   private stepTimer: Phaser.Time.TimerEvent | null = null;
@@ -358,13 +360,17 @@ export class BattleScene extends Phaser.Scene {
 
     if (unit) {
       if (unit.definition.team === 'hero') {
+        this.threatPreviewUid = null;
         this.gameState.toggleSelection(unit.uid);
       } else {
         this.gameState.clearSelection();
+        this.threatPreviewUid = this.threatPreviewUid === unit.uid ? null : unit.uid;
+        this.drawOverlay();
       }
       return;
     }
 
+    this.threatPreviewUid = null;
     if (this.gameState.selectedUnit && this.gameState.moveSelectedUnit(cell)) {
       return;
     }
@@ -783,9 +789,54 @@ export class BattleScene extends Phaser.Scene {
 
   // ---------- Destaques ----------
 
+  /** Casas que o ataque normal realmente alcança, respeitando direção, alcance e bloqueios. */
+  private getNormalAttackPreview(monster: Unit): Position[] {
+    const attack = monster.definition.attack;
+    const dirs = attack.directions === 'facing'
+      ? [monster.facing]
+      : attack.directions === 'diagonal'
+        ? [{ col:1,row:1 }, { col:1,row:-1 }, { col:-1,row:1 }, { col:-1,row:-1 }]
+        : [{ col:0,row:1 }, { col:0,row:-1 }, { col:1,row:0 }, { col:-1,row:0 }];
+    const result = new Map<string, Position>();
+    const body = unitCells(monster);
+    const origins = body.filter((cell) => !body.some((other) =>
+      other.col === cell.col + (dirs[0]?.col ?? 0) && other.row === cell.row + (dirs[0]?.row ?? 0),
+    ));
+    for (const dir of dirs) {
+      const edges = body.filter((cell) => !body.some((other) =>
+        other.col === cell.col + dir.col && other.row === cell.row + dir.row,
+      ));
+      for (const origin of edges) {
+        for (let step = 1; step <= attack.range; step++) {
+          const cell = { col: origin.col + dir.col * step, row: origin.row + dir.row * step };
+          if (cell.col < 0 || cell.col >= BOARD_COLS || cell.row < 0 || cell.row >= BOARD_ROWS) break;
+          if (this.gameState.isObstacle(cell)) break;
+          result.set(`${cell.col},${cell.row}`, cell);
+          const occupant = this.gameState.getUnitAt(cell);
+          if (occupant && occupant.uid !== monster.uid) break;
+        }
+      }
+    }
+    return [...result.values()];
+  }
+
   private drawOverlay(): void {
     const g = this.overlay;
     g.clear();
+
+    // Prévia sob demanda: só aparece depois de clicar diretamente em um monstro.
+    const previewMonster = this.threatPreviewUid
+      ? this.gameState.monsters.find((unit) => unit.uid === this.threatPreviewUid) ?? null
+      : null;
+    if (previewMonster && this.gameState.phase === 'player') {
+      for (const cell of this.getNormalAttackPreview(previewMonster)) {
+        const { x, y } = cellToPixel(cell);
+        g.fillStyle(THREAT_COLOR, 0.38);
+        g.fillRect(x - TILE_SIZE / 2 + 2, y - TILE_SIZE / 2 + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        g.lineStyle(2, THREAT_COLOR, 0.9);
+        g.strokeRect(x - TILE_SIZE / 2 + 4, y - TILE_SIZE / 2 + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+      }
+    }
 
     // Casas ameaçadas por golpes de chefe anunciados: vermelhas, sob as peças e os outros destaques.
     for (const intent of this.gameState.pendingTelegraphs) {
