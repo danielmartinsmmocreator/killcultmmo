@@ -7,6 +7,8 @@ import { GameState } from './GameState';
 import { PlayerInventory } from './progression';
 import { ITEM_DEFINITIONS } from '../data/items';
 
+const SPECIAL_ITEM_DROP_CHANCE = 0.05;
+
 /**
  * Situação da campanha:
  * - 'fighting': combate em andamento;
@@ -244,48 +246,48 @@ export class Campaign {
       }
 
       // Drops raros: amuletos com chance menor; chefes têm chances maiores.
-      if (this.floorNumber === 5 && rank === 'mini-boss' && Math.random() < 0.10) {
-        this.inventory.add('shadow-claw');
+      if (this.floorNumber === 5 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('shadow-claw', this.floorNumber);
         drops.push('Garra do Sombrio');
-      } else if (this.floorNumber === 10 && rank === 'boss' && Math.random() < 0.20) {
-        this.inventory.add('cthulhu-tentacle');
+      } else if (this.floorNumber === 10 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('cthulhu-tentacle', this.floorNumber);
         drops.push('Tentáculo de Cthulhu');
-      } else if (this.floorNumber === 15 && rank === 'mini-boss' && Math.random() < 0.15) {
-        this.inventory.add('winter-cloak');
+      } else if (this.floorNumber === 15 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('winter-cloak', this.floorNumber);
         drops.push('Capa do Inverno');
-      } else if (this.floorNumber === 20 && rank === 'boss' && Math.random() < 0.25) {
-        this.inventory.add('seventh-fang');
+      } else if (this.floorNumber === 20 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('seventh-fang', this.floorNumber);
         drops.push('Dente do Sétimo');
-      } else if (this.floorNumber === 25 && rank === 'mini-boss') {
-        this.inventory.add('medusa-eye');
+      } else if (this.floorNumber === 25 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('medusa-eye', this.floorNumber);
         drops.push('Olho de Medusa');
-      } else if (this.floorNumber === 30 && rank === 'boss') {
-        this.inventory.add('hades-pendant');
+      } else if (this.floorNumber === 30 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('hades-pendant', this.floorNumber);
         drops.push('Pingente de Hades');
       }
 
       // Recompensas garantidas de marcos da campanha.
       if (this.floorNumber === 5 && rank === 'mini-boss') {
-        this.inventory.add('leather-boots');
+        this.inventory.add('leather-boots', this.floorNumber);
         drops.push('Botas de Couro');
       } else if (this.floorNumber === 10 && rank === 'boss') {
-        this.inventory.add('padded-chest');
+        this.inventory.add('padded-chest', this.floorNumber);
         drops.push('Peitoral Acolchoado');
-        this.inventory.add('rusty-sword');
+        this.inventory.add('rusty-sword', this.floorNumber);
         drops.push('Espada Enferrujada');
       } else if (this.floorNumber === 15 && rank === 'mini-boss') {
-        this.inventory.add('double-axe');
+        this.inventory.add('double-axe', this.floorNumber);
         drops.push('Machado duplo');
-        this.inventory.add('iron-shield');
+        this.inventory.add('iron-shield', this.floorNumber);
         drops.push('Escudo de ferro');
-        this.inventory.add('iron-helmet');
+        this.inventory.add('iron-helmet', this.floorNumber);
         drops.push('Capacete de Ferro');
       } else if (this.floorNumber === 20 && rank === 'boss') {
         this.inventory.add('seventh-edge');
         drops.push('Lâmina do Sétimo');
-        this.inventory.add('wooden-buckler');
+        this.inventory.add('wooden-buckler', this.floorNumber);
         drops.push('Broquel de Madeira');
-        this.inventory.add('traveler-pants');
+        this.inventory.add('traveler-pants', this.floorNumber);
         drops.push('Calça de Viajante');
       }
 
