@@ -46,12 +46,17 @@ export function spawnPositions(count: number): Position[] {
  */
 export function buildEncounter(config: FloorConfig, party: readonly Unit[]): BattleSetup {
   spawnPositions(config.monsters.length); // erro claro se houver monstros demais
-  const taken = new Set<string>(config.obstacles.map(positionKey));
+  // A formação pode ser personalizada e persistir entre andares. Se um obstáculo fixo
+  // coincidir com um herói, prevalece a posição do herói e o obstáculo é omitido neste encontro.
+  const heroCells = new Set<string>();
   for (const hero of party) {
     if (hero.hp > 0) {
-      for (const cell of footprintCells(hero.position, sizeOf(hero.definition))) taken.add(positionKey(cell));
+      for (const cell of footprintCells(hero.position, sizeOf(hero.definition))) heroCells.add(positionKey(cell));
     }
   }
+  const obstacles = config.obstacles.filter((cell) => !heroCells.has(positionKey(cell)));
+  const taken = new Set<string>(obstacles.map(positionKey));
+  for (const key of heroCells) taken.add(key);
 
   // Cada monstro ocupa a primeira casa de surgimento onde a ÁREA INTEIRA dele cabe no tabuleiro e
   // está livre (para monstros 1×1 isso é simplesmente a próxima casa da lista).
@@ -68,7 +73,7 @@ export function buildEncounter(config: FloorConfig, party: readonly Unit[]): Bat
 
   return {
     units: [...party, ...monsters],
-    obstacles: config.obstacles.map((cell) => ({ col: cell.col, row: cell.row })),
+    obstacles: obstacles.map((cell) => ({ col: cell.col, row: cell.row })),
   };
 }
 
