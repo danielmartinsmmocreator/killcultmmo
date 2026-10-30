@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { GameState } from '../core/GameState';
 import { ARCHER, ASSASSIN, CLERIC, MAGE, WARRIOR } from '../data/heroes';
 import { GOBLIN, SKELETON, SLIME } from '../data/monsters';
+import { MEDUSA } from '../data/bosses';
 import type { GameEvent } from '../types';
 import { RIGHT, stateWith, unit } from './helpers';
 
@@ -398,5 +399,30 @@ describe('Olho de Medusa', () => {
     protectedState.passTurn();
     protectedState.resolveAll();
     expect(warrior.hp).toBeLessThan(initialHp); // golpes seguintes causam dano normalmente
+  });
+});
+
+describe('Petrificação da Medusa', () => {
+  it('petrifica heróis na linha do olhar e faz perder a ação seguinte', () => {
+    const state = stateWith(() => [
+      unit(WARRIOR, 2, 0),
+      unit(MEDUSA, 2, 2, { col: -1, row: 0 }),
+    ]);
+    const warrior = state.heroes[0];
+    const medusa = state.monsters[0];
+    medusa.medusaCycle = 1; // A próxima ação da Medusa dispara o olhar.
+
+    state.passTurn();
+    state.resolveAll();
+
+    expect(warrior.petrified).toBe(true);
+    expect(state.log.some((entry) => entry.message.includes('foi petrificado pelo olhar da Medusa'))).toBe(true);
+    expect(state.getValidMoves(warrior)).toHaveLength(0);
+
+    state.passTurn();
+    state.resolveAll();
+
+    expect(warrior.petrified).toBe(false);
+    expect(state.log.some((entry) => entry.message.includes('se liberta da petrificação e perde sua ação'))).toBe(true);
   });
 });
