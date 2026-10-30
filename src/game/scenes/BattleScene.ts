@@ -504,7 +504,7 @@ export class BattleScene extends Phaser.Scene {
         satyr: 'monster-satyr',
         medusa: 'monster-medusa',
         cyclops: 'monster-cyclops',
-        gorgon: 'monster-gorgon',
+        gorgon: 'monster-medusa',
         minotaur: 'monster-minotaur',
         hades: 'monster-hades',
         'underworld-hound': 'monster-underworld-hound',
@@ -635,7 +635,10 @@ export class BattleScene extends Phaser.Scene {
 
       this.drawHpBar(view, unit);
       this.updateFacing(view, unit);
-      view.stunMarker.setVisible(unit.hp > 0 && unit.stunned);
+      view.stunMarker
+        .setText(unit.petrified ? '🗿' : 'Zz')
+        .setColor(unit.petrified ? '#67e8f9' : '#facc15')
+        .setVisible(unit.hp > 0 && (unit.stunned || Boolean(unit.petrified)));
     }
 
     this.updateOutcomeOverlay();
