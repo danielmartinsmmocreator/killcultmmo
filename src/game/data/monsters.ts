@@ -172,6 +172,29 @@ export const GORGON: UnitDefinition = { id:'gorgon', name:'Górgona', team:'mons
 export const MINOTAUR: UnitDefinition = { id:'minotaur', name:'Minotauro', team:'monster', symbol:'M', color:0x991b1b, maxHp:260, damage:32, movement:1, attack:{directions:'orthogonal',range:1} };
 export const UNDERWORLD_HOUND: UnitDefinition = { id:'underworld-hound', name:'Cão do Submundo', team:'monster', symbol:'U', color:0x7f1d1d, maxHp:190, damage:29, movement:2, attack:{directions:'orthogonal',range:1} };
 export const UNDERWORLD_WRAITH: UnitDefinition = { id:'underworld-wraith', name:'Espectro do Submundo', team:'monster', symbol:'W', color:0x64748b, maxHp:180, damage:28, movement:1, attack:{directions:'facing',range:3} };
+ 
+// Região 4 — País das Maravilhas.
+export const CARD_SOLDIER: UnitDefinition = {
+  id: 'card-soldier', name: 'Soldado de Cartas', team: 'monster', symbol: 'C', color: 0xdc2626,
+  maxHp: 330, damage: 38, movement: 1, attack: { directions: 'orthogonal', range: 1 },
+};
+export const WHITE_RABBIT: UnitDefinition = {
+  id: 'white-rabbit', name: 'Coelho Branco Frenético', team: 'monster', symbol: 'R', color: 0xe5e7eb,
+  maxHp: 285, damage: 35, movement: 2, attack: { directions: 'orthogonal', range: 1 },
+};
+export const GIANT_CATERPILLAR: UnitDefinition = {
+  id: 'giant-caterpillar', name: 'Lagarta Oracular', team: 'monster', symbol: 'L', color: 0x16a34a,
+  maxHp: 470, damage: 42, movement: 1, attack: { directions: 'orthogonal', range: 2 },
+};
+export const MAD_MUSHROOM: UnitDefinition = {
+  id: 'mad-mushroom', name: 'Cogumelo Alucinógeno', team: 'monster', symbol: 'M', color: 0x9333ea,
+  maxHp: 390, damage: 36, movement: 1, attack: { directions: 'facing', range: 3 },
+};
+export const THORN_PLANT: UnitDefinition = {
+  id: 'thorn-plant', name: 'Roseira Carnívora', team: 'monster', symbol: 'P', color: 0x15803d,
+  maxHp: 520, damage: 44, movement: 0, attack: { directions: 'orthogonal', range: 2 },
+};
+
 
 // Região 4 — País das Maravilhas: criaturas surreais, imprevisíveis e agressivas.
 export const CARD_SOLDIER: UnitDefinition = {
