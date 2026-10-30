@@ -48,3 +48,6 @@ export const DRACULA: UnitDefinition = {
   attack: { directions: 'orthogonal', range: 1 },
   rank: 'boss', telegraph: DRACULA_TELEGRAPH,
 };
+
+export const MEDUSA: UnitDefinition = { id:'medusa', name:'Medusa', team:'monster', symbol:'♛', color:0x0f766e, maxHp:520, damage:28, movement:1, attack:{directions:'orthogonal',range:1}, rank:'mini-boss' };
+export const HADES: UnitDefinition = { id:'hades', name:'Hades', team:'monster', symbol:'♚', color:0x581c87, maxHp:1250, damage:34, movement:1, attack:{directions:'orthogonal',range:1}, rank:'boss' };
