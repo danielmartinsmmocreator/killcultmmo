@@ -3,10 +3,10 @@ import { Campaign } from '../core/Campaign';
 import { isInsideBoard, positionKey } from '../core/board';
 import { buildEncounter, createParty, prepareParty, spawnPositions, validateFloor } from '../core/encounter';
 import { HERO_FORMATION } from '../data/battleSetup';
-import { ABYSS_IDOL, GOBLIN_CHIEF } from '../data/bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, MEDUSA } from '../data/bosses';
 import { CAMPAIGN_FLOORS, SPAWN_SLOTS } from '../data/encounters';
 import type { FloorConfig } from '../data/encounters';
-import { GOBLIN, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, GORGON, SKELETON, SLIME } from '../data/monsters';
 import type { Position } from '../types';
 
 const BASE: FloorConfig = {
@@ -70,6 +70,27 @@ describe('Configuração dos andares', () => {
     expect(byFloor(9)).toBeGreaterThan(byFloor(1));
   });
 });
+
+
+  it('posiciona a Medusa 2×2 no andar 25 sem sobrepor a Górgona ou outros monstros', () => {
+    expect(MEDUSA.size).toEqual({ width: 2, height: 2 });
+    expect(GORGON.id).toBe('gorgon');
+    const floor25 = CAMPAIGN_FLOORS.find((config) => config.floor === 25);
+    expect(floor25).toBeDefined();
+    const encounter = buildEncounter(floor25!, createParty());
+    const monsters = encounter.units.filter((unit) => unit.definition.team === 'monster');
+    const occupied = new Set<string>();
+    for (const monster of monsters) {
+      const size = monster.definition.size ?? { width: 1, height: 1 };
+      for (let row = 0; row < size.height; row++) {
+        for (let col = 0; col < size.width; col++) {
+          const key = `${monster.position.col + col},${monster.position.row + row}`;
+          expect(occupied.has(key)).toBe(false);
+          occupied.add(key);
+        }
+      }
+    }
+  });
 
 describe('Validação de andares', () => {
   it('aceita uma configuração correta', () => {
