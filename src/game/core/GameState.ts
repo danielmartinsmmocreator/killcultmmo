@@ -746,13 +746,20 @@ export class GameState {
         const directions = [{ col: 0, row: -1 }, { col: 1, row: 0 }, { col: 0, row: 1 }, { col: -1, row: 0 }];
         const current = directions.findIndex((dir) => dir.col === monster.facing.col && dir.row === monster.facing.row);
         monster.facing = directions[(current + 1 + directions.length) % directions.length];
-        const affected = this.heroes.filter((hero) => {
-          const dx = hero.position.col - monster.position.col;
-          const dy = hero.position.row - monster.position.row;
-          return monster.facing.col !== 0
-            ? dy === 0 && dx * monster.facing.col > 0
-            : dx === 0 && dy * monster.facing.row > 0;
-        });
+        // O olhar parte de toda a borda frontal da Medusa (ela ocupa 2×2 casas).
+        // Assim, qualquer herói alinhado com uma das casas da borda pode ser petrificado.
+        const medusaCells = unitCells(monster);
+        const affected = this.heroes.filter((hero) =>
+          unitCells(hero).some((heroCell) =>
+            medusaCells.some((bodyCell) => {
+              const dx = heroCell.col - bodyCell.col;
+              const dy = heroCell.row - bodyCell.row;
+              return monster.facing.col !== 0
+                ? dy === 0 && dx * monster.facing.col > 0
+                : dx === 0 && dy * monster.facing.row > 0;
+            }),
+          ),
+        );
         for (const hero of affected) {
           hero.petrified = true;
           this.addLog(`${hero.definition.name} foi petrificado pelo olhar da Medusa!`, 'monster');
