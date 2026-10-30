@@ -135,7 +135,6 @@ export class SidePanel {
       campaignBox,
       turnBox,
       section('Heróis', this.heroesEl),
-      actions,
       this.advanceButton,
       this.extractButton,
     );
@@ -148,7 +147,7 @@ export class SidePanel {
       this.statusEl,
       this.attributesButton,
       this.abilityBox,
-      section('Monstros', this.monstersEl),
+      (() => { const monstersSection = section('Monstros', this.monstersEl, 'monsters-section'); monstersSection.append(actions); return monstersSection; })(),
       section('Registro de combate', this.logEl, 'log-section'),
     );
 
