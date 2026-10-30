@@ -112,7 +112,7 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(21, 'Penhascos das Harpias', [HARPY, SKELETON, SATYR]),
   floor(22, 'Templo dos Ossos', [SKELETON, HARPY, SKELETON, SATYR]),
   floor(23, 'Bosque dos Sátiros', [SATYR, SATYR, HARPY, SKELETON], [{ col:1,row:2 }, { col:4,row:3 }]),
-  floor(24, 'Entrada do Labirinto', [MINOTAUR, HARPY, SATYR, SKELETON]),
+  floor(24, 'Entrada do Labirinto', [HARPY, SATYR, SKELETON, HARPY]),
   floor(25, 'Jardim das Serpentes', [MEDUSA, GORGON, SKELETON], [], 'mini-boss'),
   floor(26, 'Salões do Labirinto', [CYCLOPS, GORGON, SATYR]),
   floor(27, 'Pátio dos Ciclopes', [CYCLOPS, CYCLOPS, HARPY]),
