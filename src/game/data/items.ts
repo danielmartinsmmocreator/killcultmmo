@@ -80,7 +80,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'bronze-helmet': { id: 'bronze-helmet', name: 'Elmo de Bronze', slot: 'helmet', minLevel: F3, sellPrice: 55, bonuses: { defense: 8 } },
   'greaves': { id: 'greaves', name: 'Grevas de Bronze', slot: 'boots', minLevel: F3, sellPrice: 60, bonuses: { vitality: 20, defense: 3 } },
 
-  // Itens especiais garantidos pelos chefes da faixa 3.
+  // Itens especiais raros da faixa 3 (5% de chance nos chefes de marco).
   'medusa-eye': { id: 'medusa-eye', name: 'Olho de Medusa', slot: 'amulet', minLevel: F3, sellPrice: 120, bonuses: {}, ignoreFirstHitPerEncounter: true },
   'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20 } },
 
