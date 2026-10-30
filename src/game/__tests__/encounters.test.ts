@@ -3,7 +3,7 @@ import { Campaign } from '../core/Campaign';
 import { isInsideBoard, positionKey } from '../core/board';
 import { buildEncounter, createParty, prepareParty, spawnPositions, validateFloor } from '../core/encounter';
 import { HERO_FORMATION } from '../data/battleSetup';
-import { ABYSS_IDOL, GOBLIN_CHIEF, MEDUSA } from '../data/bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, MEDUSA, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../data/bosses';
 import { CAMPAIGN_FLOORS, SPAWN_SLOTS } from '../data/encounters';
 import type { FloorConfig } from '../data/encounters';
 import { GOBLIN, GORGON, SKELETON, SLIME } from '../data/monsters';
@@ -20,17 +20,17 @@ const BASE: FloorConfig = {
 const cell = (col: number, row: number): Position => ({ col, row });
 
 describe('Configuração dos andares', () => {
-  it('os 10 andares da campanha de teste são válidos', () => {
-    expect(CAMPAIGN_FLOORS).toHaveLength(10);
+  it('os 40 andares da campanha são válidos', () => {
+    expect(CAMPAIGN_FLOORS).toHaveLength(40);
     for (const config of CAMPAIGN_FLOORS) {
       expect(validateFloor(config)).toEqual([]);
     }
   });
 
-  it('os andares são numerados de 1 a 10 e têm os tipos esperados', () => {
+  it('os andares são numerados de 1 a 40 e têm mini-chefes e chefes nos marcos corretos', () => {
     CAMPAIGN_FLOORS.forEach((config, index) => {
       expect(config.floor).toBe(index + 1);
-      const expected = config.floor === 5 ? 'mini-boss' : config.floor === 10 ? 'boss' : 'normal';
+      const expected = config.floor % 10 === 0 ? 'boss' : config.floor % 10 === 5 ? 'mini-boss' : 'normal';
       expect(config.type).toBe(expected);
     });
   });
@@ -39,6 +39,9 @@ describe('Configuração dos andares', () => {
     expect(GOBLIN_CHIEF.rank).toBe('mini-boss');
     expect(ABYSS_IDOL.rank).toBe('boss');
     expect(ABYSS_IDOL.name).toBe('Ídolo do Abismo');
+    expect(CHESHIRE_CAT.rank).toBe('mini-boss');
+    expect(QUEEN_OF_HEARTS.rank).toBe('boss');
+    expect(QUEEN_OF_HEARTS.telegraph?.attacks).toHaveLength(3);
     for (const common of [GOBLIN, SKELETON, SLIME]) expect(common.rank === undefined).toBe(true);
     expect(ABYSS_IDOL.maxHp).toBeGreaterThan(GOBLIN_CHIEF.maxHp);
     expect(GOBLIN_CHIEF.maxHp).toBeGreaterThan(SKELETON.maxHp);
