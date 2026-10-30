@@ -228,24 +228,24 @@ export class Campaign {
       if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 1 && this.floorNumber <= 9 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierOneWeapons);
         const pool = [...classes.flatMap((id) => tierOneWeapons[id] ?? []), ...basicArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)]);
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
         drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
         this.normalItemDroppedThisFloor = true;
       } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 11 && this.floorNumber <= 19 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierTwoWeapons);
         const pool = [...classes.flatMap((id) => tierTwoWeapons[id] ?? []), ...basicArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)]);
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
         drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
         this.normalItemDroppedThisFloor = true;
       } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 21 && this.floorNumber <= 29 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierThreeWeapons);
         const pool = [...classes.flatMap((id) => tierThreeWeapons[id] ?? []), ...tierThreeArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)]);
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
         drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
         this.normalItemDroppedThisFloor = true;
       }
 
-      // Drops raros: amuletos com chance menor; chefes têm chances maiores.
+      // Itens especiais exclusivos: todos usam a mesma chance fixa de 5%.
       if (this.floorNumber === 5 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('shadow-claw', this.floorNumber);
         drops.push('Garra do Sombrio');
@@ -283,7 +283,7 @@ export class Campaign {
         this.inventory.add('iron-helmet', this.floorNumber);
         drops.push('Capacete de Ferro');
       } else if (this.floorNumber === 20 && rank === 'boss') {
-        this.inventory.add('seventh-edge');
+        this.inventory.add('seventh-edge', this.floorNumber);
         drops.push('Lâmina do Sétimo');
         this.inventory.add('wooden-buckler', this.floorNumber);
         drops.push('Broquel de Madeira');
