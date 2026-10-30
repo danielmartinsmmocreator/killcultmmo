@@ -36,6 +36,7 @@ export class PreparationScreen {
   private readonly onStart: () => void;
   private message = '';
   private inventoryOpen = false;
+  private inventoryRangeFilter: 1 | 2 | 3 | null = null;
 
   constructor(root: HTMLElement, campaign: Campaign, onStart: () => void) {
     this.root = root;
@@ -203,9 +204,30 @@ export class PreparationScreen {
     const inventoryTitle = document.createElement('h3');
     inventoryTitle.textContent = 'Inventário disponível';
     inventoryTitle.style.cssText = 'font-size:.9rem;margin:14px 0 8px;color:#cbd5e1;';
+    const rangeFilter = document.createElement('select');
+    rangeFilter.setAttribute('aria-label', 'Filtrar inventário por faixa de obtenção');
+    rangeFilter.style.cssText = STYLE.button + 'width:100%;margin:0 0 8px;';
+    const rangeOptions: Array<{ value: string; label: string }> = [
+      { value: '', label: 'Todas as faixas' },
+      { value: '1', label: 'Faixa 1 · Andares 1–10' },
+      { value: '2', label: 'Faixa 2 · Andares 11–20' },
+      { value: '3', label: 'Faixa 3 · Andares 21–30' },
+    ];
+    for (const option of rangeOptions) {
+      const element = document.createElement('option');
+      element.value = option.value;
+      element.textContent = option.label;
+      rangeFilter.append(element);
+    }
+    rangeFilter.value = this.inventoryRangeFilter === null ? '' : String(this.inventoryRangeFilter);
+    rangeFilter.addEventListener('change', () => {
+      this.inventoryRangeFilter = rangeFilter.value === '' ? null : Number(rangeFilter.value) as 1 | 2 | 3;
+      this.render();
+    });
     const items = document.createElement('div');
     items.style.cssText = 'display:grid;gap:6px;';
-    for (const item of this.campaign.inventory.items) {
+    const filteredItems = this.campaign.inventory.filterByRange(this.inventoryRangeFilter);
+    for (const item of filteredItems) {
       const def = ITEM_DEFINITIONS[item.definitionId];
       if (!def) continue;
       const row = document.createElement('div');
@@ -214,7 +236,8 @@ export class PreparationScreen {
       button.type = 'button';
       const bonus = Object.entries(def.bonuses).map(([key, amount]) => `${key === 'strength' ? 'Força' : key === 'vitality' ? 'Vitalidade' : 'Defesa'} +${amount}`).join(' · ');
       const special = def.defensePercent ? `Defesa +${def.defensePercent}%` : def.lifestealPercent ? `Vampirismo ${def.lifestealPercent}%` : '';
-      button.textContent = `${def.name} · ${SLOTS.find((s) => s.id === def.slot)?.label ?? def.slot} · ${[bonus, special].filter(Boolean).join(' · ') || 'Sem bônus'}`;
+      const origin = item.obtainedAtFloor === undefined ? 'Origem antiga/desconhecida' : `Obtido no andar ${item.obtainedAtFloor}`;
+      button.textContent = `${def.name} · ${SLOTS.find((s) => s.id === def.slot)?.label ?? def.slot} · ${[bonus, special, origin].filter(Boolean).join(' · ') || 'Sem bônus'}`;
       button.style.cssText = STYLE.button + 'text-align:left;font-size:.8rem;flex:1;';
       button.disabled = this.selectedHero.hp <= 0 || (this.selectedHero.progression?.level ?? 1) < (def.minLevel ?? 1) || (!!def.allowedClasses && !def.allowedClasses.includes(this.selectedHero.definition.id as 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer'));
       button.addEventListener('click', () => {
@@ -233,7 +256,13 @@ export class PreparationScreen {
       row.append(button, sell);
       items.append(row);
     }
-    equipmentCard.append(equipmentTitle, slots, inventoryTitle, items);
+    equipmentCard.append(equipmentTitle, slots, inventoryTitle, rangeFilter, items);
+    if (filteredItems.length === 0) {
+      const empty = document.createElement('p');
+      empty.textContent = 'Nenhum item disponível nesta faixa.';
+      empty.style.cssText = 'color:#94a3b8;font-size:.85rem;margin:4px 0;';
+      equipmentCard.append(empty);
+    }
 
     const inventoryButton = document.createElement('button');
     inventoryButton.type = 'button';
