@@ -491,6 +491,16 @@ export class BattleScene extends Phaser.Scene {
         werewolf: 'monster-werewolf',
         inverno: 'monster-inverno',
         'the-seventh': 'monster-o-setimo',
+        harpy: 'monster-harpy',
+        skeleton: 'monster-skeleton',
+        satyr: 'monster-satyr',
+        medusa: 'monster-medusa',
+        cyclops: 'monster-cyclops',
+        gorgon: 'monster-gorgon',
+        minotaur: 'monster-minotaur',
+        hades: 'monster-hades',
+        'underworld-hound': 'monster-underworld-hound',
+        'underworld-wraith': 'monster-underworld-wraith',
       };
       const texture = monsterTextures[def.id];
       if (texture && this.textures.exists(texture)) {
