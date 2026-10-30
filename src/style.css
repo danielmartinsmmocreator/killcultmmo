@@ -1226,3 +1226,67 @@ button.unit-card:disabled:hover {
     font-weight: 800;
   }
 }
+
+/* Correção mobile: o combate pode ultrapassar a altura da viewport e deve rolar. */
+@media (max-width: 560px) {
+  html,
+  body {
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+
+  #app:not(:has(.preparation-screen)) {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: 100%;
+    height: auto;
+    min-height: 100dvh;
+    max-height: none;
+    overflow: visible;
+  }
+
+  #app:not(:has(.preparation-screen)) #game-container {
+    flex: 0 0 auto;
+    width: 100%;
+    height: min(100vw, 45dvh);
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  #app:not(:has(.preparation-screen)) #panel {
+    flex: 0 0 auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    align-items: stretch;
+  }
+
+  #panel:not(:has(.preparation-screen)) .battle-rail {
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  #panel:not(:has(.preparation-screen)) .battle-rail .log-section {
+    display: flex;
+    flex: 0 0 auto;
+    min-height: 100px;
+    max-height: 180px;
+  }
+
+  #panel:not(:has(.preparation-screen)) .battle-rail .log {
+    min-height: 0;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+}
