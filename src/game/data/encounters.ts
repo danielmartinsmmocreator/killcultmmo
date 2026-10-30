@@ -42,18 +42,7 @@ export const SPAWN_SLOTS: readonly Position[] = [
   { col: 0, row: 0 },
   { col: 5, row: 0 },
   { col: 0, row: 1 },
-  { col: 5, row: 1 },
-  floor(21, 'Penhascos das Harpias', [HARPY, SKELETON, SATYR]),
-  floor(22, 'Templo dos Ossos', [SKELETON, HARPY, SKELETON, SATYR]),
-  floor(23, 'Bosque dos Sátiros', [SATYR, SATYR, HARPY, SKELETON], [{ col:1,row:2 }, { col:4,row:3 }]),
-  floor(24, 'Entrada do Labirinto', [MINOTAUR, HARPY, SATYR, SKELETON]),
-  floor(25, 'Jardim das Serpentes', [MEDUSA, GORGON, SKELETON], [], 'mini-boss'),
-  floor(26, 'Salões do Labirinto', [CYCLOPS, GORGON, SATYR]),
-  floor(27, 'Pátio dos Ciclopes', [CYCLOPS, CYCLOPS, HARPY]),
-  floor(28, 'Câmara das Górgonas', [GORGON, GORGON, MINOTAUR]),
-  floor(29, 'Último Portão', [MINOTAUR, CYCLOPS, GORGON, HARPY]),
-  floor(30, 'Trono do Submundo', [HADES, UNDERWORLD_HOUND, UNDERWORLD_WRAITH], [], 'boss'),
-];
+  { col: 5, row: 1 },];
 
 /** Reforça um tipo de monstro sem alterar sua identidade ou comportamento. */
 function stronger(base: UnitDefinition, hp: number, damage: number): UnitDefinition {
@@ -119,4 +108,15 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
     { col: 1, row: 2 }, { col: 4, row: 2 },
   ]),
   floor(20, 'Trono do Sétimo', [DRACULA, BLOOD_KNIGHT, BLOOD_BAT], [], 'boss'),
+
+  floor(21, 'Penhascos das Harpias', [HARPY, SKELETON, SATYR]),
+  floor(22, 'Templo dos Ossos', [SKELETON, HARPY, SKELETON, SATYR]),
+  floor(23, 'Bosque dos Sátiros', [SATYR, SATYR, HARPY, SKELETON], [{ col:1,row:2 }, { col:4,row:3 }]),
+  floor(24, 'Entrada do Labirinto', [MINOTAUR, HARPY, SATYR, SKELETON]),
+  floor(25, 'Jardim das Serpentes', [MEDUSA, GORGON, SKELETON], [], 'mini-boss'),
+  floor(26, 'Salões do Labirinto', [CYCLOPS, GORGON, SATYR]),
+  floor(27, 'Pátio dos Ciclopes', [CYCLOPS, CYCLOPS, HARPY]),
+  floor(28, 'Câmara das Górgonas', [GORGON, GORGON, MINOTAUR]),
+  floor(29, 'Último Portão', [MINOTAUR, CYCLOPS, GORGON, HARPY]),
+  floor(30, 'Trono do Submundo', [HADES, UNDERWORLD_HOUND, UNDERWORLD_WRAITH], [], 'boss'),
 ];
