@@ -1,5 +1,5 @@
 import type { EncounterType, Position, UnitDefinition } from '../types';
-import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES } from './bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS } from './bosses';
 import {
   CULTIST,
   INSANE,
@@ -10,6 +10,7 @@ import {
   RLYEH_HORROR,
   HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, SKELETON,
   VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT, WEREWOLF,
+  CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT,
 } from './monsters';
 
 /**
@@ -119,4 +120,24 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(28, 'Câmara das Górgonas', [GORGON, GORGON, MINOTAUR]),
   floor(29, 'Último Portão', [MINOTAUR, CYCLOPS, GORGON, HARPY]),
   floor(30, 'Trono do Submundo', [HADES, UNDERWORLD_HOUND, UNDERWORLD_WRAITH], [], 'boss'),
+
+  // Região 4 — País das Maravilhas: surrealismo, labirintos e realidade distorcida.
+  floor(31, 'A Toca do Coelho', [WHITE_RABBIT, CARD_SOLDIER, MAD_MUSHROOM]),
+  floor(32, 'O Chá que Nunca Esfria', [CARD_SOLDIER, GIANT_CATERPILLAR, WHITE_RABBIT], [
+    { col: 1, row: 2 }, { col: 4, row: 3 },
+  ]),
+  floor(33, 'Bosque dos Cogumelos', [MAD_MUSHROOM, MAD_MUSHROOM, THORN_PLANT, CARD_SOLDIER]),
+  floor(34, 'Jardim das Rosas Pintadas', [THORN_PLANT, WHITE_RABBIT, CARD_SOLDIER, GIANT_CATERPILLAR], [
+    { col: 2, row: 2 }, { col: 3, row: 3 },
+  ]),
+  floor(35, 'O Sorriso no Escuro', [CHESHIRE_CAT, CARD_SOLDIER, WHITE_RABBIT], [], 'mini-boss'),
+  floor(36, 'Labirinto das Cartas', [CARD_SOLDIER, CARD_SOLDIER, THORN_PLANT, MAD_MUSHROOM], [
+    { col: 1, row: 3 }, { col: 4, row: 2 },
+  ]),
+  floor(37, 'Pântano da Lagarta', [GIANT_CATERPILLAR, GIANT_CATERPILLAR, WHITE_RABBIT]),
+  floor(38, 'Salão dos Espelhos', [MAD_MUSHROOM, THORN_PLANT, CARD_SOLDIER, WHITE_RABBIT]),
+  floor(39, 'Portões do Castelo de Copas', [CARD_SOLDIER, CARD_SOLDIER, GIANT_CATERPILLAR, THORN_PLANT], [
+    { col: 2, row: 3 }, { col: 3, row: 2 },
+  ]),
+  floor(40, 'Trono da Rainha de Copas', [QUEEN_OF_HEARTS, CARD_SOLDIER, MAD_MUSHROOM], [], 'boss'),
 ];
