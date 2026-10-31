@@ -5,6 +5,7 @@ const F2 = 11;
 const F3 = 21;
 const F4 = 31;
 const F5 = 41;
+const F6 = 51;
 const W = ['warrior'] as const;
 const A = ['assassin'] as const;
 const M = ['mage'] as const;
@@ -126,6 +127,24 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
 
   // Item especial raro da faixa 5 (5% de chance no mini-chefe do andar 45).
   'curupira-charm': { id: 'curupira-charm', name: 'Amuleto das Pegadas Invertidas', slot: 'amulet', minLevel: F5, sellPrice: 260, bonuses: { strength: 18, vitality: 18, defense: 8 } },
+
+  'dune-scimitar': { id:'dune-scimitar', name:'Cimitarra das Dunas', slot:'weapon', minLevel:F6, allowedClasses:W, sellPrice:190, bonuses:{strength:52} },
+  'sultan-greatsword': { id:'sultan-greatsword', name:'Lâmina do Sultão', slot:'weapon', minLevel:F6, allowedClasses:W, sellPrice:205, bonuses:{strength:56} },
+  'sandguard-shield': { id:'sandguard-shield', name:'Escudo do Guardião de Areia', slot:'off-hand', minLevel:F6, allowedClasses:W, sellPrice:180, bonuses:{defense:21} },
+  'serpent-fang-daggers': { id:'serpent-fang-daggers', name:'Adagas Presas da Serpente', slot:'weapon', minLevel:F6, allowedClasses:A, sellPrice:200, bonuses:{strength:55} },
+  'mirage-stiletto': { id:'mirage-stiletto', name:'Estilete da Miragem', slot:'weapon', minLevel:F6, allowedClasses:A, sellPrice:185, bonuses:{strength:50} },
+  'djinnfire-staff': { id:'djinnfire-staff', name:'Cajado da Chama Djinn', slot:'weapon', minLevel:F6, allowedClasses:M, sellPrice:205, bonuses:{strength:56} },
+  'moonlit-scepter': { id:'moonlit-scepter', name:'Cetro do Luar', slot:'weapon', minLevel:F6, allowedClasses:M, sellPrice:195, bonuses:{strength:53} },
+  'thousand-tales-grimoire': { id:'thousand-tales-grimoire', name:'Grimório das Mil Histórias', slot:'off-hand', minLevel:F6, allowedClasses:M, sellPrice:185, bonuses:{strength:48} },
+  'oasis-scepter': { id:'oasis-scepter', name:'Cetro do Oásis Sagrado', slot:'weapon', minLevel:F6, allowedClasses:C, sellPrice:190, bonuses:{strength:51} },
+  'golden-lamp-staff': { id:'golden-lamp-staff', name:'Cajado da Lâmpada Dourada', slot:'weapon', minLevel:F6, allowedClasses:C, sellPrice:205, bonuses:{strength:56} },
+  'desert-prayer-tome': { id:'desert-prayer-tome', name:'Tomo das Preces do Deserto', slot:'off-hand', minLevel:F6, allowedClasses:C, sellPrice:185, bonuses:{vitality:50} },
+  'crescent-bow': { id:'crescent-bow', name:'Arco da Lua Crescente', slot:'weapon', minLevel:F6, allowedClasses:R, sellPrice:215, bonuses:{strength:60} },
+  'caravan-hunter-bow': { id:'caravan-hunter-bow', name:'Arco do Caçador de Caravanas', slot:'weapon', minLevel:F6, allowedClasses:R, sellPrice:220, bonuses:{strength:62} },
+  'sandweave-armor': { id:'sandweave-armor', name:'Armadura de Trama Arenosa', slot:'chest', minLevel:F6, sellPrice:210, bonuses:{vitality:65,defense:12} },
+  'djinn-circlet': { id:'djinn-circlet', name:'Diadema do Djinn', slot:'helmet', minLevel:F6, sellPrice:165, bonuses:{defense:18} },
+  'oasis-sandals': { id:'oasis-sandals', name:'Sandálias do Oásis', slot:'boots', minLevel:F6, sellPrice:175, bonuses:{vitality:45,defense:7} },
+  'vizier-seal': { id:'vizier-seal', name:'Selo do Vizir', slot:'amulet', minLevel:F6, sellPrice:320, bonuses:{strength:24,vitality:22,defense:10} },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },
