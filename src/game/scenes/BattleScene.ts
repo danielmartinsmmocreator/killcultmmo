@@ -318,6 +318,8 @@ export class BattleScene extends Phaser.Scene {
     const regionThree = floor >= 21 && floor <= 30;
     const regionFour = floor >= 31 && floor <= 40;
     const regionFive = floor >= 41 && floor <= 50;
+    const regionSix = floor >= 51 && floor <= 60;
+    const regionSeven = floor >= 61 && floor <= 70;
     for (const { tile, col, row } of this.boardTiles) {
       const color = regionTwo
         ? ((col + row) % 2 === 0 ? 0x090909 : 0x8b0000)
@@ -327,9 +329,11 @@ export class BattleScene extends Phaser.Scene {
             ? ((col + row) % 2 === 0 ? 0x312e81 : 0x7e22ce)
             : regionFive
               ? ((col + row) % 2 === 0 ? 0x365314 : 0x854d0e)
-              : regionSix
-                ? ((col + row) % 2 === 0 ? 0x78350f : 0xd97706)
-                : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+              : regionSeven
+                ? ((col + row) % 2 === 0 ? 0x334155 : 0x0f766e)
+                : regionSix
+                  ? ((col + row) % 2 === 0 ? 0x78350f : 0xd97706)
+                  : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
       tile.setFillStyle(color, 0.3);
     }
   }
