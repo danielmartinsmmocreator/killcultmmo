@@ -66,3 +66,18 @@ export const QUEEN_OF_HEARTS: UnitDefinition = {
   rank: 'boss',
   telegraph: QUEEN_OF_HEARTS_TELEGRAPH,
 };
+
+
+// Região 5 — Folclore Brasileiro.
+export const CURUPIRA: UnitDefinition = {
+  id: 'curupira', name: 'Curupira', team: 'monster', symbol: 'C', color: 0x16a34a,
+  maxHp: 2600, damage: 88, movement: 2,
+  attack: { directions: 'diagonal', range: 2 },
+  rank: 'mini-boss',
+};
+export const CUCA: UnitDefinition = {
+  id: 'cuca', name: 'Cuca', team: 'monster', symbol: 'Q', color: 0x4d7c0f,
+  maxHp: 5900, damage: 108, movement: 1,
+  attack: { directions: 'orthogonal', range: 2 },
+  rank: 'boss',
+};
