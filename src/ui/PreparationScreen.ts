@@ -38,7 +38,10 @@ export class PreparationScreen {
   private readonly onStart: () => void;
   private message = '';
   private inventoryOpen = false;
-  private inventoryRangeFilter: 1 | 2 | 3 | null = null;
+  private inventoryRangeFilter: number | null = null;
+  private inventorySlotFilter: EquipmentSlot | 'all' = 'all';
+  private inventoryClassFilter: 'all' | 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer' = 'all';
+  private inventorySort: 'floor-asc' | 'floor-desc' | 'rarity-desc' | 'rarity-asc' = 'floor-desc';
   private devUnlocked = false;
   private devPanelOpen = false;
 
@@ -336,29 +339,92 @@ export class PreparationScreen {
     const inventoryTitle = document.createElement('h3');
     inventoryTitle.textContent = 'Inventário disponível';
     inventoryTitle.style.cssText = 'font-size:.9rem;margin:14px 0 8px;color:#cbd5e1;';
-    const rangeFilter = document.createElement('select');
-    rangeFilter.setAttribute('aria-label', 'Filtrar inventário por faixa de obtenção');
-    rangeFilter.style.cssText = STYLE.button + 'width:100%;margin:0 0 8px;';
-    const rangeOptions: Array<{ value: string; label: string }> = [
-      { value: '', label: 'Todas as faixas' },
-      { value: '1', label: 'Faixa 1 · Andares 1–10' },
-      { value: '2', label: 'Faixa 2 · Andares 11–20' },
-      { value: '3', label: 'Faixa 3 · Andares 21–30' },
-    ];
-    for (const option of rangeOptions) {
-      const element = document.createElement('option');
-      element.value = option.value;
-      element.textContent = option.label;
-      rangeFilter.append(element);
-    }
-    rangeFilter.value = this.inventoryRangeFilter === null ? '' : String(this.inventoryRangeFilter);
-    rangeFilter.addEventListener('change', () => {
-      this.inventoryRangeFilter = rangeFilter.value === '' ? null : Number(rangeFilter.value) as 1 | 2 | 3;
+    const filterGrid = document.createElement('div');
+    filterGrid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:7px;margin-bottom:10px;';
+    const makeFilter = (label: string, value: string, options: Array<{ value: string; label: string }>, onChange: (value: string) => void): HTMLSelectElement => {
+      const wrapper = document.createElement('label');
+      wrapper.style.cssText = 'display:grid;gap:4px;color:#94a3b8;font-size:.72rem;font-weight:700;';
+      const caption = document.createElement('span');
+      caption.textContent = label;
+      const select = document.createElement('select');
+      select.setAttribute('aria-label', label);
+      select.style.cssText = STYLE.button + 'width:100%;min-width:0;padding:8px;font-size:.78rem;';
+      for (const option of options) {
+        const element = document.createElement('option');
+        element.value = option.value;
+        element.textContent = option.label;
+        select.append(element);
+      }
+      select.value = value;
+      select.addEventListener('change', () => onChange(select.value));
+      wrapper.append(caption, select);
+      filterGrid.append(wrapper);
+      return select;
+    };
+    makeFilter('Tipo de equipamento', this.inventorySlotFilter, [
+      { value: 'all', label: 'Todos os tipos' },
+      ...SLOTS.map((slot) => ({ value: slot.id, label: slot.label })),
+    ], (value) => {
+      this.inventorySlotFilter = value === 'all' ? 'all' : value as EquipmentSlot;
+      this.render();
+    });
+    makeFilter('Classe compatível', this.inventoryClassFilter, [
+      { value: 'all', label: 'Todas as classes' },
+      { value: 'warrior', label: 'Guerreiro' },
+      { value: 'assassin', label: 'Assassino' },
+      { value: 'mage', label: 'Mago' },
+      { value: 'cleric', label: 'Clérigo' },
+      { value: 'archer', label: 'Arqueiro' },
+    ], (value) => {
+      this.inventoryClassFilter = value as typeof this.inventoryClassFilter;
+      this.render();
+    });
+    makeFilter('Faixa de obtenção', this.inventoryRangeFilter === null ? 'all' : String(this.inventoryRangeFilter), [
+      { value: 'all', label: 'Todas as faixas' },
+      ...Array.from({ length: 10 }, (_, index) => ({
+        value: String(index + 1),
+        label: `Faixa ${index + 1} · Andares ${index * 10 + 1}–${(index + 1) * 10}`,
+      })),
+      { value: 'unknown', label: 'Origem desconhecida' },
+    ], (value) => {
+      this.inventoryRangeFilter = value === 'all' || value === 'unknown' ? null : Number(value);
+      this.render();
+    });
+    makeFilter('Organizar por', this.inventorySort, [
+      { value: 'floor-desc', label: 'Faixa: mais recente' },
+      { value: 'floor-asc', label: 'Faixa: mais antiga' },
+      { value: 'rarity-desc', label: 'Raridade: raros primeiro' },
+      { value: 'rarity-asc', label: 'Raridade: comuns primeiro' },
+    ], (value) => {
+      this.inventorySort = value as typeof this.inventorySort;
       this.render();
     });
     const items = document.createElement('div');
     items.style.cssText = 'display:grid;gap:6px;';
-    const filteredItems = this.campaign.inventory.filterByRange(this.inventoryRangeFilter);
+    const filteredItems = [...this.campaign.inventory.items]
+      .filter((item) => {
+        const def = ITEM_DEFINITIONS[item.definitionId];
+        if (!def) return false;
+        if (this.inventorySlotFilter !== 'all' && def.slot !== this.inventorySlotFilter) return false;
+        if (this.inventoryClassFilter !== 'all' && def.allowedClasses && !def.allowedClasses.includes(this.inventoryClassFilter)) return false;
+        if (this.inventoryClassFilter !== 'all' && !def.allowedClasses && def.slot === 'off-hand' && this.inventoryClassFilter === 'archer') return false;
+        if (this.inventoryRangeFilter !== null) {
+          if (item.obtainedAtFloor === undefined) return false;
+          const firstFloor = (this.inventoryRangeFilter - 1) * 10 + 1;
+          if (item.obtainedAtFloor < firstFloor || item.obtainedAtFloor > firstFloor + 9) return false;
+        }
+        return true;
+      })
+      .filter((item) => this.inventoryRangeFilter !== null || item.obtainedAtFloor !== undefined || true)
+      .sort((a, b) => {
+        const floorA = a.obtainedAtFloor ?? 0;
+        const floorB = b.obtainedAtFloor ?? 0;
+        const rarityA = ITEM_DEFINITIONS[a.definitionId]?.rarity === 'rare' ? 1 : 0;
+        const rarityB = ITEM_DEFINITIONS[b.definitionId]?.rarity === 'rare' ? 1 : 0;
+        if (this.inventorySort === 'rarity-desc') return rarityB - rarityA || floorB - floorA;
+        if (this.inventorySort === 'rarity-asc') return rarityA - rarityB || floorB - floorA;
+        return this.inventorySort === 'floor-asc' ? floorA - floorB : floorB - floorA;
+      });
     for (const item of filteredItems) {
       const def = ITEM_DEFINITIONS[item.definitionId];
       if (!def) continue;
@@ -388,10 +454,10 @@ export class PreparationScreen {
       row.append(button, sell);
       items.append(row);
     }
-    equipmentCard.append(equipmentTitle, slots, inventoryTitle, rangeFilter, items);
+    equipmentCard.append(equipmentTitle, slots, inventoryTitle, filterGrid, items);
     if (filteredItems.length === 0) {
       const empty = document.createElement('p');
-      empty.textContent = 'Nenhum item disponível nesta faixa.';
+      empty.textContent = 'Nenhum item corresponde aos filtros selecionados.';
       empty.style.cssText = 'color:#94a3b8;font-size:.85rem;margin:4px 0;';
       equipmentCard.append(empty);
     }
