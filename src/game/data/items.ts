@@ -4,6 +4,7 @@ const F1 = 1;
 const F2 = 11;
 const F3 = 21;
 const F4 = 31;
+const F5 = 41;
 const W = ['warrior'] as const;
 const A = ['assassin'] as const;
 const M = ['mage'] as const;
@@ -105,6 +106,27 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   // Itens especiais raros da faixa 4 (5% de chance nos encontros de marco).
   'cheshire-grin': { id: 'cheshire-grin', name: 'Sorriso de Cheshire', slot: 'amulet', minLevel: F4, sellPrice: 180, bonuses: {}, lifestealPercent: 8 },
   'queen-heart': { id: 'queen-heart', name: 'Coração da Rainha', slot: 'amulet', minLevel: F4, sellPrice: 220, bonuses: { strength: 30 }, defensePercent: 8 },
+
+  // Faixa 5 — equipamentos do Folclore Brasileiro (andares 41–50).
+  'boitata-spear': { id: 'boitata-spear', name: 'Lança das Chamas do Boitatá', slot: 'weapon', minLevel: F5, allowedClasses: W, sellPrice: 145, bonuses: { strength: 40 } },
+  'mapinguari-cleaver': { id: 'mapinguari-cleaver', name: 'Cutelo do Mapinguari', slot: 'weapon', minLevel: F5, allowedClasses: W, sellPrice: 155, bonuses: { strength: 43 } },
+  'curupira-shield': { id: 'curupira-shield', name: 'Escudo das Pegadas Invertidas', slot: 'off-hand', minLevel: F5, allowedClasses: W, sellPrice: 135, bonuses: { defense: 17 } },
+  'mula-hooves': { id: 'mula-hooves', name: 'Lâminas de Casco', slot: 'weapon', minLevel: F5, allowedClasses: A, sellPrice: 150, bonuses: { strength: 42 } },
+  'saci-daggers': { id: 'saci-daggers', name: 'Adagas do Redemoinho', slot: 'weapon', minLevel: F5, allowedClasses: A, sellPrice: 140, bonuses: { strength: 39 } },
+  'boitata-staff': { id: 'boitata-staff', name: 'Cajado da Serpente de Fogo', slot: 'weapon', minLevel: F5, allowedClasses: M, sellPrice: 155, bonuses: { strength: 43 } },
+  'iara-trident': { id: 'iara-trident', name: 'Tridente de Iara', slot: 'weapon', minLevel: F5, allowedClasses: M, sellPrice: 160, bonuses: { strength: 45 } },
+  'enchanted-forest-grimoire': { id: 'enchanted-forest-grimoire', name: 'Grimório da Mata Encantada', slot: 'off-hand', minLevel: F5, allowedClasses: M, sellPrice: 140, bonuses: { strength: 38 } },
+  'iara-scepter': { id: 'iara-scepter', name: 'Cetro das Águas de Iara', slot: 'weapon', minLevel: F5, allowedClasses: C, sellPrice: 150, bonuses: { strength: 40 } },
+  'cuca-bone-staff': { id: 'cuca-bone-staff', name: 'Cajado de Ossos da Cuca', slot: 'weapon', minLevel: F5, allowedClasses: C, sellPrice: 160, bonuses: { strength: 44 } },
+  'healing-leaf-tome': { id: 'healing-leaf-tome', name: 'Tomo das Folhas Curativas', slot: 'off-hand', minLevel: F5, allowedClasses: C, sellPrice: 145, bonuses: { vitality: 40 } },
+  'curupira-bow': { id: 'curupira-bow', name: 'Arco do Guardião da Mata', slot: 'weapon', minLevel: F5, allowedClasses: R, sellPrice: 165, bonuses: { strength: 47 } },
+  'saci-wind-bow': { id: 'saci-wind-bow', name: 'Arco dos Ventos do Saci', slot: 'weapon', minLevel: F5, allowedClasses: R, sellPrice: 170, bonuses: { strength: 49 } },
+  'mapinguari-hide': { id: 'mapinguari-hide', name: 'Couraça de Couro do Mapinguari', slot: 'chest', minLevel: F5, sellPrice: 165, bonuses: { vitality: 52, defense: 10 } },
+  'boitata-crest': { id: 'boitata-crest', name: 'Crista Flamejante', slot: 'helmet', minLevel: F5, sellPrice: 125, bonuses: { defense: 15 } },
+  'saci-boots': { id: 'saci-boots', name: 'Botas de Redemoinho', slot: 'boots', minLevel: F5, sellPrice: 140, bonuses: { vitality: 36, defense: 5 } },
+
+  // Item especial raro da faixa 5 (5% de chance no mini-chefe do andar 45).
+  'curupira-charm': { id: 'curupira-charm', name: 'Amuleto das Pegadas Invertidas', slot: 'amulet', minLevel: F5, sellPrice: 260, bonuses: { strength: 18, vitality: 18, defense: 8 } },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },
