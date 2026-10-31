@@ -509,6 +509,13 @@ export class BattleScene extends Phaser.Scene {
         hades: 'monster-hades',
         'underworld-hound': 'monster-underworld-hound',
         'underworld-wraith': 'monster-underworld-wraith',
+        'card-soldier': 'monster-card-soldier',
+        'white-rabbit': 'monster-white-rabbit',
+        'giant-caterpillar': 'monster-giant-caterpillar',
+        'mad-mushroom': 'monster-mad-mushroom',
+        'thorn-plant': 'monster-thorn-plant',
+        'cheshire-cat': 'monster-cheshire-cat',
+        'queen-of-hearts': 'monster-queen-of-hearts',
       };
       const texture = monsterTextures[def.id];
       if (texture && this.textures.exists(texture)) {
