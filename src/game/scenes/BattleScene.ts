@@ -464,6 +464,46 @@ export class BattleScene extends Phaser.Scene {
     if (effect) this.flashArea(effect);
   }
 
+  /** Anéis e partículas mágicas marcam a origem e o destino do teleporte do Gato Mistério. */
+  private spawnCheshireTeleportBurst(x: number, y: number, color: number): void {
+    const burst = this.add.graphics().setDepth(3);
+    burst.lineStyle(4, color, 0.95);
+    burst.strokeCircle(0, 0, 18);
+    burst.lineStyle(2, 0xffffff, 0.8);
+    burst.strokeCircle(0, 0, 9);
+    burst.setPosition(x, y).setScale(0.35).setAlpha(0.95);
+
+    this.tweens.add({
+      targets: burst,
+      scale: 2.1,
+      alpha: 0,
+      duration: 360,
+      ease: 'Cubic.Out',
+      onComplete: () => burst.destroy(),
+    });
+
+    for (let i = 0; i < 8; i++) {
+      const angle = (Math.PI * 2 * i) / 8;
+      const particle = this.add.circle(
+        x + Math.cos(angle) * 12,
+        y + Math.sin(angle) * 12,
+        4,
+        color,
+        1,
+      ).setDepth(3);
+      this.tweens.add({
+        targets: particle,
+        x: x + Math.cos(angle) * 42,
+        y: y + Math.sin(angle) * 42,
+        alpha: 0,
+        scale: 0.2,
+        duration: 300,
+        ease: 'Cubic.Out',
+        onComplete: () => particle.destroy(),
+      });
+    }
+  }
+
   /** Destaca quem acabou de agir com um pequeno "pulso" na peça. */
   private pulseActor(): void {
     const actor = this.gameState.lastActor;
@@ -638,11 +678,37 @@ export class BattleScene extends Phaser.Scene {
       container.setScale(1);
 
       if (unit.hp > 0) {
-        container.setVisible(true).setAlpha(1);
-        if (animate && moved) {
+        container.setVisible(true);
+        if (animate && moved && unit.definition.id === 'cheshire-cat') {
+          // O gato não atravessa o tabuleiro visualmente: desaparece na origem e reaparece no destino.
+          const originX = container.x;
+          const originY = container.y;
+          this.spawnCheshireTeleportBurst(originX, originY, 0xa78bfa);
+          container.setAlpha(1);
+          this.tweens.add({
+            targets: container,
+            alpha: 0,
+            scale: 0.12,
+            duration: 190,
+            ease: 'Cubic.In',
+            onComplete: () => {
+              if (!container.active || this.disposed) return;
+              container.setPosition(x, y).setAlpha(0).setScale(0.12);
+              this.spawnCheshireTeleportBurst(x, y, 0xe9d5ff);
+              this.tweens.add({
+                targets: container,
+                alpha: 1,
+                scale: 1,
+                duration: 240,
+                ease: 'Back.Out',
+              });
+            },
+          });
+        } else if (animate && moved) {
+          container.setAlpha(1).setScale(1);
           this.tweens.add({ targets: container, x, y, duration: 180, ease: 'Cubic.Out' });
         } else {
-          container.setPosition(x, y);
+          container.setAlpha(1).setScale(1).setPosition(x, y);
         }
       } else if (container.visible) {
         // Unidade derrotada: some do tabuleiro (e deixa de ocupar casa no GameState).
