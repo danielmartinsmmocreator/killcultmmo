@@ -81,3 +81,6 @@ export const CUCA: UnitDefinition = {
   attack: { directions: 'orthogonal', range: 2 },
   rank: 'boss',
 };
+
+export const SAND_VIZIER: UnitDefinition = { id:'sand-vizier', name:'Vizir das Areias', team:'monster', symbol:'♜', color:0xb45309, maxHp:3900, damage:118, movement:1, attack:{directions:'orthogonal',range:2}, rank:'mini-boss' };
+export const SULTAN_OF_NIGHTS: UnitDefinition = { id:'sultan-of-nights', name:'Sultão das Mil Noites', team:'monster', symbol:'♛', color:0x92400e, maxHp:7800, damage:138, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
