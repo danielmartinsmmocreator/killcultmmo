@@ -230,4 +230,13 @@ export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
   CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT, SACI, BOITATA,
   IARA, MULA_SEM_CABECA, MAPINGUARI, CUCA_MINION, DESERT_BANDIT, BRONZE_SCORPION,
   SAND_DJINN, MIRAGE_SORCERER, DESERT_SERPENT, DUNE_GUARDIAN,
+  STITCHED_THRALL, PLAGUE_SURGEON, LIGHTNING_REVENANT, HOMUNCULUS, IRON_AUTOMATON, FLESH_GOLEM,
 ];
+
+// Região 7 — Ciência Proibida.
+export const STITCHED_THRALL: UnitDefinition = { id:'stitched-thrall', name:'Servo Costurado', team:'monster', symbol:'T', color:0x64748b, maxHp:3450, damage:126, movement:1, attack:{directions:'orthogonal',range:1} };
+export const PLAGUE_SURGEON: UnitDefinition = { id:'plague-surgeon', name:'Cirurgião da Peste', team:'monster', symbol:'P', color:0x166534, maxHp:2950, damage:120, movement:1, attack:{directions:'diagonal',range:2} };
+export const LIGHTNING_REVENANT: UnitDefinition = { id:'lightning-revenant', name:'Revenante Elétrico', team:'monster', symbol:'R', color:0x38bdf8, maxHp:3250, damage:132, movement:2, attack:{directions:'facing',range:3} };
+export const HOMUNCULUS: UnitDefinition = { id:'homunculus', name:'Homúnculo Instável', team:'monster', symbol:'H', color:0xa3e635, maxHp:2800, damage:118, movement:2, attack:{directions:'diagonal',range:1} };
+export const IRON_AUTOMATON: UnitDefinition = { id:'iron-automaton', name:'Autômato de Ferro', team:'monster', symbol:'A', color:0x94a3b8, maxHp:3900, damage:138, movement:1, attack:{directions:'orthogonal',range:2} };
+export const FLESH_GOLEM: UnitDefinition = { id:'flesh-golem', name:'Golem de Retalhos', team:'monster', symbol:'G', color:0x9f1239, maxHp:4400, damage:145, movement:1, attack:{directions:'orthogonal',range:1} };
