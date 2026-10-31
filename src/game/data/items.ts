@@ -105,7 +105,6 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
 
   // Itens especiais raros da faixa 4 (5% de chance nos encontros de marco).
   'cheshire-grin': { id: 'cheshire-grin', name: 'Sorriso de Cheshire', slot: 'amulet', minLevel: F4, sellPrice: 180, bonuses: {}, lifestealPercent: 8 },
-  'queen-heart': { id: 'queen-heart', name: 'Coração da Rainha', slot: 'amulet', minLevel: F4, sellPrice: 220, bonuses: { strength: 30 }, defensePercent: 8 },
 
   // Faixa 5 — equipamentos do Folclore Brasileiro (andares 41–50).
   'boitata-spear': { id: 'boitata-spear', name: 'Lança das Chamas do Boitatá', slot: 'weapon', minLevel: F5, allowedClasses: W, sellPrice: 145, bonuses: { strength: 40 } },
