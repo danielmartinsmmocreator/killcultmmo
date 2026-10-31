@@ -878,6 +878,25 @@ export class GameState {
   }
 
   /** Heróis derrotados têm precedência: se todos caíram (por exemplo, por fogo amigo), é derrota. */
+  /** Ferramentas de desenvolvimento: encerra o combate sem executar turnos. */
+  debugSetOutcome(outcome: 'victory' | 'defeat'): void {
+    if (outcome === 'victory') {
+      for (const monster of this.monsters) monster.hp = 0;
+    } else {
+      for (const hero of this.heroes) hero.hp = 0;
+    }
+    this.updateOutcome();
+    this.emit('step');
+  }
+
+  /** Recupera todos os heróis vivos do grupo atual. */
+  debugHealHeroes(): void {
+    for (const hero of this.heroRoster) {
+      if (hero.hp > 0) hero.hp = hero.maxHp;
+    }
+    this.emit('step');
+  }
+
   private updateOutcome(): void {
     if (this.isOver) return;
 
