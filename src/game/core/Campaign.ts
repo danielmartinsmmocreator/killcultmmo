@@ -1,11 +1,14 @@
 import { CAMPAIGN_FLOORS, ENCOUNTER_LABELS } from '../data/encounters';
 import type { FloorConfig } from '../data/encounters';
 import type { BattleSetup } from '../data/battleSetup';
-import type { EncounterType, Position, Unit } from '../types';
+import type { EncounterType, Position, Unit, UnitDefinition } from '../types';
 import { buildEncounter, createParty, prepareParty, validateFloor } from './encounter';
 import { GameState } from './GameState';
 import { PlayerInventory } from './progression';
 import { ITEM_DEFINITIONS } from '../data/items';
+import { MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT } from '../data/monsters';
+import { GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../data/bosses';
+
 
 const SPECIAL_ITEM_DROP_CHANCE = 0.05;
 
@@ -174,9 +177,68 @@ export class Campaign {
     return true;
   }
 
+  /** Pula para qualquer andar e recria o encontro preservando o grupo. */
+  debugJumpToFloor(floorNumber: number): boolean {
+    if (!Number.isInteger(floorNumber) || floorNumber < 1 || floorNumber > this.totalFloors) return false;
+    this.floorIndex = floorNumber - 1;
+    this.rewardedMonsterUids.clear();
+    this.rewardMessages.length = 0;
+    this.rewardGold = 0;
+    this.rewardDrops.length = 0;
+    prepareParty(this.activeParty);
+    this.battle.loadEncounter(this.createEncounter());
+    return true;
+  }
+
+  /** Substitui os inimigos do andar atual pelos selecionados no painel de desenvolvimento. */
+  debugSetMonsters(monsters: readonly UnitDefinition[]): boolean {
+    if (monsters.length < 1 || monsters.length > 12 || monsters.some((m) => m.team !== 'monster')) return false;
+    const config: FloorConfig = {
+      ...this.floor,
+      type: monsters.some((m) => m.rank === 'boss') ? 'boss' : monsters.some((m) => m.rank === 'mini-boss') ? 'mini-boss' : 'normal',
+      monsters,
+      obstacles: [],
+    };
+    // A configuração customizada é validada pelo construtor do encontro; o tipo acompanha o chefe escolhido.
+    try {
+      const setup = buildEncounter(config, this.activeParty);
+      this.battle.loadEncounter({ ...setup, title: `DEV — Andar ${this.floorNumber}: encontro personalizado` });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  debugAddGold(amount: number): void {
+    if (Number.isFinite(amount)) this.gold = Math.max(0, this.gold + Math.trunc(amount));
+  }
+
+  debugAddItem(definitionId: string): boolean {
+    if (!ITEM_DEFINITIONS[definitionId]) return false;
+    this.inventory.add(definitionId, this.floorNumber);
+    return true;
+  }
+
+  debugSetHeroLevel(uid: string, level: number): boolean {
+    const hero = this.partyUnits.find((unit) => unit.uid === uid);
+    if (!hero?.progression || !Number.isInteger(level) || level < 1 || level > 999) return false;
+    const p = hero.progression;
+    const gained = Math.max(0, level - p.level);
+    p.level = level;
+    p.xp = 0;
+    p.unspentAttributePoints += gained * 3;
+    return true;
+  }
+
+  debugToggleExtraction(enabled: boolean): void {
+    this.debugExtractionEnabled = enabled;
+  }
+
+  debugExtractionEnabled = true;
+
   /** Extração manual após concluir um marco de 5 andares (ex.: andar 5). */
   get canExtract(): boolean {
-    return (this.status === 'floor-cleared' || this.status === 'completed') && this.floorNumber % 5 === 0;
+    return this.debugExtractionEnabled && ((this.status === 'floor-cleared' || this.status === 'completed') && this.floorNumber % 5 === 0);
   }
 
   /** Consolida os itens obtidos e retorna à base ao extrair em um marco válido. */
