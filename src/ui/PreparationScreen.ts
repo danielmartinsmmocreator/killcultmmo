@@ -38,7 +38,7 @@ export class PreparationScreen {
   private readonly onStart: () => void;
   private message = '';
   private inventoryOpen = false;
-  private inventoryRangeFilter: number | null = null;
+  private inventoryRangeFilter: number | null | 'unknown' = null;
   private inventorySlotFilter: EquipmentSlot | 'all' = 'all';
   private inventoryClassFilter: 'all' | 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer' = 'all';
   private inventorySort: 'floor-asc' | 'floor-desc' | 'rarity-desc' | 'rarity-asc' = 'floor-desc';
@@ -387,7 +387,7 @@ export class PreparationScreen {
       })),
       { value: 'unknown', label: 'Origem desconhecida' },
     ], (value) => {
-      this.inventoryRangeFilter = value === 'all' || value === 'unknown' ? null : Number(value);
+      this.inventoryRangeFilter = value === 'all' ? null : value === 'unknown' ? 'unknown' : Number(value);
       this.render();
     });
     makeFilter('Organizar por', this.inventorySort, [
@@ -408,14 +408,14 @@ export class PreparationScreen {
         if (this.inventorySlotFilter !== 'all' && def.slot !== this.inventorySlotFilter) return false;
         if (this.inventoryClassFilter !== 'all' && def.allowedClasses && !def.allowedClasses.includes(this.inventoryClassFilter)) return false;
         if (this.inventoryClassFilter !== 'all' && !def.allowedClasses && def.slot === 'off-hand' && this.inventoryClassFilter === 'archer') return false;
-        if (this.inventoryRangeFilter !== null) {
+        if (this.inventoryRangeFilter === 'unknown' && item.obtainedAtFloor !== undefined) return false;
+        if (typeof this.inventoryRangeFilter === 'number') {
           if (item.obtainedAtFloor === undefined) return false;
           const firstFloor = (this.inventoryRangeFilter - 1) * 10 + 1;
           if (item.obtainedAtFloor < firstFloor || item.obtainedAtFloor > firstFloor + 9) return false;
         }
         return true;
       })
-      .filter((item) => this.inventoryRangeFilter !== null || item.obtainedAtFloor !== undefined || true)
       .sort((a, b) => {
         const floorA = a.obtainedAtFloor ?? 0;
         const floorB = b.obtainedAtFloor ?? 0;
