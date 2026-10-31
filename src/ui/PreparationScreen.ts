@@ -71,16 +71,6 @@ export class PreparationScreen {
     devButton.type = 'button';
     devButton.textContent = '⚙ Dev Mode';
     devButton.style.cssText = 'padding:9px 13px;border:1px solid #8b7be8;border-radius:8px;background:#25233d;color:#fff;font-weight:800;cursor:pointer;';
-    devButton.addEventListener('click', () => {
-      if (!this.devUnlocked) {
-        const password = window.prompt('Senha de desenvolvedor:');
-        if (password !== 'BeatrizL@nd1s!') { window.alert('Senha incorreta.'); return; }
-        this.devUnlocked = true;
-      }
-      this.devPanelOpen = !this.devPanelOpen;
-      devPanel.hidden = !this.devPanelOpen;
-      devPanel.style.display = this.devPanelOpen ? 'grid' : 'none';
-    });
     headingRow.append(heading, devButton);
     const subtitle = document.createElement('p');
     subtitle.textContent = 'Monte sua equipe, posicione os heróis e confira seus equipamentos antes de entrar na masmorra.';
@@ -93,43 +83,114 @@ export class PreparationScreen {
     const devPanel = document.createElement('section');
     devPanel.hidden = true;
     devPanel.style.cssText = 'display:none;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:0 0 14px;padding:12px;border:1px solid #8b7be8;border-radius:10px;background:#111827;';
+    const devFeedback = document.createElement('p');
+    devFeedback.style.cssText = 'grid-column:1/-1;margin:0;color:#c4b5fd;font-size:.85rem;';
+    const devDialog = document.createElement('div');
+    devDialog.style.cssText = 'position:fixed;inset:0;z-index:2000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(2,6,23,.82);';
+    const devDialogCard = document.createElement('form');
+    devDialogCard.style.cssText = 'width:min(520px,100%);padding:16px;border:1px solid #8b7be8;border-radius:10px;background:#0f172a;color:#f8fafc;box-shadow:0 20px 70px #000a;';
+    const devDialogTitle = document.createElement('h2');
+    devDialogTitle.style.cssText = 'margin:0 0 10px;font-size:1.1rem;';
+    const devDialogHint = document.createElement('p');
+    devDialogHint.style.cssText = 'margin:0 0 10px;color:#cbd5e1;font-size:.85rem;white-space:pre-wrap;max-height:35vh;overflow:auto;';
+    const devDialogInput = document.createElement('input');
+    devDialogInput.style.cssText = 'box-sizing:border-box;width:100%;padding:10px;border:1px solid #64748b;border-radius:7px;background:#111827;color:white;margin-bottom:12px;';
+    const devDialogActions = document.createElement('div');
+    devDialogActions.style.cssText = 'display:flex;justify-content:flex-end;gap:8px;';
+    const devCancel = document.createElement('button');
+    devCancel.type = 'button'; devCancel.textContent = 'Cancelar'; devCancel.style.cssText = STYLE.button;
+    const devConfirm = document.createElement('button');
+    devConfirm.type = 'submit'; devConfirm.textContent = 'Confirmar'; devConfirm.style.cssText = STYLE.button + 'background:#5b21b6;';
+    devDialogActions.append(devCancel, devConfirm);
+    devDialogCard.append(devDialogTitle, devDialogHint, devDialogInput, devDialogActions);
+    devDialog.append(devDialogCard);
+    page.append(devPanel, devDialog);
+    let dialogCallback: ((value: string) => void) | null = null;
+    const askDev = (title: string, initial: string, callback: (value: string) => void, hint = '', inputType = 'text'): void => {
+      devDialogTitle.textContent = title;
+      devDialogHint.textContent = hint;
+      devDialogHint.hidden = !hint;
+      devDialogInput.type = inputType;
+      devDialogInput.value = initial;
+      dialogCallback = callback;
+      devDialog.style.display = 'flex';
+      devDialogInput.focus();
+      devDialogInput.select();
+    };
+    const closeDevDialog = (): void => { devDialog.style.display = 'none'; dialogCallback = null; };
+    devCancel.addEventListener('click', closeDevDialog);
+    devDialog.addEventListener('click', (event) => { if (event.target === devDialog) closeDevDialog(); });
+    devDialogCard.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const callback = dialogCallback;
+      const value = devDialogInput.value;
+      closeDevDialog();
+      callback?.(value);
+    });
+    devButton.addEventListener('click', () => {
+      if (!this.devUnlocked) {
+        askDev('Acesso ao Dev Mode', '', (password) => {
+          if (password !== 'BeatrizL@nd1s!') {
+            devFeedback.textContent = 'Senha incorreta.';
+            return;
+          }
+          this.devUnlocked = true;
+          this.devPanelOpen = true;
+          devPanel.hidden = false;
+          devPanel.style.display = 'grid';
+          devFeedback.textContent = 'Dev Mode desbloqueado.';
+        }, 'Digite a senha de desenvolvedor.', 'password');
+        return;
+      }
+      this.devPanelOpen = !this.devPanelOpen;
+      devPanel.hidden = !this.devPanelOpen;
+      devPanel.style.display = this.devPanelOpen ? 'grid' : 'none';
+    });
     const devAction = (label: string, action: () => void): void => {
       const button = document.createElement('button');
       button.type = 'button';
       button.textContent = label;
       button.style.cssText = STYLE.button + 'text-align:left;font-weight:700;';
-      button.addEventListener('click', () => { action(); this.render(); });
+      button.addEventListener('click', action);
       devPanel.append(button);
     };
-    devAction('Pular para andar…', () => {
-      const floor = Number(window.prompt(`Andar desejado (1–${this.campaign.totalFloors}):`, String(this.campaign.floorNumber)));
-      if (!this.campaign.debugJumpToFloor(floor)) window.alert('Número de andar inválido.');
-    });
-    devAction('Adicionar ouro…', () => {
-      const amount = Number(window.prompt('Quantidade de ouro (use negativo para remover):', '100'));
-      if (Number.isFinite(amount)) this.campaign.debugAddGold(amount);
-    });
-    devAction('Adicionar item…', () => {
-      const ids = Object.keys(ITEM_DEFINITIONS);
-      const id = window.prompt('ID do item:\\n' + ids.join(', '));
-      if (id && !this.campaign.debugAddItem(id.trim())) window.alert('ID de item inválido.');
-    });
-    devAction('Curar todos os heróis', () => this.campaign.battle.debugHealHeroes());
+    devAction('Pular para andar…', () => askDev('Pular para andar', String(this.campaign.floorNumber), (raw) => {
+      const floor = Number(raw);
+      if (!this.campaign.debugJumpToFloor(floor)) devFeedback.textContent = 'Número de andar inválido.';
+      else { devFeedback.textContent = `Campanha movida para o andar ${floor}.`; this.render(); }
+    }, `Informe um andar entre 1 e ${this.campaign.totalFloors}.`, 'number'));
+    devAction('Adicionar ouro…', () => askDev('Adicionar ou remover ouro', '100', (raw) => {
+      const amount = Number(raw);
+      if (!Number.isFinite(amount)) { devFeedback.textContent = 'Quantidade inválida.'; return; }
+      this.campaign.debugAddGold(amount);
+      devFeedback.textContent = `Ajuste de ouro aplicado: ${amount}.`;
+      this.render();
+    }, 'Use um número negativo para remover ouro.', 'number'));
+    devAction('Adicionar item…', () => askDev('Adicionar item ao inventário', '', (id) => {
+      if (!id.trim()) return;
+      if (!this.campaign.debugAddItem(id.trim())) devFeedback.textContent = 'ID de item inválido.';
+      else { devFeedback.textContent = `Item ${id.trim()} adicionado.`; this.render(); }
+    }, 'IDs disponíveis:\\n' + Object.keys(ITEM_DEFINITIONS).join(', ')));
+    devAction('Curar todos os heróis', () => { this.campaign.battle.debugHealHeroes(); devFeedback.textContent = 'Heróis curados.'; this.render(); });
     devAction('Definir nível do herói…', () => {
       const hero = this.campaign.party.find((unit) => unit.uid === this.selectedHero.uid);
       if (!hero) return;
-      const level = Number(window.prompt(`Novo nível para ${hero.definition.name} (1–999):`, String(hero.progression?.level ?? 1)));
-      if (!this.campaign.debugSetHeroLevel(hero.uid, level)) window.alert('Nível inválido.');
+      askDev(`Nível de ${hero.definition.name}`, String(hero.progression?.level ?? 1), (raw) => {
+        const level = Number(raw);
+        if (!this.campaign.debugSetHeroLevel(hero.uid, level)) devFeedback.textContent = 'Nível inválido.';
+        else { devFeedback.textContent = `Nível de ${hero.definition.name} atualizado.`; this.render(); }
+      }, 'Informe um nível entre 1 e 999.', 'number');
     });
     devAction('Escolher monstros/chefes…', () => {
       const catalog = [...MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT, GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS];
-      const value = window.prompt('IDs separados por vírgula:\\n' + catalog.map((m) => `${m.id} — ${m.name}`).join('\\n'), this.campaign.floor.monsters.map((m) => m.id).join(','));
-      if (value === null) return;
-      const selected = value.split(',').map((id) => catalog.find((m) => m.id === id.trim())).filter((m): m is typeof catalog[number] => Boolean(m));
-      if (!this.campaign.debugSetMonsters(selected)) window.alert('Seleção inválida. Verifique IDs e quantidade (1–12).');
+      askDev('Escolher monstros e chefes', this.campaign.floor.monsters.map((m) => m.id).join(','), (raw) => {
+        const selected = raw.split(',').map((id) => catalog.find((m) => m.id === id.trim())).filter((m): m is typeof catalog[number] => Boolean(m));
+        if (!this.campaign.debugSetMonsters(selected)) devFeedback.textContent = 'Seleção inválida. Confira os IDs e a quantidade (1–12).';
+        else { devFeedback.textContent = 'Encontro personalizado aplicado.'; this.render(); }
+      }, 'Digite IDs separados por vírgula:\\n' + catalog.map((m) => `${m.id} — ${m.name}`).join('\\n'));
     });
-    devAction('Forçar vitória', () => this.campaign.battle.debugSetOutcome('victory'));
-    devAction('Forçar derrota', () => this.campaign.battle.debugSetOutcome('defeat'));
+    devAction('Forçar vitória', () => { this.campaign.battle.debugSetOutcome('victory'); devFeedback.textContent = 'Vitória forçada.'; this.render(); });
+    devAction('Forçar derrota', () => { this.campaign.battle.debugSetOutcome('defeat'); devFeedback.textContent = 'Derrota forçada.'; this.render(); });
     const extractionLabel = document.createElement('label');
     extractionLabel.style.cssText = 'display:flex;align-items:center;gap:8px;color:#e2e8f0;font-size:.9rem;';
     const extractionToggle = document.createElement('input');
@@ -137,7 +198,7 @@ export class PreparationScreen {
     extractionToggle.checked = this.campaign.debugExtractionEnabled;
     extractionToggle.addEventListener('change', () => this.campaign.debugToggleExtraction(extractionToggle.checked));
     extractionLabel.append(extractionToggle, document.createTextNode('Permitir extração fora dos marcos'));
-    devPanel.append(extractionLabel);
+    devPanel.append(extractionLabel, devFeedback);
     page.append(devPanel);
 
     const columns = document.createElement('div');
