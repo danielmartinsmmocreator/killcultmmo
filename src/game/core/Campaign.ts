@@ -309,6 +309,14 @@ export class Campaign {
         archer: ['crescent-bow', 'caravan-hunter-bow'],
       };
       const tierSixArmor = ['sandweave-armor', 'djinn-circlet', 'oasis-sandals'];
+      const tierSevenWeapons: Record<string, string[]> = {
+        warrior: ['surgical-cleaver', 'iron-heart-blade', 'coilguard-shield'],
+        assassin: ['vivisection-daggers', 'voltneedle'],
+        mage: ['tesla-coil-staff', 'homunculus-core', 'alchemist-rod'],
+        cleric: ['plague-scepter', 'serum-grimoire', 'lifeweaver-staff'],
+        archer: ['lightning-railbow', 'surgeon-crossbow'],
+      };
+      const tierSevenArmor = ['stitched-coat', 'copper-conductor-helm', 'surgeon-boots'];
       if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 1 && this.floorNumber <= 9 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierOneWeapons);
         const pool = [...classes.flatMap((id) => tierOneWeapons[id] ?? []), ...basicArmor];
@@ -351,6 +359,14 @@ export class Campaign {
         this.normalItemDroppedThisFloor = true;
       }
 
+      else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 61 && this.floorNumber <= 69 && roll < 0.10) {
+        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierSevenWeapons);
+        const pool = [...classes.flatMap((id) => tierSevenWeapons[id] ?? []), ...tierSevenArmor];
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
+        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
+        this.normalItemDroppedThisFloor = true;
+      }
+
       // Itens especiais exclusivos: todos usam a mesma chance fixa de 5%.
       if (this.floorNumber === 5 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('shadow-claw', this.floorNumber);
@@ -379,6 +395,9 @@ export class Campaign {
       } else if (this.floorNumber === 55 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('vizier-seal', this.floorNumber);
         drops.push('Selo do Vizir');
+      } else if (this.floorNumber === 65 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('mad-scientist-seal', this.floorNumber);
+        drops.push('Selo do Doutor');
       }
 
       // Recompensas garantidas de marcos da campanha.
