@@ -751,10 +751,12 @@ export class GameState {
           { col: 0, row: 1 },
           { col: -1, row: 0 },
         ];
-        const current = directions.findIndex(
-          (dir) => dir.col === monster.facing.col && dir.row === monster.facing.row,
-        );
-        monster.facing = directions[(current + 1 + directions.length) % directions.length];
+        // O primeiro olhar deve apontar para baixo, em direção à formação inicial dos heróis.
+        // Não podemos derivar a direção de `monster.facing`: o movimento comum altera essa
+        // propriedade e poderia fazer a Medusa começar olhando para longe dos personagens.
+        const gazeIndex = (2 + Math.floor(monster.medusaCycle / 2) - 1) % directions.length;
+        const gazeDirection = directions[gazeIndex];
+        monster.facing = { ...gazeDirection };
 
         const body = unitCells(monster);
         const affected = this.heroes.filter((hero) =>
@@ -762,9 +764,9 @@ export class GameState {
             body.some((bodyCell) => {
               const dx = heroCell.col - bodyCell.col;
               const dy = heroCell.row - bodyCell.row;
-              if (monster.facing.col === 1) return dy === 0 && dx > 0;
-              if (monster.facing.col === -1) return dy === 0 && dx < 0;
-              if (monster.facing.row === 1) return dx === 0 && dy > 0;
+              if (gazeDirection.col === 1) return dy === 0 && dx > 0;
+              if (gazeDirection.col === -1) return dy === 0 && dx < 0;
+              if (gazeDirection.row === 1) return dx === 0 && dy > 0;
               return dx === 0 && dy < 0;
             }),
           ),
