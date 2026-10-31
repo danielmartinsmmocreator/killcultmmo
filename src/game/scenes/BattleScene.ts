@@ -170,7 +170,7 @@ export class BattleScene extends Phaser.Scene {
     }
     for (const [path, url] of Object.entries(optionalRegionBackgrounds)) {
       const filename = path.split('/').pop()?.replace(/\.(png|jpe?g|jfif)$/i, '').toLowerCase();
-      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3' || filename === 'faixa-4' || filename === 'faixa-5') {
+      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3' || filename === 'faixa-4' || filename === 'faixa-5' || filename === 'faixa-6') {
         this.load.image(`background-${filename}`, url);
       }
     }
@@ -244,6 +244,8 @@ export class BattleScene extends Phaser.Scene {
         const regionThree = floor >= 21 && floor <= 30;
         const regionFour = floor >= 31 && floor <= 40;
         const regionFive = floor >= 41 && floor <= 50;
+    const regionSix = floor >= 51 && floor <= 60;
+        const regionSix = floor >= 51 && floor <= 60;
         const color = regionTwo
           ? ((col + row) % 2 === 0 ? 0x171717 : 0x7f1d1d)
           : regionThree
@@ -252,7 +254,9 @@ export class BattleScene extends Phaser.Scene {
               ? ((col + row) % 2 === 0 ? 0x312e81 : 0x7e22ce)
               : regionFive
                 ? ((col + row) % 2 === 0 ? 0x365314 : 0x854d0e)
-                : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+                : regionSix
+                  ? ((col + row) % 2 === 0 ? 0x78350f : 0xd97706)
+                  : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
 
         const tile = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, color, 0.3);
         this.boardTiles.push({ tile, col, row });
@@ -285,7 +289,7 @@ export class BattleScene extends Phaser.Scene {
 
   private refreshBoardBackground(): void {
     const floor = this.campaign.floorNumber;
-    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : floor >= 31 && floor <= 40 ? 'faixa-4' : floor >= 41 && floor <= 50 ? 'faixa-5' : null;
+    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : floor >= 31 && floor <= 40 ? 'faixa-4' : floor >= 41 && floor <= 50 ? 'faixa-5' : floor >= 51 && floor <= 60 ? 'faixa-6' : null;
     if (this.boardBackground) {
       this.boardBackground.destroy();
       this.boardBackground = null;
@@ -321,7 +325,9 @@ export class BattleScene extends Phaser.Scene {
             ? ((col + row) % 2 === 0 ? 0x312e81 : 0x7e22ce)
             : regionFive
               ? ((col + row) % 2 === 0 ? 0x365314 : 0x854d0e)
-              : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+              : regionSix
+                ? ((col + row) % 2 === 0 ? 0x78350f : 0xd97706)
+                : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
       tile.setFillStyle(color, 0.3);
     }
   }
