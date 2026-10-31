@@ -401,10 +401,18 @@ export class Campaign {
       hero.hp = hero.maxHp;
       hero.abilityUsed = false;
       hero.stunned = false;
+      hero.petrified = false;
     }
 
-
     if (this.activePartyUids.length === 0) this.activePartyUids = this.partyUnits.slice(0, 3).map((hero) => hero.uid);
+
+    // Heróis derrotados deixam de ocupar casas durante o combate. Por isso, dois ou mais
+    // podem terminar sobre a mesma posição. Antes de reconstruir o encontro, reposicionamos
+    // a equipe ativa em casas iniciais distintas para evitar um encontro inválido no reset.
+    this.activeParty.forEach((hero, index) => {
+      hero.position = { col: index + 1, row: 5 };
+    });
+
     this.battle.reset(notify);
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.retainedGold = this.gold;
