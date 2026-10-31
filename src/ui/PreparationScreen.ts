@@ -1,6 +1,8 @@
 import type { Campaign } from '../game/core/Campaign';
 import type { EquipmentSlot, Position, Unit } from '../game/types';
 import { ITEM_DEFINITIONS } from '../game/data/items';
+import { MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT } from '../game/data/monsters';
+import { GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../game/data/bosses';
 import warriorSprite from '../assets/sprites/warrior.png';
 import assassinSprite from '../assets/sprites/assassin.png';
 import archerSprite from '../assets/sprites/archer.png';
@@ -37,6 +39,8 @@ export class PreparationScreen {
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: 1 | 2 | 3 | null = null;
+  private devUnlocked = false;
+  private devPanelOpen = false;
 
   constructor(root: HTMLElement, campaign: Campaign, onStart: () => void) {
     this.root = root;
@@ -58,16 +62,83 @@ export class PreparationScreen {
     const eyebrow = document.createElement('p');
     eyebrow.textContent = 'ROGUELIKE ALFA · BASE DE OPERAÇÕES';
     eyebrow.style.cssText = 'color:#a78bfa;font-weight:800;letter-spacing:.16em;font-size:.75rem;margin:0 0 8px;';
+    const headingRow = document.createElement('div');
+    headingRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;';
     const heading = document.createElement('h1');
     heading.textContent = 'Preparar expedição';
     heading.style.cssText = 'font-size:clamp(2rem,4vw,3rem);margin:0;';
+    const devButton = document.createElement('button');
+    devButton.type = 'button';
+    devButton.textContent = '⚙ Dev Mode';
+    devButton.style.cssText = 'padding:9px 13px;border:1px solid #8b7be8;border-radius:8px;background:#25233d;color:#fff;font-weight:800;cursor:pointer;';
+    devButton.addEventListener('click', () => {
+      if (!this.devUnlocked) {
+        const password = window.prompt('Senha de desenvolvedor:');
+        if (password !== 'BeatrizL@nd1s!') { window.alert('Senha incorreta.'); return; }
+        this.devUnlocked = true;
+      }
+      this.devPanelOpen = !this.devPanelOpen;
+      devPanel.hidden = !this.devPanelOpen;
+      devPanel.style.display = this.devPanelOpen ? 'grid' : 'none';
+    });
+    headingRow.append(heading, devButton);
     const subtitle = document.createElement('p');
     subtitle.textContent = 'Monte sua equipe, posicione os heróis e confira seus equipamentos antes de entrar na masmorra.';
     subtitle.style.cssText = 'color:#aeb8c8;line-height:1.4;margin:6px 0 12px;max-width:760px;';
     const goldBalance = document.createElement('div');
     goldBalance.textContent = `🪙 Ouro disponível: ${this.campaign.gold}`;
     goldBalance.style.cssText = 'display:inline-flex;align-items:center;padding:8px 12px;margin:0 0 12px;border:1px solid #a16207;border-radius:9px;background:#422006;color:#fde68a;font-weight:800;';
-    page.append(eyebrow, heading, subtitle, goldBalance);
+    page.append(eyebrow, headingRow, subtitle, goldBalance);
+
+    const devPanel = document.createElement('section');
+    devPanel.hidden = true;
+    devPanel.style.cssText = 'display:none;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px;margin:0 0 14px;padding:12px;border:1px solid #8b7be8;border-radius:10px;background:#111827;';
+    const devAction = (label: string, action: () => void): void => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = label;
+      button.style.cssText = STYLE.button + 'text-align:left;font-weight:700;';
+      button.addEventListener('click', () => { action(); this.render(); });
+      devPanel.append(button);
+    };
+    devAction('Pular para andar…', () => {
+      const floor = Number(window.prompt(`Andar desejado (1–${this.campaign.totalFloors}):`, String(this.campaign.floorNumber)));
+      if (!this.campaign.debugJumpToFloor(floor)) window.alert('Número de andar inválido.');
+    });
+    devAction('Adicionar ouro…', () => {
+      const amount = Number(window.prompt('Quantidade de ouro (use negativo para remover):', '100'));
+      if (Number.isFinite(amount)) this.campaign.debugAddGold(amount);
+    });
+    devAction('Adicionar item…', () => {
+      const ids = Object.keys(ITEM_DEFINITIONS);
+      const id = window.prompt('ID do item:\\n' + ids.join(', '));
+      if (id && !this.campaign.debugAddItem(id.trim())) window.alert('ID de item inválido.');
+    });
+    devAction('Curar todos os heróis', () => this.campaign.battle.debugHealHeroes());
+    devAction('Definir nível do herói…', () => {
+      const hero = this.campaign.party.find((unit) => unit.uid === this.selectedHero.uid);
+      if (!hero) return;
+      const level = Number(window.prompt(`Novo nível para ${hero.definition.name} (1–999):`, String(hero.progression?.level ?? 1)));
+      if (!this.campaign.debugSetHeroLevel(hero.uid, level)) window.alert('Nível inválido.');
+    });
+    devAction('Escolher monstros/chefes…', () => {
+      const catalog = [...MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT, GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS];
+      const value = window.prompt('IDs separados por vírgula:\\n' + catalog.map((m) => `${m.id} — ${m.name}`).join('\\n'), this.campaign.floor.monsters.map((m) => m.id).join(','));
+      if (value === null) return;
+      const selected = value.split(',').map((id) => catalog.find((m) => m.id === id.trim())).filter((m): m is typeof catalog[number] => Boolean(m));
+      if (!this.campaign.debugSetMonsters(selected)) window.alert('Seleção inválida. Verifique IDs e quantidade (1–12).');
+    });
+    devAction('Forçar vitória', () => this.campaign.battle.debugSetOutcome('victory'));
+    devAction('Forçar derrota', () => this.campaign.battle.debugSetOutcome('defeat'));
+    const extractionLabel = document.createElement('label');
+    extractionLabel.style.cssText = 'display:flex;align-items:center;gap:8px;color:#e2e8f0;font-size:.9rem;';
+    const extractionToggle = document.createElement('input');
+    extractionToggle.type = 'checkbox';
+    extractionToggle.checked = this.campaign.debugExtractionEnabled;
+    extractionToggle.addEventListener('change', () => this.campaign.debugToggleExtraction(extractionToggle.checked));
+    extractionLabel.append(extractionToggle, document.createTextNode('Permitir extração fora dos marcos'));
+    devPanel.append(extractionLabel);
+    page.append(devPanel);
 
     const columns = document.createElement('div');
     columns.style.cssText = 'display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:12px;align-items:start;';
