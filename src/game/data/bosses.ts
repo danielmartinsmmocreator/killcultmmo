@@ -53,7 +53,7 @@ export const MEDUSA: UnitDefinition = { id:'medusa', name:'Medusa', team:'monste
 export const HADES: UnitDefinition = { id:'hades', name:'Hades', team:'monster', symbol:'♚', color:0x581c87, maxHp:1250, damage:34, movement:1, attack:{directions:'orthogonal',range:1}, rank:'boss', telegraph: HADES_TELEGRAPH };
 
 export const CHESHIRE_CAT: UnitDefinition = {
-  id: 'cheshire-cat', name: 'Gato de Cheshire', team: 'monster', symbol: 'C', color: 0xc084fc,
+  id: 'cheshire-cat', name: 'Gato Mistério', team: 'monster', symbol: 'C', color: 0xc084fc,
   maxHp: 880, damage: 43, movement: 2,
   attack: { directions: 'diagonal', range: 2 },
   rank: 'mini-boss',
