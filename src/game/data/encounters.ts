@@ -141,4 +141,24 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
     { col: 2, row: 3 }, { col: 3, row: 2 },
   ]),
   floor(40, 'Trono da Rainha de Copas', [QUEEN_OF_HEARTS, CARD_SOLDIER, MAD_MUSHROOM], [], 'boss'),
+
+  // Região 5 — Folclore Brasileiro: mata fechada, rios encantados e lendas das estradas.
+  floor(41, 'Trilha das Pegadas Invertidas', [SACI, CUCA_MINION, SACI]),
+  floor(42, 'Margens do Rio Encantado', [IARA, SACI, BOITATA], [
+    { col: 1, row: 2 }, { col: 4, row: 3 },
+  ]),
+  floor(43, 'Clareira do Fogo Vivo', [BOITATA, BOITATA, CUCA_MINION, SACI]),
+  floor(44, 'Estrada da Meia-Noite', [MULA_SEM_CABECA, SACI, MAPINGUARI], [
+    { col: 2, row: 2 }, { col: 3, row: 3 },
+  ]),
+  floor(45, 'A Floresta de Trás para Frente', [CURUPIRA, SACI, IARA], [], 'mini-boss'),
+  floor(46, 'Coração da Mata', [MAPINGUARI, CUCA_MINION, BOITATA]),
+  floor(47, 'Lagoa das Vozes', [IARA, IARA, MULA_SEM_CABECA], [
+    { col: 1, row: 3 }, { col: 4, row: 2 },
+  ]),
+  floor(48, 'Território do Gigante', [MAPINGUARI, MAPINGUARI, SACI, CUCA_MINION]),
+  floor(49, 'Portal do Pântano', [MULA_SEM_CABECA, BOITATA, MAPINGUARI, IARA], [
+    { col: 2, row: 3 }, { col: 3, row: 2 },
+  ]),
+  floor(50, 'Caldeirão da Cuca', [CUCA, MULA_SEM_CABECA, CUCA_MINION], [], 'boss'),
 ];
