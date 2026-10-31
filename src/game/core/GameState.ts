@@ -1,3 +1,4 @@
+import { BOARD_COLS, BOARD_ROWS } from '../config';
 import { ABILITY_BALANCE } from './abilities';
 import { allocateAttributePoint, applyDeathXpPenalty, awardKillXp } from './progression';
 import type { AttributeName } from './progression';
@@ -90,6 +91,8 @@ export class GameState {
   private allUnits: Unit[] = [];
   private obstacleList: Position[] = [];
   private currentTurn = 1;
+  /** Contador independente de ações do Gato Mistério neste encontro. */
+  private readonly cheshireCycles = new Map<string, number>();
   private currentPhase: BattlePhase = 'player';
   private currentOutcome: BattleOutcome = 'ongoing';
   private selectedUnitUid: string | null = null;
@@ -794,6 +797,17 @@ export class GameState {
       }
     }
 
+    // O Gato Mistério desaparece e reaparece atrás de um herói a cada duas ações.
+    // Se os três heróis vivos estiverem encostados nas bordas, escolhe uma casa livre aleatória.
+    if (monster.definition.id === 'cheshire-cat') {
+      const cycle = (this.cheshireCycles.get(monster.uid) ?? 0) + 1;
+      this.cheshireCycles.set(monster.uid, cycle);
+      if (cycle % 2 === 0) {
+        this.teleportCheshireCat(monster);
+        return true;
+      }
+    }
+
     // Chefe com ataques telegrafados: anunciar o golpe é a ação dele neste turno.
     if (this.tryAnnounceTelegraph(monster)) return true;
 
@@ -813,6 +827,65 @@ export class GameState {
 
     if (this.performAttack(monster) > 0) acted = true;
     return acted;
+  }
+
+  /**
+   * Teleporte especial do Gato Mistério. A casa-alvo fica imediatamente atrás do herói,
+   * no lado oposto ao Gato. Se todos os heróis vivos estiverem nas bordas, ou a casa
+   * estiver bloqueada, usa uma casa livre aleatória do tabuleiro.
+   */
+  private teleportCheshireCat(cat: Unit): void {
+    const heroes = this.heroes;
+    if (heroes.length === 0) return;
+
+    const allAgainstWall = heroes.length === 3 && heroes.every((hero) =>
+      unitCells(hero).some((cell) =>
+        cell.col === 0 || cell.col === BOARD_COLS - 1 || cell.row === 0 || cell.row === BOARD_ROWS - 1,
+      ),
+    );
+
+    const target = heroes[Math.floor(Math.random() * heroes.length)];
+    const direction = directionBetween(cat.position, target.position);
+    const behindTarget = {
+      col: target.position.col + direction.col,
+      row: target.position.row + direction.row,
+    };
+    const isFree = (position: Position): boolean =>
+      isInsideBoard(position) &&
+      !this.isObstacle(position) &&
+      !this.units.some((unit) => unit !== cat && occupies(unit, position));
+
+    let destination: Position | undefined;
+    if (!allAgainstWall && isFree(behindTarget)) {
+      destination = behindTarget;
+    } else {
+      const freeCells: Position[] = [];
+      for (let row = 0; row < BOARD_ROWS; row++) {
+        for (let col = 0; col < BOARD_COLS; col++) {
+          const cell = { col, row };
+          if (isFree(cell)) freeCells.push(cell);
+        }
+      }
+      if (freeCells.length > 0) {
+        destination = freeCells[Math.floor(Math.random() * freeCells.length)];
+      }
+    }
+
+    if (!destination) {
+      this.addLog('Gato Mistério tentou desaparecer, mas não encontrou uma casa livre.', 'monster');
+      return;
+    }
+
+    const from = positionLabel(cat.position);
+    cat.position = { col: destination.col, row: destination.row };
+    cat.facing = directionBetween(cat.position, target.position);
+    this.addLog(
+      allAgainstWall
+        ? `Gato Mistério desapareceu de ${from} e reapareceu em ${positionLabel(destination)}!`
+        : `Gato Mistério desapareceu de ${from} e surgiu atrás de ${target.definition.name}, em ${positionLabel(destination)}!`,
+      'monster',
+    );
+    this.performAttack(cat);
   }
 
   /** Ataque normal: acerta todos os alvos válidos da unidade. Retorna quantos foram atingidos. */
@@ -1284,6 +1357,7 @@ export class GameState {
     this.lastActorUid = null;
     // Nada anunciado antes sobrevive a um reinício ou à troca de andar.
     this.intents = [];
+    this.cheshireCycles.clear();
     this.intentCounter = 0;
     this.resetEffects();
     if (firstBattle) this.logEntries = [];
