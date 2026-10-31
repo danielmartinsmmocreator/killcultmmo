@@ -435,8 +435,9 @@ export class PreparationScreen {
       const bonus = Object.entries(def.bonuses).map(([key, amount]) => `${key === 'strength' ? 'Força' : key === 'vitality' ? 'Vitalidade' : 'Defesa'} +${amount}`).join(' · ');
       const special = def.defensePercent ? `Defesa +${def.defensePercent}%` : def.lifestealPercent ? `Vampirismo ${def.lifestealPercent}%` : '';
       const origin = item.obtainedAtFloor === undefined ? 'Origem antiga/desconhecida' : `Obtido no andar ${item.obtainedAtFloor}`;
-      button.textContent = `${def.name} · ${SLOTS.find((s) => s.id === def.slot)?.label ?? def.slot} · ${[bonus, special, origin].filter(Boolean).join(' · ') || 'Sem bônus'}`;
-      button.style.cssText = STYLE.button + 'text-align:left;font-size:.8rem;flex:1;';
+      const rarityLabel = def.rarity === 'rare' ? 'RARO' : 'COMUM';
+      button.textContent = `[${rarityLabel}] ${def.name} · ${SLOTS.find((s) => s.id === def.slot)?.label ?? def.slot} · ${[bonus, special, origin].filter(Boolean).join(' · ') || 'Sem bônus'}`;
+      button.style.cssText = STYLE.button + `text-align:left;font-size:.8rem;flex:1;${def.rarity === 'rare' ? 'border-color:#c084fc;color:#e9d5ff;' : ''}`;
       button.disabled = this.selectedHero.hp <= 0 || (this.selectedHero.progression?.level ?? 1) < (def.minLevel ?? 1) || (!!def.allowedClasses && !def.allowedClasses.includes(this.selectedHero.definition.id as 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer'));
       button.addEventListener('click', () => {
         if (this.campaign.inventory.equip(this.selectedHero, item.instanceId, ITEM_DEFINITIONS)) this.render();
