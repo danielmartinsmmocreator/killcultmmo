@@ -194,3 +194,30 @@ export const THORN_PLANT: UnitDefinition = {
   id: 'thorn-plant', name: 'Roseira Carnívora', team: 'monster', symbol: 'P', color: 0x15803d,
   maxHp: 520, damage: 44, movement: 0, attack: { directions: 'orthogonal', range: 2 },
 };
+
+
+// Região 5 — Folclore Brasileiro: criaturas das matas, rios e estradas.
+export const SACI: UnitDefinition = {
+  id: 'saci', name: 'Saci-Pererê', team: 'monster', symbol: 'S', color: 0xdc2626,
+  maxHp: 980, damage: 58, movement: 2, attack: { directions: 'orthogonal', range: 1 },
+};
+export const BOITATA: UnitDefinition = {
+  id: 'boitata', name: 'Boitatá', team: 'monster', symbol: 'B', color: 0xf97316,
+  maxHp: 1250, damage: 64, movement: 1, attack: { directions: 'facing', range: 3 },
+};
+export const IARA: UnitDefinition = {
+  id: 'iara', name: 'Iara', team: 'monster', symbol: 'I', color: 0x0ea5e9,
+  maxHp: 1120, damage: 60, movement: 1, attack: { directions: 'diagonal', range: 2 },
+};
+export const MULA_SEM_CABECA: UnitDefinition = {
+  id: 'mula-sem-cabeca', name: 'Mula sem Cabeça', team: 'monster', symbol: 'M', color: 0xea580c,
+  maxHp: 1480, damage: 72, movement: 2, attack: { directions: 'orthogonal', range: 1 },
+};
+export const MAPINGUARI: UnitDefinition = {
+  id: 'mapinguari', name: 'Mapinguari', team: 'monster', symbol: 'P', color: 0x78350f,
+  maxHp: 1750, damage: 78, movement: 1, attack: { directions: 'orthogonal', range: 1 },
+};
+export const CUCA_MINION: UnitDefinition = {
+  id: 'cuca-servant', name: 'Criatura da Cuca', team: 'monster', symbol: 'C', color: 0x65a30d,
+  maxHp: 1320, damage: 66, movement: 1, attack: { directions: 'orthogonal', range: 2 },
+};
