@@ -3,6 +3,9 @@ import type { GameState } from '../game/core/GameState';
 import type { BattlePhase, EncounterType, Unit } from '../game/types';
 import { xpRequiredForNextLevel } from '../game/core/progression';
 import type { AttributeName } from '../game/core/progression';
+import { MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT } from '../game/data/monsters';
+import { GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../game/data/bosses';
+import { ITEM_DEFINITIONS } from '../game/data/items';
 
 const MODE_LABEL: Record<CampaignStatus, string> = {
   fighting: 'Em combate',
@@ -86,6 +89,9 @@ export class SidePanel {
   private readonly monstersEl = el('div', 'unit-list');
   private readonly logEl = el('ol', 'log');
   private readonly passButton = el('button', 'btn-pass', 'Passar a vez');
+  private readonly devSettingsButton = el('button', 'btn-dev-settings', '⚙ Configurações');
+  private readonly devPanel = el('section', 'dev-panel');
+  private devUnlocked = false;
   private transitionScheduled = false;
   private readonly onRestart?: () => void;
   private unsubscribe: (() => void) | null = null;
@@ -117,6 +123,21 @@ export class SidePanel {
 
     this.bannerEl.hidden = true;
     this.telegraphBox.hidden = true;
+    this.devPanel.hidden = true;
+    this.devPanel.style.cssText = 'padding:12px;margin:8px 0;background:#111827;border:1px solid #a78bfa;border-radius:8px;color:#f8fafc;display:none;max-height:55vh;overflow:auto;';
+    this.devSettingsButton.type = 'button';
+    this.devSettingsButton.style.cssText = 'width:100%;padding:9px;margin:6px 0;background:#25233d;border:1px solid #8b7be8;color:#fff;font-weight:800;cursor:pointer;';
+    this.devSettingsButton.addEventListener('click', () => {
+      if (!this.devUnlocked) {
+        const password = window.prompt('Senha de desenvolvedor:');
+        if (password !== 'BeatrizL@nd1s!') { window.alert('Senha incorreta.'); return; }
+        this.devUnlocked = true;
+      }
+      this.devPanel.hidden = !this.devPanel.hidden;
+      this.devPanel.style.display = this.devPanel.hidden ? 'none' : 'block';
+      this.renderDevPanel();
+    });
+    this.buildDevPanel();
     this.buildAbilityBox();
     this.buildAttributesModal();
     this.buildSpecialConfirmModal();
@@ -167,6 +188,62 @@ export class SidePanel {
   destroy(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+  }
+
+  private buildDevPanel(): void {
+    const heading = el('h2', undefined, 'Dev Mode');
+    heading.style.cssText = 'margin:0 0 8px;color:#c4b5fd;';
+    this.devPanel.append(heading);
+    const addButton = (label: string, action: () => void): void => {
+      const button = el('button', 'btn-dev-action', label);
+      button.type = 'button';
+      button.style.cssText = 'display:block;width:100%;padding:8px;margin:5px 0;background:#29243f;border:1px solid #6d5bb2;color:#fff;cursor:pointer;text-align:left;';
+      button.addEventListener('click', (event) => { event.stopPropagation(); action(); this.render(); });
+      this.devPanel.append(button);
+    };
+    addButton('Pular para andar…', () => {
+      const value = Number(window.prompt(`Andar desejado (1–${this.campaign.totalFloors}):`, String(this.campaign.floorNumber)));
+      if (this.campaign.debugJumpToFloor(value)) this.transitionScheduled = false;
+      else window.alert('Número de andar inválido.');
+    });
+    addButton('Escolher monstros/chefes…', () => {
+      const catalog = [...MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT, GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS];
+      const listing = catalog.map((m) => `${m.id} — ${m.name}`).join('\n');
+      const value = window.prompt('Digite os IDs separados por vírgula:\n' + listing, this.campaign.floor.monsters.map((m) => m.id).join(','));
+      if (value === null) return;
+      const selected = value.split(',').map((id) => catalog.find((m) => m.id === id.trim())).filter((m): m is typeof catalog[number] => Boolean(m));
+      if (!this.campaign.debugSetMonsters(selected)) window.alert('Seleção inválida. Verifique os IDs e a quantidade de inimigos.');
+    });
+    addButton('Vencer batalha instantaneamente', () => this.state.debugSetOutcome('victory'));
+    addButton('Perder batalha instantaneamente', () => this.state.debugSetOutcome('defeat'));
+    addButton('Adicionar ouro…', () => {
+      const amount = Number(window.prompt('Quantidade de ouro (use valor negativo para remover):', '1000'));
+      if (Number.isFinite(amount)) this.campaign.debugAddGold(amount);
+    });
+    addButton('Adicionar equipamento…', () => {
+      const listing = Object.values(ITEM_DEFINITIONS).map((item) => `${item.id} — ${item.name}`).join('\n');
+      const id = window.prompt('Digite o ID do equipamento:\n' + listing);
+      if (id && !this.campaign.debugAddItem(id.trim())) window.alert('Equipamento não encontrado.');
+    });
+    addButton('Recuperar vida de todos os heróis', () => this.state.debugHealHeroes());
+    addButton('Definir nível do herói selecionado…', () => {
+      const hero = this.state.selectedUnit;
+      if (!hero || hero.definition.team !== 'hero') { window.alert('Selecione um herói primeiro.'); return; }
+      const level = Number(window.prompt(`Novo nível para ${hero.definition.name}:`, String(hero.progression?.level ?? 1)));
+      if (!this.campaign.debugSetHeroLevel(hero.uid, level)) window.alert('Nível inválido.');
+    });
+    const extraction = el('label');
+    extraction.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 0;';
+    const toggle = el('input');
+    toggle.type = 'checkbox';
+    toggle.checked = this.campaign.debugExtractionEnabled;
+    toggle.addEventListener('change', () => { this.campaign.debugToggleExtraction(toggle.checked); this.render(); });
+    extraction.append(toggle, document.createTextNode('Permitir extração fora dos marcos'));
+    this.devPanel.append(extraction);
+  }
+
+  private renderDevPanel(): void {
+    if (!this.devUnlocked) this.devPanel.hidden = true;
   }
 
   private buildAbilityBox(): void {
