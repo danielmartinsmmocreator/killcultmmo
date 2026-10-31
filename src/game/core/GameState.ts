@@ -258,7 +258,8 @@ export class GameState {
       isAlive(unit) &&
       unit.definition.ability !== undefined &&
       !unit.abilityUsed &&
-      !unit.petrified
+      !unit.petrified &&
+      (unit.definition.ability.id !== 'exura' || this.heroes.some((hero) => hero.hp < hero.maxHp))
     );
   }
 
@@ -486,6 +487,12 @@ export class GameState {
 
     if (hero.abilityUsed) {
       this.setNotice(`${ability.name} já foi usada neste combate.`);
+      this.emit('targeting');
+      return false;
+    }
+
+    if (ability.id === 'exura' && !this.heroes.some((ally) => ally.hp < ally.maxHp)) {
+      this.setNotice('Exura não pode ser ativada: todos os heróis estão com a vida cheia.');
       this.emit('targeting');
       return false;
     }
@@ -904,7 +911,9 @@ export class GameState {
   private dealDamage(target: Unit, amount: number, kind: LogKind, prefix: string, attacker?: Unit): void {
     if (!isAlive(target)) return;
     const cell = positionLabel(target.position);
-    const defense = target.definition.team === 'hero' ? (target.progression?.attributes.defense ?? 0) : 0;
+    const defenseAttribute = target.definition.team === 'hero' ? (target.progression?.attributes.defense ?? 0) : 0;
+    // Cada 2 pontos de Defesa absorvem 1 ponto de dano; arredonda para baixo.
+    const defense = Math.floor(defenseAttribute / 2);
     const targetSpecial = target.definition.team === 'hero' ? this.specialBonusesFor(target) : { defensePercent: 0, lifestealPercent: 0 };
     if (target.definition.team === 'hero' && targetSpecial.ignoreFirstHitPerEncounter && !this.medusaProtectionUsed.has(target.uid)) {
       this.medusaProtectionUsed.add(target.uid);
