@@ -1,5 +1,5 @@
 import type { EncounterType, Position, UnitDefinition } from '../types';
-import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS, CURUPIRA, CUCA, SAND_VIZIER, SULTAN_OF_NIGHTS } from './bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS, CURUPIRA, CUCA, SAND_VIZIER, SULTAN_OF_NIGHTS, MAD_SCIENTIST, FRANKENSTEIN_ABOMINATION } from './bosses';
 import {
   CULTIST,
   INSANE,
@@ -13,6 +13,7 @@ import {
   CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT,
   SACI, BOITATA, IARA, MULA_SEM_CABECA, MAPINGUARI, CUCA_MINION,
   DESERT_BANDIT, BRONZE_SCORPION, SAND_DJINN, MIRAGE_SORCERER, DESERT_SERPENT, DUNE_GUARDIAN,
+  STITCHED_THRALL, PLAGUE_SURGEON, LIGHTNING_REVENANT, HOMUNCULUS, IRON_AUTOMATON, FLESH_GOLEM,
 } from './monsters';
 
 /**
@@ -172,4 +173,14 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(58, 'Jardins da Lua Crescente', [SAND_DJINN, MIRAGE_SORCERER, BRONZE_SCORPION], [{ col:1,row:3 }, { col:4,row:2 }]),
   floor(59, 'Os Portões de Âmbar', [DUNE_GUARDIAN, DESERT_SERPENT, SAND_DJINN, MIRAGE_SORCERER], [{ col:2,row:3 }, { col:3,row:2 }]),
   floor(60, 'O Trono das Mil e Uma Noites', [SULTAN_OF_NIGHTS, DUNE_GUARDIAN, SAND_DJINN], [], 'boss'),
+  floor(61, 'Os Corredores do Sanatório', [STITCHED_THRALL, HOMUNCULUS, PLAGUE_SURGEON]),
+  floor(62, 'Ala de Contenção', [IRON_AUTOMATON, STITCHED_THRALL, LIGHTNING_REVENANT], [{ col:1,row:2 }, { col:4,row:3 }]),
+  floor(63, 'Laboratório de Transmutação', [HOMUNCULUS, PLAGUE_SURGEON, HOMUNCULUS, STITCHED_THRALL]),
+  floor(64, 'Galeria das Bobinas', [LIGHTNING_REVENANT, IRON_AUTOMATON, PLAGUE_SURGEON], [{ col:2,row:2 }, { col:3,row:3 }]),
+  floor(65, 'O Teatro da Vivissecção', [MAD_SCIENTIST, STITCHED_THRALL, HOMUNCULUS], [], 'mini-boss'),
+  floor(66, 'Fornalha dos Corpos', [FLESH_GOLEM, IRON_AUTOMATON, STITCHED_THRALL]),
+  floor(67, 'Arquivo dos Experimentos', [PLAGUE_SURGEON, LIGHTNING_REVENANT, HOMUNCULUS, STITCHED_THRALL]),
+  floor(68, 'A Câmara do Relâmpago', [LIGHTNING_REVENANT, LIGHTNING_REVENANT, IRON_AUTOMATON], [{ col:1,row:3 }, { col:4,row:2 }]),
+  floor(69, 'O Coração da Máquina', [FLESH_GOLEM, IRON_AUTOMATON, PLAGUE_SURGEON, LIGHTNING_REVENANT], [{ col:2,row:3 }, { col:3,row:2 }]),
+  floor(70, 'A Cripta da Vida Artificial', [FRANKENSTEIN_ABOMINATION, FLESH_GOLEM, LIGHTNING_REVENANT], [], 'boss'),
 ];
