@@ -1,5 +1,5 @@
 import type { EncounterType, Position, UnitDefinition } from '../types';
-import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS, CURUPIRA, CUCA } from './bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS, CURUPIRA, CUCA, SAND_VIZIER, SULTAN_OF_NIGHTS } from './bosses';
 import {
   CULTIST,
   INSANE,
@@ -12,6 +12,7 @@ import {
   VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT, WEREWOLF,
   CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT,
   SACI, BOITATA, IARA, MULA_SEM_CABECA, MAPINGUARI, CUCA_MINION,
+  DESERT_BANDIT, BRONZE_SCORPION, SAND_DJINN, MIRAGE_SORCERER, DESERT_SERPENT, DUNE_GUARDIAN,
 } from './monsters';
 
 /**
@@ -161,4 +162,14 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
     { col: 2, row: 3 }, { col: 3, row: 2 },
   ]),
   floor(50, 'Caldeirão da Cuca', [CUCA, MULA_SEM_CABECA, CUCA_MINION], [], 'boss'),
+  floor(51, 'A Rota das Caravanas', [DESERT_BANDIT, DESERT_BANDIT, BRONZE_SCORPION]),
+  floor(52, 'Oásis das Vozes', [SAND_DJINN, DESERT_SERPENT, DESERT_BANDIT], [{ col:1,row:2 }, { col:4,row:3 }]),
+  floor(53, 'Ruínas Soterradas', [DUNE_GUARDIAN, BRONZE_SCORPION, MIRAGE_SORCERER]),
+  floor(54, 'Templo dos Espelhos de Areia', [MIRAGE_SORCERER, SAND_DJINN, DESERT_SERPENT], [{ col:2,row:2 }, { col:3,row:3 }]),
+  floor(55, 'O Palácio do Vizir', [SAND_VIZIER, BRONZE_SCORPION, DESERT_BANDIT], [], 'mini-boss'),
+  floor(56, 'Cemitério das Caravanas', [DESERT_SERPENT, DESERT_SERPENT, DUNE_GUARDIAN]),
+  floor(57, 'A Cidade sob as Dunas', [DUNE_GUARDIAN, MIRAGE_SORCERER, SAND_DJINN, DESERT_BANDIT]),
+  floor(58, 'Jardins da Lua Crescente', [SAND_DJINN, MIRAGE_SORCERER, BRONZE_SCORPION], [{ col:1,row:3 }, { col:4,row:2 }]),
+  floor(59, 'Os Portões de Âmbar', [DUNE_GUARDIAN, DESERT_SERPENT, SAND_DJINN, MIRAGE_SORCERER], [{ col:2,row:3 }, { col:3,row:2 }]),
+  floor(60, 'O Trono das Mil e Uma Noites', [SULTAN_OF_NIGHTS, DUNE_GUARDIAN, SAND_DJINN], [], 'boss'),
 ];
