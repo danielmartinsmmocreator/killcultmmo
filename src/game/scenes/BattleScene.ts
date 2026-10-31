@@ -162,7 +162,7 @@ export class BattleScene extends Phaser.Scene {
     }
     for (const [path, url] of Object.entries(optionalRegionBackgrounds)) {
       const filename = path.split('/').pop()?.replace(/\.(png|jpe?g|jfif)$/i, '').toLowerCase();
-      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3') {
+      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3' || filename === 'faixa-4' || filename === 'faixa-5') {
         this.load.image(`background-${filename}`, url);
       }
     }
@@ -271,7 +271,7 @@ export class BattleScene extends Phaser.Scene {
 
   private refreshBoardBackground(): void {
     const floor = this.campaign.floorNumber;
-    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : null;
+    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : floor >= 31 && floor <= 40 ? 'faixa-4' : floor >= 41 && floor <= 50 ? 'faixa-5' : null;
     if (this.boardBackground) {
       this.boardBackground.destroy();
       this.boardBackground = null;
@@ -517,7 +517,7 @@ export class BattleScene extends Phaser.Scene {
         'cheshire-cat': 'monster-cheshire-cat',
         'queen-of-hearts': 'monster-queen-of-hearts',
       };
-      const texture = monsterTextures[def.id];
+      // Todo monstro aceita sprite automaticamente: salve <id-do-monstro>.png em assets/sprites.\n      // Mantemos aliases para IDs antigos cujo arquivo usa um nome legado.\n      const genericTexture = `monster-${def.id}`;\n      const texture = this.textures.exists(genericTexture) ? genericTexture : monsterTextures[def.id];
       if (texture && this.textures.exists(texture)) {
         const spriteSize = large ? size : rank === 'mini-boss' ? 72 : rank === 'boss' ? 78 : 64;
         children.push(this.add.image(0, -4, texture).setDisplaySize(spriteSize, spriteSize));
