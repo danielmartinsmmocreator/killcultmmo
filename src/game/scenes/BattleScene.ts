@@ -530,7 +530,8 @@ export class BattleScene extends Phaser.Scene {
         'queen-of-hearts': 'monster-queen-of-hearts',
       };
       // Todo monstro aceita sprite automaticamente: salve <id-do-monstro>.png em assets/sprites.
-      // Mantemos aliases para IDs antigos cujo arquivo usa um nome legado.\n      const genericTexture = `monster-${def.id}`;\n      const texture = this.textures.exists(genericTexture) ? genericTexture : monsterTextures[def.id];
+      // Mantemos aliases para IDs antigos cujo arquivo usa um nome legado.
+      const genericTexture = `monster-${def.id}`;\n      const texture = this.textures.exists(genericTexture) ? genericTexture : monsterTextures[def.id];
       if (texture && this.textures.exists(texture)) {
         const spriteSize = large ? size : rank === 'mini-boss' ? 72 : rank === 'boss' ? 78 : 64;
         children.push(this.add.image(0, -4, texture).setDisplaySize(spriteSize, spriteSize));
