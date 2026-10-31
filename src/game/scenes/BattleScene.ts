@@ -234,11 +234,17 @@ export class BattleScene extends Phaser.Scene {
         const floor = this.campaign.floorNumber;
         const regionTwo = floor >= 11 && floor <= 20;
         const regionThree = floor >= 21 && floor <= 30;
+        const regionFour = floor >= 31 && floor <= 40;
+        const regionFive = floor >= 41 && floor <= 50;
         const color = regionTwo
           ? ((col + row) % 2 === 0 ? 0x171717 : 0x7f1d1d)
           : regionThree
             ? ((col + row) % 2 === 0 ? 0xffffff : 0xe5e7eb)
-            : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+            : regionFour
+              ? ((col + row) % 2 === 0 ? 0x312e81 : 0x7e22ce)
+              : regionFive
+                ? ((col + row) % 2 === 0 ? 0x365314 : 0x854d0e)
+                : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
 
         const tile = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, color, 0.3);
         this.boardTiles.push({ tile, col, row });
@@ -296,12 +302,18 @@ export class BattleScene extends Phaser.Scene {
     const floor = this.campaign.floorNumber;
     const regionTwo = floor >= 11 && floor <= 20;
     const regionThree = floor >= 21 && floor <= 30;
+    const regionFour = floor >= 31 && floor <= 40;
+    const regionFive = floor >= 41 && floor <= 50;
     for (const { tile, col, row } of this.boardTiles) {
       const color = regionTwo
         ? ((col + row) % 2 === 0 ? 0x090909 : 0x8b0000)
         : regionThree
           ? ((col + row) % 2 === 0 ? 0xffffff : 0xe5e7eb)
-          : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+          : regionFour
+            ? ((col + row) % 2 === 0 ? 0x312e81 : 0x7e22ce)
+            : regionFive
+              ? ((col + row) % 2 === 0 ? 0x365314 : 0x854d0e)
+              : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
       tile.setFillStyle(color, 0.3);
     }
   }
@@ -517,7 +529,8 @@ export class BattleScene extends Phaser.Scene {
         'cheshire-cat': 'monster-cheshire-cat',
         'queen-of-hearts': 'monster-queen-of-hearts',
       };
-      // Todo monstro aceita sprite automaticamente: salve <id-do-monstro>.png em assets/sprites.\n      // Mantemos aliases para IDs antigos cujo arquivo usa um nome legado.\n      const genericTexture = `monster-${def.id}`;\n      const texture = this.textures.exists(genericTexture) ? genericTexture : monsterTextures[def.id];
+      // Todo monstro aceita sprite automaticamente: salve <id-do-monstro>.png em assets/sprites.
+      // Mantemos aliases para IDs antigos cujo arquivo usa um nome legado.\n      const genericTexture = `monster-${def.id}`;\n      const texture = this.textures.exists(genericTexture) ? genericTexture : monsterTextures[def.id];
       if (texture && this.textures.exists(texture)) {
         const spriteSize = large ? size : rank === 'mini-boss' ? 72 : rank === 'boss' ? 78 : 64;
         children.push(this.add.image(0, -4, texture).setDisplaySize(spriteSize, spriteSize));
