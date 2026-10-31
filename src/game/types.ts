@@ -288,6 +288,8 @@ export interface ItemDefinition {
   readonly minLevel?: number;
   readonly allowedClasses?: readonly ('warrior' | 'assassin' | 'mage' | 'cleric' | 'archer')[];
   readonly sellPrice: number;
+  /** Classificação usada nos filtros do inventário; itens sem raridade explícita são comuns. */
+  readonly rarity?: 'common' | 'rare';
   readonly bonuses: Partial<{ strength: number; vitality: number; defense: number }>;
   readonly defensePercent?: number;
   readonly lifestealPercent?: number;
