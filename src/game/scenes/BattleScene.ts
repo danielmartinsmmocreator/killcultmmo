@@ -563,7 +563,7 @@ export class BattleScene extends Phaser.Scene {
       .setVisible(false);
 
     let facingMarker: Phaser.GameObjects.Graphics | null = null;
-    if (def.attack.directions === 'facing') {
+    if (def.attack.directions === 'facing' || def.id === 'medusa') {
       // Triângulo apontando para a direita; a rotação o aponta para onde a unidade olha.
       facingMarker = this.add.graphics();
       facingMarker.fillStyle(0xffffff, 1).fillTriangle(28, -7, 40, 0, 28, 7);
