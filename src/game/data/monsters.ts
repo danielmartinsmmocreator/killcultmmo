@@ -156,12 +156,7 @@ export const WEREWOLF: UnitDefinition = {
   attack: { directions: 'orthogonal', range: 1 },
 };
 
-export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
-  GOBLIN, SKELETON, SLIME,
-  CULTIST, INSANE, ACOLYTE, DEFORMED_DEVOTEE,
-  ABYSSAL_SCALED, SCALED_GUARDIAN, RLYEH_HORROR,
-  VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT, WEREWOLF,
-];
+
 
 
 // Região 3 — Mitologia.
@@ -221,3 +216,18 @@ export const CUCA_MINION: UnitDefinition = {
   id: 'cuca-servant', name: 'Criatura da Cuca', team: 'monster', symbol: 'C', color: 0x65a30d,
   maxHp: 1320, damage: 66, movement: 1, attack: { directions: 'orthogonal', range: 2 },
 };
+
+export const DESERT_BANDIT: UnitDefinition = { id:'desert-bandit', name:'Saqueador das Dunas', team:'monster', symbol:'S', color:0xb45309, maxHp:2050, damage:92, movement:2, attack:{directions:'orthogonal',range:1} };
+export const BRONZE_SCORPION: UnitDefinition = { id:'bronze-scorpion', name:'Escorpião de Bronze', team:'monster', symbol:'E', color:0xa16207, maxHp:2450, damage:96, movement:1, attack:{directions:'diagonal',range:1} };
+export const SAND_DJINN: UnitDefinition = { id:'sand-djinn', name:'Djinn Errante', team:'monster', symbol:'D', color:0xf59e0b, maxHp:2250, damage:104, movement:1, attack:{directions:'facing',range:3} };
+export const MIRAGE_SORCERER: UnitDefinition = { id:'mirage-sorcerer', name:'Feiticeiro das Miragens', team:'monster', symbol:'M', color:0x7c3aed, maxHp:1900, damage:100, movement:1, attack:{directions:'diagonal',range:2} };
+export const DESERT_SERPENT: UnitDefinition = { id:'desert-serpent', name:'Serpente das Areias', team:'monster', symbol:'S', color:0x65a30d, maxHp:2700, damage:110, movement:2, attack:{directions:'orthogonal',range:1} };
+export const DUNE_GUARDIAN: UnitDefinition = { id:'dune-guardian', name:'Guardião de Arenito', team:'monster', symbol:'G', color:0x92400e, maxHp:3100, damage:112, movement:1, attack:{directions:'orthogonal',range:2} };
+export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
+  GOBLIN, SKELETON, SLIME, CULTIST, INSANE, ACOLYTE, DEFORMED_DEVOTEE, ABYSSAL_SCALED,
+  SCALED_GUARDIAN, RLYEH_HORROR, VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT,
+  WEREWOLF, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH,
+  CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT, SACI, BOITATA,
+  IARA, MULA_SEM_CABECA, MAPINGUARI, CUCA_MINION, DESERT_BANDIT, BRONZE_SCORPION,
+  SAND_DJINN, MIRAGE_SORCERER, DESERT_SERPENT, DUNE_GUARDIAN,
+];
