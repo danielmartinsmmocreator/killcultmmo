@@ -158,7 +158,15 @@ export class BattleScene extends Phaser.Scene {
     this.load.image('monster-abyss-idol', abyssIdolSprite);
     for (const [path, url] of Object.entries(optionalMonsterSprites)) {
       const filename = path.split('/').pop()?.replace(/\.png$/i, '');
-      if (filename) this.load.image(`monster-${filename}`, url);
+      if (!filename) continue;
+
+      // Corrige nomes legados que foram salvos com pequenos erros de digitação.
+      const spriteAliases: Record<string, string> = {
+        'chesire-cat': 'cheshire-cat',
+        'giant-catterpillar': 'giant-caterpillar',
+      };
+      const textureName = spriteAliases[filename] ?? filename;
+      this.load.image(`monster-${textureName}`, url);
     }
     for (const [path, url] of Object.entries(optionalRegionBackgrounds)) {
       const filename = path.split('/').pop()?.replace(/\.(png|jpe?g|jfif)$/i, '').toLowerCase();
