@@ -42,8 +42,8 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'longbow': { id: 'longbow', name: 'Arco longo', slot: 'weapon', allowedClasses: R, sellPrice: 15, bonuses: { strength: 9 } },
 
   // Amuletos especiais da faixa 1.
-  'shadow-claw': { id: 'shadow-claw', name: 'Garra do Sombrio', slot: 'amulet', sellPrice: 20, bonuses: { strength: 5, vitality: 5, defense: 5, rarity: 'rare' } },
-  'cthulhu-tentacle': { id: 'cthulhu-tentacle', name: 'Tentáculo de Cthulhu', slot: 'amulet', sellPrice: 30, bonuses: { strength: 10, vitality: 10, defense: 10, rarity: 'rare' } },
+  'shadow-claw': { id: 'shadow-claw', name: 'Garra do Sombrio', slot: 'amulet', sellPrice: 20, bonuses: { strength: 5, vitality: 5, defense: 5}, rarity: 'rare' },
+  'cthulhu-tentacle': { id: 'cthulhu-tentacle', name: 'Tentáculo de Cthulhu', slot: 'amulet', sellPrice: 30, bonuses: { strength: 10, vitality: 10, defense: 10}, rarity: 'rare' },
 
   // Faixa 2 — armas exclusivas por classe.
   'long-sword': { id: 'long-sword', name: 'Espada longa', slot: 'weapon', minLevel: F2, allowedClasses: W, sellPrice: 25, bonuses: { strength: 10 } },
@@ -85,7 +85,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
 
   // Itens especiais raros da faixa 3 (5% de chance nos chefes de marco).
   'medusa-eye': { id: 'medusa-eye', name: 'Olho de Medusa', slot: 'amulet', minLevel: F3, sellPrice: 120, bonuses: {}, ignoreFirstHitPerEncounter: true, rarity: 'rare' },
-  'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20, rarity: 'rare' } },
+  'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20}, rarity: 'rare' },
 
   // Faixa 4 — equipamentos do País das Maravilhas (andares 31–40).
   'queen-rapier': { id: 'queen-rapier', name: 'Florete da Rainha', slot: 'weapon', minLevel: F4, allowedClasses: W, sellPrice: 100, bonuses: { strength: 30 } },
@@ -127,7 +127,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'saci-boots': { id: 'saci-boots', name: 'Botas de Redemoinho', slot: 'boots', minLevel: F5, sellPrice: 140, bonuses: { vitality: 36, defense: 5 } },
 
   // Item especial raro da faixa 5 (5% de chance no mini-chefe do andar 45).
-  'curupira-charm': { id: 'curupira-charm', name: 'Amuleto das Pegadas Invertidas', slot: 'amulet', minLevel: F5, sellPrice: 260, bonuses: { strength: 18, vitality: 18, defense: 8, rarity: 'rare' } },
+  'curupira-charm': { id: 'curupira-charm', name: 'Amuleto das Pegadas Invertidas', slot: 'amulet', minLevel: F5, sellPrice: 260, bonuses: { strength: 18, vitality: 18, defense: 8}, rarity: 'rare' },
 
   'dune-scimitar': { id:'dune-scimitar', name:'Cimitarra das Dunas', slot:'weapon', minLevel:F6, allowedClasses:W, sellPrice:190, bonuses:{strength:52} },
   'sultan-greatsword': { id:'sultan-greatsword', name:'Lâmina do Sultão', slot:'weapon', minLevel:F6, allowedClasses:W, sellPrice:205, bonuses:{strength:56} },
