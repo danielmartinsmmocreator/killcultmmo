@@ -6,6 +6,7 @@ const F3 = 21;
 const F4 = 31;
 const F5 = 41;
 const F6 = 51;
+const F7 = 61;
 const W = ['warrior'] as const;
 const A = ['assassin'] as const;
 const M = ['mage'] as const;
@@ -145,6 +146,25 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'djinn-circlet': { id:'djinn-circlet', name:'Diadema do Djinn', slot:'helmet', minLevel:F6, sellPrice:165, bonuses:{defense:18} },
   'oasis-sandals': { id:'oasis-sandals', name:'Sandálias do Oásis', slot:'boots', minLevel:F6, sellPrice:175, bonuses:{vitality:45,defense:7} },
   'vizier-seal': { id:'vizier-seal', name:'Selo do Vizir', slot:'amulet', minLevel:F6, sellPrice:320, bonuses:{strength:24,vitality:22,defense:10} },
+
+  // Faixa 7 — Ciência Proibida.
+  'surgical-cleaver': { id:'surgical-cleaver', name:'Cutelo Cirúrgico', slot:'weapon', minLevel:F7, allowedClasses:W, sellPrice:245, bonuses:{strength:66} },
+  'iron-heart-blade': { id:'iron-heart-blade', name:'Lâmina do Coração de Ferro', slot:'weapon', minLevel:F7, allowedClasses:W, sellPrice:260, bonuses:{strength:70} },
+  'coilguard-shield': { id:'coilguard-shield', name:'Escudo das Bobinas', slot:'off-hand', minLevel:F7, allowedClasses:W, sellPrice:230, bonuses:{defense:25} },
+  'vivisection-daggers': { id:'vivisection-daggers', name:'Adagas da Vivissecção', slot:'weapon', minLevel:F7, allowedClasses:A, sellPrice:255, bonuses:{strength:69} },
+  'voltneedle': { id:'voltneedle', name:'Agulha Voltaica', slot:'weapon', minLevel:F7, allowedClasses:A, sellPrice:240, bonuses:{strength:64} },
+  'tesla-coil-staff': { id:'tesla-coil-staff', name:'Cajado da Bobina de Tesla', slot:'weapon', minLevel:F7, allowedClasses:M, sellPrice:265, bonuses:{strength:72} },
+  'homunculus-core': { id:'homunculus-core', name:'Núcleo de Homúnculo', slot:'off-hand', minLevel:F7, allowedClasses:M, sellPrice:235, bonuses:{strength:62} },
+  'alchemist-rod': { id:'alchemist-rod', name:'Bastão do Alquimista', slot:'weapon', minLevel:F7, allowedClasses:M, sellPrice:250, bonuses:{strength:67} },
+  'plague-scepter': { id:'plague-scepter', name:'Cetro da Peste', slot:'weapon', minLevel:F7, allowedClasses:C, sellPrice:250, bonuses:{strength:67} },
+  'serum-grimoire': { id:'serum-grimoire', name:'Grimório dos Soros', slot:'off-hand', minLevel:F7, allowedClasses:C, sellPrice:235, bonuses:{vitality:62} },
+  'lifeweaver-staff': { id:'lifeweaver-staff', name:'Cajado do Tecelão da Vida', slot:'weapon', minLevel:F7, allowedClasses:C, sellPrice:265, bonuses:{strength:72} },
+  'lightning-railbow': { id:'lightning-railbow', name:'Arco de Trilho Elétrico', slot:'weapon', minLevel:F7, allowedClasses:R, sellPrice:275, bonuses:{strength:76} },
+  'surgeon-crossbow': { id:'surgeon-crossbow', name:'Besta do Cirurgião', slot:'weapon', minLevel:F7, allowedClasses:R, sellPrice:280, bonuses:{strength:78} },
+  'stitched-coat': { id:'stitched-coat', name:'Sobretudo de Retalhos', slot:'chest', minLevel:F7, sellPrice:255, bonuses:{vitality:78,defense:15} },
+  'copper-conductor-helm': { id:'copper-conductor-helm', name:'Elmo do Condutor de Cobre', slot:'helmet', minLevel:F7, sellPrice:205, bonuses:{defense:22} },
+  'surgeon-boots': { id:'surgeon-boots', name:'Botas do Cirurgião', slot:'boots', minLevel:F7, sellPrice:215, bonuses:{vitality:55,defense:9} },
+  'mad-scientist-seal': { id:'mad-scientist-seal', name:'Selo do Doutor', slot:'amulet', minLevel:F7, sellPrice:390, bonuses:{strength:30,vitality:28,defense:12} },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },
