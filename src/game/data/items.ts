@@ -42,8 +42,8 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'longbow': { id: 'longbow', name: 'Arco longo', slot: 'weapon', allowedClasses: R, sellPrice: 15, bonuses: { strength: 9 } },
 
   // Amuletos especiais da faixa 1.
-  'shadow-claw': { id: 'shadow-claw', name: 'Garra do Sombrio', slot: 'amulet', sellPrice: 20, bonuses: { strength: 5, vitality: 5, defense: 5 } },
-  'cthulhu-tentacle': { id: 'cthulhu-tentacle', name: 'Tentáculo de Cthulhu', slot: 'amulet', sellPrice: 30, bonuses: { strength: 10, vitality: 10, defense: 10 } },
+  'shadow-claw': { id: 'shadow-claw', name: 'Garra do Sombrio', slot: 'amulet', sellPrice: 20, bonuses: { strength: 5, vitality: 5, defense: 5, rarity: 'rare' } },
+  'cthulhu-tentacle': { id: 'cthulhu-tentacle', name: 'Tentáculo de Cthulhu', slot: 'amulet', sellPrice: 30, bonuses: { strength: 10, vitality: 10, defense: 10, rarity: 'rare' } },
 
   // Faixa 2 — armas exclusivas por classe.
   'long-sword': { id: 'long-sword', name: 'Espada longa', slot: 'weapon', minLevel: F2, allowedClasses: W, sellPrice: 25, bonuses: { strength: 10 } },
@@ -63,8 +63,8 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'expert-longbow': { id: 'expert-longbow', name: 'Arco longo especialista', slot: 'weapon', minLevel: F2, allowedClasses: R, sellPrice: 40, bonuses: { strength: 18 } },
 
   // Amuletos especiais da faixa 2.
-  'winter-cloak': { id: 'winter-cloak', name: 'Capa do Inverno', slot: 'amulet', minLevel: F2, sellPrice: 45, bonuses: {}, defensePercent: 10 },
-  'seventh-fang': { id: 'seventh-fang', name: 'Dente do Sétimo', slot: 'amulet', minLevel: F2, sellPrice: 45, bonuses: {}, lifestealPercent: 5 },
+  'winter-cloak': { id: 'winter-cloak', name: 'Capa do Inverno', slot: 'amulet', minLevel: F2, sellPrice: 45, bonuses: {}, defensePercent: 10, rarity: 'rare' },
+  'seventh-fang': { id: 'seventh-fang', name: 'Dente do Sétimo', slot: 'amulet', minLevel: F2, sellPrice: 45, bonuses: {}, lifestealPercent: 5, rarity: 'rare' },
 
   // Faixa 3 — armas e armaduras da região mitológica (andares 21–30).
   'curved-sword': { id: 'curved-sword', name: 'Espada Encurvada', slot: 'weapon', minLevel: F3, allowedClasses: W, sellPrice: 65, bonuses: { strength: 20 } },
@@ -84,8 +84,8 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'greaves': { id: 'greaves', name: 'Grevas de Bronze', slot: 'boots', minLevel: F3, sellPrice: 60, bonuses: { vitality: 20, defense: 3 } },
 
   // Itens especiais raros da faixa 3 (5% de chance nos chefes de marco).
-  'medusa-eye': { id: 'medusa-eye', name: 'Olho de Medusa', slot: 'amulet', minLevel: F3, sellPrice: 120, bonuses: {}, ignoreFirstHitPerEncounter: true },
-  'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20 } },
+  'medusa-eye': { id: 'medusa-eye', name: 'Olho de Medusa', slot: 'amulet', minLevel: F3, sellPrice: 120, bonuses: {}, ignoreFirstHitPerEncounter: true, rarity: 'rare' },
+  'hades-pendant': { id: 'hades-pendant', name: 'Pingente de Hades', slot: 'amulet', minLevel: F3, sellPrice: 140, bonuses: { strength: 20, rarity: 'rare' } },
 
   // Faixa 4 — equipamentos do País das Maravilhas (andares 31–40).
   'queen-rapier': { id: 'queen-rapier', name: 'Florete da Rainha', slot: 'weapon', minLevel: F4, allowedClasses: W, sellPrice: 100, bonuses: { strength: 30 } },
@@ -106,7 +106,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'rabbit-boots': { id: 'rabbit-boots', name: 'Botas do Coelho', slot: 'boots', minLevel: F4, sellPrice: 90, bonuses: { vitality: 28, defense: 4 } },
 
   // Itens especiais raros da faixa 4 (5% de chance nos encontros de marco).
-  'cheshire-grin': { id: 'cheshire-grin', name: 'Sorriso de Cheshire', slot: 'amulet', minLevel: F4, sellPrice: 180, bonuses: {}, lifestealPercent: 8 },
+  'cheshire-grin': { id: 'cheshire-grin', name: 'Sorriso de Cheshire', slot: 'amulet', minLevel: F4, sellPrice: 180, bonuses: {}, lifestealPercent: 8, rarity: 'rare' },
 
   // Faixa 5 — equipamentos do Folclore Brasileiro (andares 41–50).
   'boitata-spear': { id: 'boitata-spear', name: 'Lança das Chamas do Boitatá', slot: 'weapon', minLevel: F5, allowedClasses: W, sellPrice: 145, bonuses: { strength: 40 } },
@@ -127,7 +127,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'saci-boots': { id: 'saci-boots', name: 'Botas de Redemoinho', slot: 'boots', minLevel: F5, sellPrice: 140, bonuses: { vitality: 36, defense: 5 } },
 
   // Item especial raro da faixa 5 (5% de chance no mini-chefe do andar 45).
-  'curupira-charm': { id: 'curupira-charm', name: 'Amuleto das Pegadas Invertidas', slot: 'amulet', minLevel: F5, sellPrice: 260, bonuses: { strength: 18, vitality: 18, defense: 8 } },
+  'curupira-charm': { id: 'curupira-charm', name: 'Amuleto das Pegadas Invertidas', slot: 'amulet', minLevel: F5, sellPrice: 260, bonuses: { strength: 18, vitality: 18, defense: 8, rarity: 'rare' } },
 
   'dune-scimitar': { id:'dune-scimitar', name:'Cimitarra das Dunas', slot:'weapon', minLevel:F6, allowedClasses:W, sellPrice:190, bonuses:{strength:52} },
   'sultan-greatsword': { id:'sultan-greatsword', name:'Lâmina do Sultão', slot:'weapon', minLevel:F6, allowedClasses:W, sellPrice:205, bonuses:{strength:56} },
@@ -145,7 +145,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'sandweave-armor': { id:'sandweave-armor', name:'Armadura de Trama Arenosa', slot:'chest', minLevel:F6, sellPrice:210, bonuses:{vitality:65,defense:12} },
   'djinn-circlet': { id:'djinn-circlet', name:'Diadema do Djinn', slot:'helmet', minLevel:F6, sellPrice:165, bonuses:{defense:18} },
   'oasis-sandals': { id:'oasis-sandals', name:'Sandálias do Oásis', slot:'boots', minLevel:F6, sellPrice:175, bonuses:{vitality:45,defense:7} },
-  'vizier-seal': { id:'vizier-seal', name:'Selo do Vizir', slot:'amulet', minLevel:F6, sellPrice:320, bonuses:{strength:24,vitality:22,defense:10} },
+  'vizier-seal': { id:'vizier-seal', name:'Selo do Vizir', slot:'amulet', minLevel:F6, sellPrice:320, bonuses:{strength:24,vitality:22,defense:10}, rarity: 'rare' },
 
   // Faixa 7 — Ciência Proibida.
   'surgical-cleaver': { id:'surgical-cleaver', name:'Cutelo Cirúrgico', slot:'weapon', minLevel:F7, allowedClasses:W, sellPrice:245, bonuses:{strength:66} },
@@ -164,7 +164,7 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'stitched-coat': { id:'stitched-coat', name:'Sobretudo de Retalhos', slot:'chest', minLevel:F7, sellPrice:255, bonuses:{vitality:78,defense:15} },
   'copper-conductor-helm': { id:'copper-conductor-helm', name:'Elmo do Condutor de Cobre', slot:'helmet', minLevel:F7, sellPrice:205, bonuses:{defense:22} },
   'surgeon-boots': { id:'surgeon-boots', name:'Botas do Cirurgião', slot:'boots', minLevel:F7, sellPrice:215, bonuses:{vitality:55,defense:9} },
-  'mad-scientist-seal': { id:'mad-scientist-seal', name:'Selo do Doutor', slot:'amulet', minLevel:F7, sellPrice:390, bonuses:{strength:30,vitality:28,defense:12} },
+  'mad-scientist-seal': { id:'mad-scientist-seal', name:'Selo do Doutor', slot:'amulet', minLevel:F7, sellPrice:390, bonuses:{strength:30,vitality:28,defense:12}, rarity: 'rare' },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },
