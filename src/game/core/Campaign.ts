@@ -6,8 +6,6 @@ import { buildEncounter, createParty, prepareParty, validateFloor } from './enco
 import { GameState } from './GameState';
 import { PlayerInventory } from './progression';
 import { ITEM_DEFINITIONS } from '../data/items';
-import { MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT } from '../data/monsters';
-import { GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../data/bosses';
 
 
 const SPECIAL_ITEM_DROP_CHANCE = 0.05;
@@ -234,11 +232,11 @@ export class Campaign {
     this.debugExtractionEnabled = enabled;
   }
 
-  debugExtractionEnabled = true;
+  debugExtractionEnabled = false;
 
   /** Extração manual após concluir um marco de 5 andares (ex.: andar 5). */
   get canExtract(): boolean {
-    return this.debugExtractionEnabled && ((this.status === 'floor-cleared' || this.status === 'completed') && this.floorNumber % 5 === 0);
+    return (this.status === 'floor-cleared' || this.status === 'completed') && (this.debugExtractionEnabled || this.floorNumber % 5 === 0);
   }
 
   /** Consolida os itens obtidos e retorna à base ao extrair em um marco válido. */
