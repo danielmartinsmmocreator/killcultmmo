@@ -84,3 +84,8 @@ export const CUCA: UnitDefinition = {
 
 export const SAND_VIZIER: UnitDefinition = { id:'sand-vizier', name:'Vizir das Areias', team:'monster', symbol:'♜', color:0xb45309, maxHp:3900, damage:118, movement:1, attack:{directions:'orthogonal',range:2}, rank:'mini-boss' };
 export const SULTAN_OF_NIGHTS: UnitDefinition = { id:'sultan-of-nights', name:'Sultão das Mil Noites', team:'monster', symbol:'♛', color:0x92400e, maxHp:7800, damage:138, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
+
+ 
+// Região 7 — Ciência Proibida: chefes-base para posterior especificação de mecânicas.
+export const MAD_SCIENTIST: UnitDefinition = { id:'mad-scientist', name:'Doutor das Experiências', team:'monster', symbol:'⚗', color:0x15803d, maxHp:5200, damage:152, movement:1, attack:{directions:'orthogonal',range:2}, rank:'mini-boss' };
+export const FRANKENSTEIN_ABOMINATION: UnitDefinition = { id:'frankenstein-abomination', name:'Abominação de Frankenstein', team:'monster', symbol:'♜', color:0x475569, maxHp:10200, damage:178, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
