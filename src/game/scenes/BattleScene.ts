@@ -170,7 +170,7 @@ export class BattleScene extends Phaser.Scene {
     }
     for (const [path, url] of Object.entries(optionalRegionBackgrounds)) {
       const filename = path.split('/').pop()?.replace(/\.(png|jpe?g|jfif)$/i, '').toLowerCase();
-      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3' || filename === 'faixa-4' || filename === 'faixa-5' || filename === 'faixa-6') {
+      if (filename === 'faixa-1' || filename === 'faixa-2' || filename === 'faixa-3' || filename === 'faixa-4' || filename === 'faixa-5' || filename === 'faixa-6' || filename === 'faixa-7') {
         this.load.image(`background-${filename}`, url);
       }
     }
@@ -254,9 +254,11 @@ export class BattleScene extends Phaser.Scene {
               ? ((col + row) % 2 === 0 ? 0x312e81 : 0x7e22ce)
               : regionFive
                 ? ((col + row) % 2 === 0 ? 0x365314 : 0x854d0e)
-                : regionSix
-                  ? ((col + row) % 2 === 0 ? 0x78350f : 0xd97706)
-                  : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
+                : regionSeven
+                  ? ((col + row) % 2 === 0 ? 0x334155 : 0x0f766e)
+                  : regionSix
+                    ? ((col + row) % 2 === 0 ? 0x78350f : 0xd97706)
+                    : ((col + row) % 2 === 0 ? COLORS.tileLight : COLORS.tileDark);
 
         const tile = this.add.rectangle(x, y, TILE_SIZE, TILE_SIZE, color, 0.3);
         this.boardTiles.push({ tile, col, row });
