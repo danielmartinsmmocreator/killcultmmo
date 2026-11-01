@@ -391,27 +391,29 @@ export class GameState {
     this.emit('select');
   }
 
-  /** Distribui um ponto no herói selecionado sem consumir o turno de combate. */
+  /** Distribui pontos no herói selecionado sem consumir o turno de combate. */
   allocateSelectedAttribute(attribute: AttributeName): boolean {
+    return this.allocateSelectedAttributePoints(attribute, 1);
+  }
+
+  /** Distribui até a quantidade solicitada, limitada aos pontos disponíveis. */
+  allocateSelectedAttributePoints(attribute: AttributeName, requestedPoints: number): boolean {
     if (this.currentPhase !== 'player' || this.targetingState) return false;
     const hero = this.selectedUnit;
     if (!hero || hero.definition.team !== 'hero' || !hero.progression) return false;
-    if (!allocateAttributePoint(hero, attribute, 1)) return false;
-
-    if (attribute === 'strength') {
-      hero.damage += 1;
-    } else if (attribute === 'vitality') {
-      hero.maxHp += 5;
-      hero.hp = Math.min(hero.maxHp, hero.hp + 5);
+    if (!Number.isInteger(requestedPoints) || requestedPoints < 1) return false;
+    const points = Math.min(requestedPoints, hero.progression.unspentAttributePoints);
+    if (points < 1 || !allocateAttributePoint(hero, attribute, points)) return false;
+    if (attribute === 'strength') hero.damage += points;
+    else if (attribute === 'vitality') {
+      hero.maxHp += points * 5;
+      hero.hp = Math.min(hero.maxHp, hero.hp + points * 5);
     }
-    this.addLog(
-      `${hero.definition.name} investiu 1 ponto em ${attribute === 'strength' ? 'Força' : attribute === 'vitality' ? 'Vitalidade' : 'Defesa'}.`,
-      'hero',
-    );
+    const label = attribute === 'strength' ? 'Força' : attribute === 'vitality' ? 'Vitalidade' : 'Defesa';
+    this.addLog(`${hero.definition.name} investiu ${points} ponto(s) em ${label}.`, 'hero');
     this.emit('select');
     return true;
   }
-
   /** Desfaz a seleção do herói e qualquer escolha de alvo em andamento. */
   clearSelection(): void {
     if (this.selectedUnitUid === null && this.targetingState === null) return;
