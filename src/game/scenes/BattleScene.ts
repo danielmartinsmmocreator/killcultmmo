@@ -249,10 +249,8 @@ export class BattleScene extends Phaser.Scene {
         const regionFive = floor >= 41 && floor <= 50;
         const regionSix = floor >= 51 && floor <= 60;
         const regionSeven = floor >= 61 && floor <= 70;
-    const regionEight = floor >= 71 && floor <= 80;
-    const regionNine = floor >= 81 && floor <= 90;
-    const regionEight = floor >= 71 && floor <= 80;
-    const regionNine = floor >= 81 && floor <= 90;
+        const regionEight = floor >= 71 && floor <= 80;
+        const regionNine = floor >= 81 && floor <= 90;
         const color = regionEight
         ? ((col + row) % 2 === 0 ? 0x78350f : 0xfacc15)
         : regionNine
