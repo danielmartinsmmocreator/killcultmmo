@@ -231,6 +231,24 @@ export const HOMUNCULUS: UnitDefinition = { id:'homunculus', name:'Homúnculo In
 export const IRON_AUTOMATON: UnitDefinition = { id:'iron-automaton', name:'Autômato de Ferro', team:'monster', symbol:'A', color:0x94a3b8, maxHp:3900, damage:138, movement:1, attack:{directions:'orthogonal',range:2} };
 export const FLESH_GOLEM: UnitDefinition = { id:'flesh-golem', name:'Golem de Retalhos', team:'monster', symbol:'G', color:0x9f1239, maxHp:4400, damage:145, movement:1, attack:{directions:'orthogonal',range:1} };
 
+
+ 
+// Região 8 — Reino de Oz.
+export const MUNCHKIN_GUARD: UnitDefinition = { id:'munchkin-guard', name:'Guarda Munchkin', team:'monster', symbol:'M', color:0x0ea5e9, maxHp:4800, damage:158, movement:1, attack:{directions:'orthogonal',range:1} };
+export const FLYING_MONKEY: UnitDefinition = { id:'flying-monkey', name:'Macaco Alado', team:'monster', symbol:'F', color:0x7c3aed, maxHp:4300, damage:166, movement:2, attack:{directions:'diagonal',range:2} };
+export const TIN_WOODSMAN: UnitDefinition = { id:'tin-woodsman', name:'Lenhador de Lata', team:'monster', symbol:'T', color:0x94a3b8, maxHp:5600, damage:172, movement:1, attack:{directions:'orthogonal',range:2} };
+export const COWARDLY_LION: UnitDefinition = { id:'cowardly-lion', name:'Leão Covarde', team:'monster', symbol:'L', color:0xd97706, maxHp:5200, damage:180, movement:2, attack:{directions:'orthogonal',range:1} };
+export const POPPY_SENTINEL: UnitDefinition = { id:'poppy-sentinel', name:'Sentinela das Papoulas', team:'monster', symbol:'P', color:0xdc2626, maxHp:4900, damage:168, movement:0, attack:{directions:'facing',range:3} };
+export const EMERALD_SENTINEL: UnitDefinition = { id:'emerald-sentinel', name:'Sentinela Esmeralda', team:'monster', symbol:'E', color:0x16a34a, maxHp:6100, damage:185, movement:1, attack:{directions:'orthogonal',range:2} };
+
+// Região 9 — Folclore Japonês.
+export const KAPPA: UnitDefinition = { id:'kappa', name:'Kappa', team:'monster', symbol:'K', color:0x0f766e, maxHp:6500, damage:190, movement:1, attack:{directions:'diagonal',range:2} };
+export const TENGU: UnitDefinition = { id:'tengu', name:'Tengu', team:'monster', symbol:'T', color:0xdc2626, maxHp:6200, damage:198, movement:2, attack:{directions:'facing',range:3} };
+export const YUKI_ONNA: UnitDefinition = { id:'yuki-onna', name:'Yuki-onna', team:'monster', symbol:'Y', color:0x7dd3fc, maxHp:5900, damage:194, movement:1, attack:{directions:'orthogonal',range:2} };
+export const ONI: UnitDefinition = { id:'oni', name:'Oni', team:'monster', symbol:'O', color:0x991b1b, maxHp:7600, damage:210, movement:1, attack:{directions:'orthogonal',range:1} };
+export const JOROGUMO: UnitDefinition = { id:'jorogumo', name:'Jorogumo', team:'monster', symbol:'J', color:0x7e22ce, maxHp:6800, damage:202, movement:1, attack:{directions:'diagonal',range:3} };
+export const KITSUNE: UnitDefinition = { id:'kitsune', name:'Kitsune', team:'monster', symbol:'狐', color:0xea580c, maxHp:6300, damage:205, movement:2, attack:{directions:'orthogonal',range:2} };
+
 export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
   GOBLIN, SKELETON, SLIME, CULTIST, INSANE, ACOLYTE, DEFORMED_DEVOTEE, ABYSSAL_SCALED,
   SCALED_GUARDIAN, RLYEH_HORROR, VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT,
@@ -239,5 +257,7 @@ export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
   IARA, MULA_SEM_CABECA, MAPINGUARI, CUCA_MINION, DESERT_BANDIT, BRONZE_SCORPION,
   SAND_DJINN, MIRAGE_SORCERER, DESERT_SERPENT, DUNE_GUARDIAN,
   STITCHED_THRALL, PLAGUE_SURGEON, LIGHTNING_REVENANT, HOMUNCULUS, IRON_AUTOMATON, FLESH_GOLEM,
+  MUNCHKIN_GUARD, FLYING_MONKEY, TIN_WOODSMAN, COWARDLY_LION, POPPY_SENTINEL, EMERALD_SENTINEL,
+  KAPPA, TENGU, YUKI_ONNA, ONI, JOROGUMO, KITSUNE,
 ];
 
