@@ -74,6 +74,7 @@ export function buildEncounter(config: FloorConfig, party: readonly Unit[]): Bat
   return {
     units: [...party, ...monsters],
     obstacles: obstacles.map((cell) => ({ col: cell.col, row: cell.row })),
+    floor: config.floor,
   };
 }
 
