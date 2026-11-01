@@ -129,6 +129,8 @@ export interface Unit {
   stunned: boolean;
   /** Petrificada pela Medusa: perde o próximo turno inteiro. */
   petrified?: boolean;
+  /** Turnos restantes preso em areia movediça; ainda pode atacar e usar habilidades. */
+  trappedTurns?: number;
   /** Contador de ações da Medusa para petrificar a cada duas rodadas. */
   medusaCycle?: number;
   /** Estado do rodízio de ataques telegrafados (só existe se a definição tiver `telegraph`). */
@@ -172,7 +174,7 @@ export interface HealEvent {
 
 /** Casas que a cena deve destacar por um instante depois de uma habilidade ou de um golpe de chefe. */
 export interface AbilityEffect {
-  id: AbilityId | 'telegraph';
+  id: AbilityId | 'telegraph' | 'orochi-sweep';
   cells: Position[];
 }
 
