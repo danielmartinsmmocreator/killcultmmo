@@ -516,6 +516,22 @@ export class BattleScene extends Phaser.Scene {
     }
   }
 
+  /** Efeito de ressurreição: energia verde parte da Cuca e envolve o servo que retorna. */
+  private playCucaResurrection(x: number, y: number, cucaX: number, cucaY: number): void {
+    const beam = this.add.graphics().setDepth(4);
+    beam.lineStyle(5, 0x65ff65, 0.9).lineBetween(cucaX, cucaY, x, y);
+    beam.setAlpha(0);
+    this.tweens.add({ targets: beam, alpha: 0.9, duration: 180, yoyo: true, hold: 120, onComplete: () => beam.destroy() });
+    const circle = this.add.graphics().setDepth(4);
+    circle.lineStyle(4, 0x7cff4f, 0.95).strokeCircle(0, 0, 16);
+    circle.setPosition(x, y).setScale(0.25).setAlpha(0.95);
+    this.tweens.add({ targets: circle, scale: 2.2, alpha: 0, duration: 520, ease: 'Cubic.Out', onComplete: () => circle.destroy() });
+    for (let i = 0; i < 12; i++) {
+      const angle = (Math.PI * 2 * i) / 12;
+      const particle = this.add.circle(x + Math.cos(angle) * 24, y + Math.sin(angle) * 24, 4, i % 2 === 0 ? 0x8dff55 : 0xd7ff9a, 1).setDepth(5);
+      this.tweens.add({ targets: particle, x: x + Math.cos(angle) * 5, y: y + Math.sin(angle) * 5 - 22, alpha: 0, scale: 0.25, duration: 480, ease: 'Cubic.Out', onComplete: () => particle.destroy() });
+    }
+  }
   /** Destaca quem acabou de agir com um pequeno "pulso" na peça. */
   private pulseActor(): void {
     const actor = this.gameState.lastActor;
@@ -690,6 +706,12 @@ export class BattleScene extends Phaser.Scene {
       container.setScale(1);
 
       if (unit.hp > 0) {
+        const wasHidden = !container.visible;
+        if (animate && wasHidden && unit.definition.team === 'monster') {
+          const cuca = this.gameState.monsters.find((candidate) => candidate.definition.id === 'cuca');
+          const source = cuca && cuca.uid !== unit.uid ? this.unitViews.get(cuca.uid)?.container : undefined;
+          if (source) this.playCucaResurrection(x, y, source.x, source.y);
+        }
         container.setVisible(true);
         if (animate && moved && unit.definition.id === 'cheshire-cat') {
           // O gato não atravessa o tabuleiro visualmente: desaparece na origem e reaparece no destino.
