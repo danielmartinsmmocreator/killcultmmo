@@ -217,7 +217,7 @@ export const CUCA_MINION: UnitDefinition = {
   maxHp: 1320, damage: 66, movement: 1, attack: { directions: 'orthogonal', range: 2 },
 };
 
-export const DESERT_BANDIT: UnitDefinition = { id:'desert-bandit', name:'Saqueador das Dunas', team:'monster', symbol:'S', color:0xb45309, maxHp:2050, damage:92, movement:2, attack:{directions:'orthogonal',range:1} };
+export const DESERT_BANDIT: UnitDefinition = { id:'desert-bandit', name:'Saqueador das Dunas', team:'monster', symbol:'S', color:0xb45309, maxHp:1000, damage:92, movement:2, attack:{directions:'orthogonal',range:1} };
 export const BRONZE_SCORPION: UnitDefinition = { id:'bronze-scorpion', name:'Escorpião de Bronze', team:'monster', symbol:'E', color:0xa16207, maxHp:2450, damage:96, movement:1, attack:{directions:'diagonal',range:1} };
 export const SAND_DJINN: UnitDefinition = { id:'sand-djinn', name:'Djinn Errante', team:'monster', symbol:'D', color:0xf59e0b, maxHp:2250, damage:104, movement:1, attack:{directions:'facing',range:3} };
 export const MIRAGE_SORCERER: UnitDefinition = { id:'mirage-sorcerer', name:'Feiticeiro das Miragens', team:'monster', symbol:'M', color:0x7c3aed, maxHp:1900, damage:100, movement:1, attack:{directions:'diagonal',range:2} };
