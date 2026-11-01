@@ -248,7 +248,13 @@ export class BattleScene extends Phaser.Scene {
         const regionFive = floor >= 41 && floor <= 50;
         const regionSix = floor >= 51 && floor <= 60;
         const regionSeven = floor >= 61 && floor <= 70;
-        const color = regionTwo
+    const regionEight = floor >= 71 && floor <= 80;
+    const regionNine = floor >= 81 && floor <= 90;
+        const color = regionEight
+        ? ((col + row) % 2 === 0 ? 0x78350f : 0xfacc15)
+        : regionNine
+          ? ((col + row) % 2 === 0 ? 0x1e3a8a : 0x7f1d1d)
+          : regionTwo
           ? ((col + row) % 2 === 0 ? 0x171717 : 0x7f1d1d)
           : regionThree
             ? ((col + row) % 2 === 0 ? 0xffffff : 0xe5e7eb)
@@ -293,7 +299,7 @@ export class BattleScene extends Phaser.Scene {
 
   private refreshBoardBackground(): void {
     const floor = this.campaign.floorNumber;
-    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : floor >= 31 && floor <= 40 ? 'faixa-4' : floor >= 41 && floor <= 50 ? 'faixa-5' : floor >= 51 && floor <= 60 ? 'faixa-6' : null;
+    const filename = floor >= 1 && floor <= 10 ? 'faixa-1' : floor >= 11 && floor <= 20 ? 'faixa-2' : floor >= 21 && floor <= 30 ? 'faixa-3' : floor >= 31 && floor <= 40 ? 'faixa-4' : floor >= 41 && floor <= 50 ? 'faixa-5' : floor >= 51 && floor <= 60 ? 'faixa-6' : floor >= 61 && floor <= 70 ? 'faixa-7' : floor >= 71 && floor <= 80 ? 'faixa-8' : floor >= 81 && floor <= 90 ? 'faixa-9' : null;
     if (this.boardBackground) {
       this.boardBackground.destroy();
       this.boardBackground = null;
