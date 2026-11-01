@@ -86,6 +86,16 @@ export const SAND_VIZIER: UnitDefinition = { id:'sand-vizier', name:'Vizir das A
 export const SULTAN_OF_NIGHTS: UnitDefinition = { id:'sultan-of-nights', name:'Sultão das Mil Noites', team:'monster', symbol:'♛', color:0x92400e, maxHp:7800, damage:138, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
 
  
+
+ 
+// Região 8 — Reino de Oz.
+export const WICKED_WITCH: UnitDefinition = { id:'wicked-witch', name:'Bruxa Má do Oeste', team:'monster', symbol:'W', color:0x15803d, maxHp:11200, damage:220, movement:1, attack:{directions:'facing',range:3}, rank:'mini-boss' };
+export const WIZARD_OF_OZ: UnitDefinition = { id:'wizard-of-oz', name:'Mágico de Oz', team:'monster', symbol:'O', color:0x16a34a, maxHp:14800, damage:235, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
+
+// Região 9 — Folclore Japonês.
+export const TENGU_LORD: UnitDefinition = { id:'tengu-lord', name:'Senhor Tengu', team:'monster', symbol:'天', color:0xb91c1c, maxHp:13200, damage:245, movement:2, attack:{directions:'facing',range:3}, rank:'mini-boss' };
+export const YAMATA_NO_OROCHI: UnitDefinition = { id:'yamata-no-orochi', name:'Yamata-no-Orochi', team:'monster', symbol:'八', color:0x7f1d1d, maxHp:18500, damage:265, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
+
 // Região 7 — Ciência Proibida: chefes-base para posterior especificação de mecânicas.
 export const MAD_SCIENTIST: UnitDefinition = { id:'mad-scientist', name:'Doutor das Experiências', team:'monster', symbol:'⚗', color:0x15803d, maxHp:5200, damage:152, movement:1, attack:{directions:'orthogonal',range:2}, rank:'mini-boss' };
 export const FRANKENSTEIN_ABOMINATION: UnitDefinition = { id:'frankenstein-abomination', name:'Abominação de Frankenstein', team:'monster', symbol:'♜', color:0x475569, maxHp:10200, damage:178, movement:1, attack:{directions:'orthogonal',range:2}, rank:'boss' };
