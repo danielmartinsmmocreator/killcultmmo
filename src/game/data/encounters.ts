@@ -1,5 +1,5 @@
 import type { EncounterType, Position, UnitDefinition } from '../types';
-import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS, CURUPIRA, CUCA, SAND_VIZIER, SULTAN_OF_NIGHTS, MAD_SCIENTIST, FRANKENSTEIN_ABOMINATION } from './bosses';
+import { ABYSS_IDOL, GOBLIN_CHIEF, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS, CURUPIRA, CUCA, SAND_VIZIER, SULTAN_OF_NIGHTS, MAD_SCIENTIST, FRANKENSTEIN_ABOMINATION, WICKED_WITCH, WIZARD_OF_OZ, TENGU_LORD, YAMATA_NO_OROCHI } from './bosses';
 import {
   CULTIST,
   INSANE,
@@ -14,6 +14,8 @@ import {
   SACI, BOITATA, IARA, MULA_SEM_CABECA, MAPINGUARI, CUCA_MINION,
   DESERT_BANDIT, BRONZE_SCORPION, SAND_DJINN, MIRAGE_SORCERER, DESERT_SERPENT, DUNE_GUARDIAN,
   STITCHED_THRALL, PLAGUE_SURGEON, LIGHTNING_REVENANT, HOMUNCULUS, IRON_AUTOMATON, FLESH_GOLEM,
+  MUNCHKIN_GUARD, FLYING_MONKEY, TIN_WOODSMAN, COWARDLY_LION, POPPY_SENTINEL, EMERALD_SENTINEL,
+  KAPPA, TENGU, YUKI_ONNA, ONI, JOROGUMO, KITSUNE,
 } from './monsters';
 
 /**
@@ -183,4 +185,28 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(68, 'A Câmara do Relâmpago', [LIGHTNING_REVENANT, LIGHTNING_REVENANT, IRON_AUTOMATON], [{ col:1,row:3 }, { col:4,row:2 }]),
   floor(69, 'O Coração da Máquina', [FLESH_GOLEM, IRON_AUTOMATON, PLAGUE_SURGEON, LIGHTNING_REVENANT], [{ col:2,row:3 }, { col:3,row:2 }]),
   floor(70, 'A Cripta da Vida Artificial', [FRANKENSTEIN_ABOMINATION, FLESH_GOLEM, LIGHTNING_REVENANT], [], 'boss'),
+
+  // Região 8 — Reino de Oz (andares 71–80).
+  floor(71, 'Estrada de Tijolos Amarelos', [MUNCHKIN_GUARD, COWARDLY_LION, FLYING_MONKEY]),
+  floor(72, 'Campo das Papoulas', [POPPY_SENTINEL, FLYING_MONKEY, MUNCHKIN_GUARD], [{ col:1,row:2 }, { col:4,row:3 }]),
+  floor(73, 'Oficina do Lenhador', [TIN_WOODSMAN, MUNCHKIN_GUARD, EMERALD_SENTINEL]),
+  floor(74, 'Floresta dos Sussurros', [COWARDLY_LION, FLYING_MONKEY, POPPY_SENTINEL, TIN_WOODSMAN], [{ col:2,row:2 }, { col:3,row:3 }]),
+  floor(75, 'Castelo da Bruxa do Oeste', [WICKED_WITCH, FLYING_MONKEY, POPPY_SENTINEL], [], 'mini-boss'),
+  floor(76, 'Muralhas da Cidade Esmeralda', [EMERALD_SENTINEL, MUNCHKIN_GUARD, TIN_WOODSMAN]),
+  floor(77, 'Salão dos Espelhos Verdes', [EMERALD_SENTINEL, FLYING_MONKEY, COWARDLY_LION, MUNCHKIN_GUARD]),
+  floor(78, 'A Câmara do Grande Oz', [TIN_WOODSMAN, POPPY_SENTINEL, EMERALD_SENTINEL], [{ col:1,row:3 }, { col:4,row:2 }]),
+  floor(79, 'O Trono por Trás da Cortina', [WICKED_WITCH, COWARDLY_LION, FLYING_MONKEY, EMERALD_SENTINEL], [{ col:2,row:3 }, { col:3,row:2 }]),
+  floor(80, 'O Grande Salão de Oz', [WIZARD_OF_OZ, EMERALD_SENTINEL, TIN_WOODSMAN], [], 'boss'),
+
+  // Região 9 — Folclore Japonês (andares 81–90).
+  floor(81, 'Margens do Rio dos Kappa', [KAPPA, KITSUNE, KAPPA]),
+  floor(82, 'Trilha dos Tengu', [TENGU, KAPPA, YUKI_ONNA], [{ col:1,row:2 }, { col:4,row:3 }]),
+  floor(83, 'Vila sob a Neve Eterna', [YUKI_ONNA, KITSUNE, ONI]),
+  floor(84, 'Santuário das Tecelãs', [JOROGUMO, KAPPA, TENGU, KITSUNE], [{ col:2,row:2 }, { col:3,row:3 }]),
+  floor(85, 'Pico do Senhor Tengu', [TENGU_LORD, TENGU, KITSUNE], [], 'mini-boss'),
+  floor(86, 'Portões do Inferno Oni', [ONI, ONI, KAPPA]),
+  floor(87, 'Floresta das Raposas', [KITSUNE, JOROGUMO, YUKI_ONNA, TENGU]),
+  floor(88, 'Templo das Oito Sombras', [JOROGUMO, ONI, KITSUNE], [{ col:1,row:3 }, { col:4,row:2 }]),
+  floor(89, 'Covil das Serpentes Antigas', [YAMATA_NO_OROCHI, ONI, JOROGUMO, YUKI_ONNA], [{ col:2,row:3 }, { col:3,row:2 }]),
+  floor(90, 'Altar das Oito Cabeças', [YAMATA_NO_OROCHI, TENGU, KITSUNE], [], 'boss'),
 ];
