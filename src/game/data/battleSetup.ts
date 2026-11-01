@@ -13,6 +13,8 @@ export interface BattleSetup {
   obstacles: Position[];
   /** Texto de abertura do encontro, registrado no log (por exemplo, o andar da campanha). */
   title?: string;
+  /** Número do andar para habilitar mecânicas especiais. */
+  floor?: number;
 }
 
 /** Cria uma batalha nova a cada chamada. O GameState a usa no início e a cada reinício. */
