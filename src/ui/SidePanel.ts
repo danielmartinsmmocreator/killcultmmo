@@ -147,6 +147,7 @@ export class SidePanel {
 
     const actions = el('div', 'actions');
     actions.append(this.passButton);
+    actions.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:1200;width:min(260px,calc(100vw - 36px));padding:6px;background:#111827;border:1px solid #334155;box-shadow:0 8px 24px #0009;';
 
     this.goldEl.style.cssText = 'padding:8px 10px;margin:8px 0;border:1px solid #a16207;border-radius:6px;background:#422006;color:#fde68a;font-weight:800;';
     const leftRail = el('div', 'battle-rail battle-rail--left');
