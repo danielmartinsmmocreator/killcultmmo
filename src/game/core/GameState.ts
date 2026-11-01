@@ -844,9 +844,11 @@ export class GameState {
     }
 
     if (monster.definition.id === 'yamata-no-orochi') {
-      const cycle = (this.specialBossCycles.get(monster.uid) ?? 0) + 1;
-      this.specialBossCycles.set(monster.uid, cycle);
-      if (cycle % 2 === 0) { this.yamataSwordSweep(monster); return true; }
+      // O golpe avança uma faixa por ação do chefe: uma etapa em cada turno.
+      const stage = ((this.specialBossCycles.get(monster.uid) ?? 0) % 3) + 1;
+      this.specialBossCycles.set(monster.uid, stage);
+      this.yamataSwordSweep(monster, stage);
+      return true;
     }
 
     // Chefe com ataques telegrafados: anunciar o golpe é a ação dele neste turno.
@@ -1433,19 +1435,27 @@ export class GameState {
     this.effect = { id: 'telegraph', cells: heroes.flatMap((hero) => unitCells(hero)) };
   }
 
-  private yamataSwordSweep(boss: Unit): void {
+  private yamataSwordSweep(boss: Unit, stage: number): void {
     const direction = boss.facing;
     const perpendicular = direction.col !== 0 ? { col: 0, row: 1 } : { col: 1, row: 0 };
     const cells: Position[] = [];
-    for (let distance = 1; distance <= 3; distance++) for (let width = -1; width <= 1; width++) {
-      const cell = { col: boss.position.col + direction.col * distance + perpendicular.col * width, row: boss.position.row + direction.row * distance + perpendicular.row * width };
+    // Cada turno atinge somente a próxima faixa frontal de três casas.
+    for (let width = -1; width <= 1; width++) {
+      const cell = {
+        col: boss.position.col + direction.col * stage + perpendicular.col * width,
+        row: boss.position.row + direction.row * stage + perpendicular.row * width,
+      };
       if (isInsideBoard(cell)) cells.push(cell);
     }
     this.effect = { id: 'orochi-sweep', cells };
-    const victims = this.heroes.filter((hero) => unitCells(hero).some((cell) => cells.some((hit) => positionsEqual(hit, cell))));
-    this.addLog('Yamata-no-Orochi ergue a espada ancestral e desfere um corte colossal que varre o chão à sua frente!', 'monster');
-    victims.forEach((hero) => this.dealDamage(hero, Math.ceil(boss.damage * 1.5), 'monster', 'O corte da espada de Yamata-no-Orochi atingiu', boss));
-    if (victims.length === 0) this.addLog('O golpe de espada do Yamata não encontrou nenhum herói na área.', 'monster');
+    const victims = this.heroes.filter((hero) =>
+      unitCells(hero).some((cell) => cells.some((hit) => positionsEqual(hit, cell))),
+    );
+    this.addLog(`Yamata-no-Orochi avança o golpe de espada — etapa ${stage}/3!`, 'monster');
+    victims.forEach((hero) =>
+      this.dealDamage(hero, Math.ceil(boss.damage * 1.5), 'monster', 'A lâmina de Yamata-no-Orochi atingiu', boss),
+    );
+    if (victims.length === 0) this.addLog(`A etapa ${stage}/3 do golpe não encontrou nenhum herói na faixa atingida.`, 'monster');
   }
 
   private combatContext(): AttackContext {
