@@ -71,6 +71,7 @@ export class SidePanel {
   private readonly attributesButton = el('button', 'btn-open-attributes', 'Atributos');
   private readonly attributesModal = el('div', 'attributes-modal');
   private attributesOpen = false;
+  private pendingAttributeBatch: number | null = null;
   private readonly specialConfirmModal = el('div', 'special-confirm-modal');
   private readonly specialConfirmText = el('p', 'special-confirm-text');
 
@@ -491,6 +492,24 @@ export class SidePanel {
 
     const pointsTitle = el('h3', undefined, `Distribuir atributos · ${p.unspentAttributePoints} ponto(s)`);
     pointsTitle.style.cssText = 'font-size:0.95rem;margin:12px 0 6px;';
+    const quickAmounts = el('div', 'character-stats__quick-amounts');
+    quickAmounts.style.cssText = 'display:flex;justify-content:flex-end;gap:6px;margin:0 0 8px;';
+    for (const amount of [10, 50, 100]) {
+      const quickButton = el('button', 'btn-attribute-batch', `+ ${amount}`);
+      quickButton.type = 'button';
+      quickButton.disabled = p.unspentAttributePoints < 1 || this.state.phase !== 'player' || selected.hp <= 0;
+      quickButton.title = `Selecionar ${amount} ponto(s) para o próximo atributo escolhido`;
+      quickButton.style.cssText = 'min-width:54px;padding:5px 9px;border:1px solid #8b7be8;border-radius:4px;background:#342c57;color:#fff;font-weight:700;cursor:pointer;';
+      quickButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        this.pendingAttributeBatch = amount;
+        quickAmounts.querySelectorAll('button').forEach((button) => {
+          (button as HTMLButtonElement).style.background = button === quickButton ? '#6d5bb2' : '#342c57';
+        });
+      });
+      quickAmounts.append(quickButton);
+    }
     const attributes = el('div', 'character-stats__attributes');
     attributes.style.cssText = 'display:grid;gap:6px;';
     const attributeRows: Array<{ key: AttributeName; label: string; value: number; effect: string }> = [
@@ -514,7 +533,8 @@ export class SidePanel {
       add.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
-        this.state.allocateSelectedAttribute(attribute.key);
+        this.state.allocateSelectedAttributePoints(attribute.key, this.pendingAttributeBatch ?? 1);
+        this.pendingAttributeBatch = null;
         // Re-render explicitly so the point count and derived stats update immediately.
         this.render();
       });
@@ -527,7 +547,7 @@ export class SidePanel {
     this.attributesButton.style.cssText = 'width:100%;padding:9px;background:#342c57;border:1px solid #8b7be8;color:#fff;font-weight:800;cursor:pointer;';
     this.characterStatsBox.hidden = false;
     this.characterStatsBox.style.cssText = 'padding:12px;margin:8px 0;background:#20212b;border:1px solid #4b465e;border-radius:5px;color:#f3f0ff;';
-    this.characterStatsBox.replaceChildren(header, xpRow, xpBar, remaining, stats, pointsTitle, attributes);
+    this.characterStatsBox.replaceChildren(header, xpRow, xpBar, remaining, stats, pointsTitle, quickAmounts, attributes);
     this.attributesModal.style.display = this.attributesOpen ? 'flex' : 'none';
     this.attributesModal.hidden = !this.attributesOpen;
   }
