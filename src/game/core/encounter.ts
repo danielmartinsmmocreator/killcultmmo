@@ -116,7 +116,9 @@ export function validateFloor(config: FloorConfig): string[] {
   }
 
   const formationKeys = new Set(HERO_FORMATION.map((entry) => positionKey(entry.position)));
-  const slotKeys = new Set(SPAWN_SLOTS.map((slot) => positionKey(slot)));
+  // Só as primeiras casas correspondentes à quantidade de monstros deste andar
+  // são consideradas pontos de surgimento obrigatórios para a validação dos obstáculos.
+  const slotKeys = new Set(spawnPositions(config.monsters.length).map(positionKey));
   const seen = new Set<string>();
   for (const obstacle of config.obstacles) {
     const key = positionKey(obstacle);
