@@ -988,7 +988,7 @@ export class GameState {
   }
 
   /** Aplica dano (HP nunca fica abaixo de zero), registra o golpe e a morte. */
-  private dealDamage(target: Unit, amount: number, kind: LogKind, prefix: string, attacker?: Unit): void {
+  private dealDamage(target: Unit, amount: number, kind: LogKind, prefix: string, attacker?: Unit, ignoreMitigation = false): void {
     if (!isAlive(target)) return;
     const cell = positionLabel(target.position);
     const defenseAttribute = target.definition.team === 'hero' ? (target.progression?.attributes.defense ?? 0) : 0;
@@ -1000,8 +1000,10 @@ export class GameState {
       this.addLog(`O Olho de Medusa anulou o primeiro golpe recebido por ${target.definition.name} nesta fase.`, 'ability');
       return;
     }
-    const afterPercent = Math.floor(amount * (1 - targetSpecial.defensePercent / 100));
-    const effectiveAmount = target.definition.team === 'hero' ? Math.max(1, afterPercent - defense) : amount;
+    const afterPercent = ignoreMitigation ? amount : Math.floor(amount * (1 - targetSpecial.defensePercent / 100));
+    const effectiveAmount = target.definition.team === 'hero'
+      ? (ignoreMitigation ? amount : Math.max(1, afterPercent - defense))
+      : amount;
     target.hp = Math.max(0, target.hp - effectiveAmount);
     const killed = target.hp === 0;
 
@@ -1455,7 +1457,7 @@ export class GameState {
     );
     this.addLog(`Yamata-no-Orochi avança o golpe de espada — etapa ${stage}/3!`, 'monster');
     victims.forEach((hero) =>
-      this.dealDamage(hero, Math.ceil(boss.damage * 1.5), 'monster', 'A lâmina de Yamata-no-Orochi atingiu', boss),
+      this.dealDamage(hero, Math.ceil(boss.damage * 1.5), 'monster', 'A lâmina de Yamata-no-Orochi atingiu', boss, true),
     );
     if (victims.length === 0) this.addLog(`A etapa ${stage}/3 do golpe não encontrou nenhum herói na faixa atingida.`, 'monster');
   }
