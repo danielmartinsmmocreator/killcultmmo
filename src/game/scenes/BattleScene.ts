@@ -71,6 +71,7 @@ const EFFECT_COLORS: Record<AbilityEffect['id'], number> = {
   fireball: 0xef4444,
   exura: 0x4ade80,
   telegraph: 0xef4444,
+  'orochi-sweep': 0xf97316,
 };
 
 /** Casas ameaçadas por um golpe anunciado de chefe. */
@@ -785,9 +786,9 @@ export class BattleScene extends Phaser.Scene {
       this.drawHpBar(view, unit);
       this.updateFacing(view, unit);
       view.stunMarker
-        .setText(unit.petrified ? '🗿' : 'Zz')
-        .setColor(unit.petrified ? '#67e8f9' : '#facc15')
-        .setVisible(unit.hp > 0 && (unit.stunned || Boolean(unit.petrified)));
+        .setText(unit.petrified ? '🗿' : (unit.trappedTurns ?? 0) > 0 ? `⛓${unit.trappedTurns}` : 'Zz')
+        .setColor(unit.petrified ? '#67e8f9' : (unit.trappedTurns ?? 0) > 0 ? '#f59e0b' : '#facc15')
+        .setVisible(unit.hp > 0 && (unit.stunned || Boolean(unit.petrified) || (unit.trappedTurns ?? 0) > 0));
     }
 
     this.updateOutcomeOverlay();
@@ -820,19 +821,18 @@ export class BattleScene extends Phaser.Scene {
   /** Clarão colorido sobre a área afetada pela habilidade, que some em instantes. */
   private flashArea(effect: AbilityEffect): void {
     const flash = this.add.graphics().setDepth(4);
-    flash.fillStyle(EFFECT_COLORS[effect.id], 0.6);
-    for (const cell of effect.cells) {
-      const { x, y } = cellToPixel(cell);
-      flash.fillRect(x - TILE_SIZE / 2 + 2, y - TILE_SIZE / 2 + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+    if (effect.id === 'orochi-sweep') {
+      effect.cells.forEach((cell, index) => this.time.delayedCall(Math.floor(index / 3) * 150, () => {
+        const { x, y } = cellToPixel(cell);
+        const slice = this.add.graphics().setDepth(4);
+        slice.fillStyle(EFFECT_COLORS[effect.id], 0.72).fillRect(x - TILE_SIZE / 2 + 2, y - TILE_SIZE / 2 + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        this.tweens.add({ targets: slice, alpha: 0, duration: 420, onComplete: () => slice.destroy() });
+      }));
+      return;
     }
-    this.tweens.add({
-      targets: flash,
-      alpha: 0,
-      duration: 700,
-      onComplete: () => {
-        flash.destroy();
-      },
-    });
+    flash.fillStyle(EFFECT_COLORS[effect.id], 0.6);
+    for (const cell of effect.cells) { const { x, y } = cellToPixel(cell); flash.fillRect(x - TILE_SIZE / 2 + 2, y - TILE_SIZE / 2 + 2, TILE_SIZE - 4, TILE_SIZE - 4); }
+    this.tweens.add({ targets: flash, alpha: 0, duration: 700, onComplete: () => flash.destroy() });
   }
 
   private spawnDamageText(x: number, y: number, amount: number): void {
@@ -992,6 +992,14 @@ export class BattleScene extends Phaser.Scene {
   private drawOverlay(): void {
     const g = this.overlay;
     g.clear();
+
+    // Armadilhas de areia só aparecem depois de serem acionadas.
+    for (const cell of this.gameState.revealedTraps) {
+      const { x, y } = cellToPixel(cell);
+      g.fillStyle(0xd6a84b, 0.75).fillCircle(x, y, 13);
+      g.lineStyle(3, 0x78350f, 1).strokeCircle(x, y, 13);
+      g.lineStyle(2, 0xfef3c7, 0.9).strokeCircle(x, y, 6);
+    }
 
     // Prévia sob demanda: só aparece depois de clicar diretamente em um monstro.
     const previewMonster = this.threatPreviewUid
