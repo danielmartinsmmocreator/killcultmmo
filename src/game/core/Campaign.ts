@@ -515,6 +515,7 @@ export class Campaign {
     return {
       ...setup,
       title: `Andar ${config.floor}/${this.floors.length} — ${ENCOUNTER_LABELS[config.type]}: ${config.name}`,
+      floor: config.floor,
     };
   }
 }
