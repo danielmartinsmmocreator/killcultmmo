@@ -92,7 +92,7 @@ const END_SCREENS: Record<
   completed: {
     title: 'CAMPANHA CONCLUÍDA!',
     color: '#facc15',
-    subtitle: 'O Ídolo do Abismo foi derrotado! Reinicie a campanha no painel para jogar de novo.',
+    subtitle: 'Você venceu a campanha! Reinicie pelo painel para começar uma nova expedição.',
   },
   defeated: {
     title: 'DERROTA',
@@ -250,6 +250,8 @@ export class BattleScene extends Phaser.Scene {
         const regionSeven = floor >= 61 && floor <= 70;
     const regionEight = floor >= 71 && floor <= 80;
     const regionNine = floor >= 81 && floor <= 90;
+    const regionEight = floor >= 71 && floor <= 80;
+    const regionNine = floor >= 81 && floor <= 90;
         const color = regionEight
         ? ((col + row) % 2 === 0 ? 0x78350f : 0xfacc15)
         : regionNine
@@ -329,7 +331,11 @@ export class BattleScene extends Phaser.Scene {
     const regionSix = floor >= 51 && floor <= 60;
     const regionSeven = floor >= 61 && floor <= 70;
     for (const { tile, col, row } of this.boardTiles) {
-      const color = regionTwo
+      const color = regionEight
+        ? ((col + row) % 2 === 0 ? 0x78350f : 0xfacc15)
+        : regionNine
+          ? ((col + row) % 2 === 0 ? 0x1e3a8a : 0x7f1d1d)
+          : regionTwo
         ? ((col + row) % 2 === 0 ? 0x090909 : 0x8b0000)
         : regionThree
           ? ((col + row) % 2 === 0 ? 0xffffff : 0xe5e7eb)
