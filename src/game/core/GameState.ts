@@ -93,6 +93,8 @@ export class GameState {
   private currentTurn = 1;
   /** Contador independente de ações do Gato Mistério neste encontro. */
   private readonly cheshireCycles = new Map<string, number>();
+  /** Posição original dos acompanhantes da Cuca, que ela pode ressuscitar enquanto viver. */
+  private readonly cucaMinionSpawns = new Map<string, Position>();
   private currentPhase: BattlePhase = 'player';
   private currentOutcome: BattleOutcome = 'ongoing';
   private selectedUnitUid: string | null = null;
@@ -833,9 +835,51 @@ export class GameState {
     }
 
     if (this.performAttack(monster) > 0) acted = true;
+    if (monster.definition.id === 'cuca' && this.resurrectCucaMinions(monster)) acted = true;
     return acted;
   }
 
+  /** A Cuca mantém seus acompanhantes no combate: se caírem, ela os ressuscita. */
+  private resurrectCucaMinions(cuca: Unit): boolean {
+    if (!isAlive(cuca)) return false;
+    let resurrected = false;
+    for (const [uid, originalPosition] of this.cucaMinionSpawns) {
+      const minion = this.allUnits.find((unit) => unit.uid === uid);
+      if (!minion || isAlive(minion)) continue;
+      const isFree = (position: Position): boolean =>
+        isInsideBoard(position) && !this.isObstacle(position) &&
+        !this.units.some((unit) => unit !== minion && occupies(unit, position));
+      let destination: Position | undefined;
+      if (isFree(originalPosition)) destination = { ...originalPosition };
+      else {
+        const candidates: Position[] = [];
+        for (let row = 0; row < BOARD_ROWS; row++) {
+          for (let col = 0; col < BOARD_COLS; col++) {
+            const cell = { col, row };
+            if (isFree(cell)) candidates.push(cell);
+          }
+        }
+        candidates.sort((left, right) =>
+          Math.abs(left.col - originalPosition.col) + Math.abs(left.row - originalPosition.row) -
+          Math.abs(right.col - originalPosition.col) - Math.abs(right.row - originalPosition.row),
+        );
+        destination = candidates[0];
+      }
+      if (!destination) continue;
+      minion.position = destination;
+      minion.hp = minion.maxHp;
+      minion.stunned = false;
+      minion.petrified = false;
+      minion.abilityUsed = false;
+      this.addLog(`A Cuca ergueu as mãos e ressuscitou ${minion.definition.name}!`, 'ability');
+      resurrected = true;
+    }
+    if (resurrected) {
+      this.lastActorUid = cuca.uid;
+      this.addLog('A magia da Cuca mantém seus servos presos à batalha. Derrote a Cuca para impedir novas ressurreições!', 'ability');
+    }
+    return resurrected;
+  }
   /**
    * Teleporte especial do Gato Mistério. A casa-alvo fica imediatamente atrás do herói,
    * no lado oposto ao Gato. Se todos os heróis vivos estiverem nas bordas, ou a casa
@@ -1355,6 +1399,15 @@ export class GameState {
     }
     this.allUnits = battle.units;
     this.obstacleList = battle.obstacles;
+    this.cucaMinionSpawns.clear();
+    const cuca = battle.units.find((unit) => unit.definition.id === 'cuca');
+    if (cuca) {
+      for (const minion of battle.units) {
+        if (minion.definition.team === 'monster' && minion.uid !== cuca.uid) {
+          this.cucaMinionSpawns.set(minion.uid, { ...minion.position });
+        }
+      }
+    }
     this.medusaProtectionUsed.clear();
     this.currentTurn = 1;
     this.currentPhase = 'player';
