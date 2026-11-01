@@ -197,7 +197,7 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(76, 'Muralhas da Cidade Esmeralda', [EMERALD_SENTINEL, MUNCHKIN_GUARD, TIN_WOODSMAN]),
   floor(77, 'Salão dos Espelhos Verdes', [EMERALD_SENTINEL, FLYING_MONKEY, COWARDLY_LION, MUNCHKIN_GUARD]),
   floor(78, 'A Câmara do Grande Oz', [TIN_WOODSMAN, POPPY_SENTINEL, EMERALD_SENTINEL], [{ col:1,row:3 }, { col:4,row:2 }]),
-  floor(79, 'O Trono por Trás da Cortina', [WICKED_WITCH, COWARDLY_LION, FLYING_MONKEY, EMERALD_SENTINEL], [{ col:2,row:3 }, { col:3,row:2 }]),
+  floor(79, 'O Trono por Trás da Cortina', [POPPY_SENTINEL, COWARDLY_LION, FLYING_MONKEY, EMERALD_SENTINEL], [{ col:2,row:3 }, { col:3,row:2 }]),
   floor(80, 'O Grande Salão de Oz', [WIZARD_OF_OZ, EMERALD_SENTINEL, TIN_WOODSMAN], [], 'boss'),
 
   // Região 9 — Folclore Japonês (andares 81–90).
@@ -209,6 +209,6 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(86, 'Portões do Inferno Oni', [ONI, ONI, KAPPA]),
   floor(87, 'Floresta das Raposas', [KITSUNE, JOROGUMO, YUKI_ONNA, TENGU]),
   floor(88, 'Templo das Oito Sombras', [JOROGUMO, ONI, KITSUNE], [{ col:1,row:3 }, { col:4,row:2 }]),
-  floor(89, 'Covil das Serpentes Antigas', [YAMATA_NO_OROCHI, ONI, JOROGUMO, YUKI_ONNA], [{ col:2,row:3 }, { col:3,row:2 }]),
+  floor(89, 'Covil das Serpentes Antigas', [ONI, ONI, JOROGUMO, YUKI_ONNA], [{ col:2,row:3 }, { col:3,row:2 }]),
   floor(90, 'Altar das Oito Cabeças', [YAMATA_NO_OROCHI, TENGU, KITSUNE], [], 'boss'),
 ];
