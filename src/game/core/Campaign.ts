@@ -426,15 +426,9 @@ export class Campaign {
       } else if (this.floorNumber === 65 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('mad-scientist-seal', this.floorNumber);
         drops.push('Selo do Doutor');
-      } else if (this.floorNumber === 75 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('oz-heart', this.floorNumber);
-        drops.push('Coração de Oz');
       } else if (this.floorNumber === 80 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('oz-heart', this.floorNumber);
         drops.push('Coração de Oz');
-      } else if (this.floorNumber === 85 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('orochi-scale', this.floorNumber);
-        drops.push('Escama de Orochi');
       } else if (this.floorNumber === 90 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('orochi-scale', this.floorNumber);
         drops.push('Escama de Orochi');
