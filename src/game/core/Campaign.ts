@@ -317,6 +317,20 @@ export class Campaign {
         archer: ['lightning-railbow', 'surgeon-crossbow'],
       };
       const tierSevenArmor = ['stitched-coat', 'copper-conductor-helm', 'surgeon-boots'];
+
+      const tierEightWeapons: Record<string, string[]> = {
+        warrior: ['emerald-greatsword', 'tin-forged-axe', 'yellow-brick-shield'], assassin: ['witchfang-daggers', 'monkey-claw'],
+        mage: ['emerald-wand', 'oz-illusion-staff', 'poppy-grimoire'], cleric: ['emerald-scepter', 'lionheart-staff', 'good-witch-tome'],
+        archer: ['flying-monkey-bow', 'rainbow-longbow'],
+      };
+      const tierEightArmor = ['emerald-plate', 'witch-hat', 'yellow-brick-boots'];
+      const tierNineWeapons: Record<string, string[]> = {
+        warrior: ['oni-kanabo', 'orochi-fangblade', 'tengu-war-fan'], assassin: ['kitsune-claws', 'jorogumo-silk-daggers'],
+        mage: ['oni-fire-staff', 'yuki-scepter', 'eight-heads-grimoire'], cleric: ['kami-scepter', 'sakura-prayer-staff', 'purification-scroll'],
+        archer: ['tengu-feather-bow', 'moonlit-yumi'],
+      };
+      const tierNineArmor = ['oni-scale-armor', 'tengu-mask', 'kitsune-sandals'];
+
       if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 1 && this.floorNumber <= 9 && roll < 0.10) {
         const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierOneWeapons);
         const pool = [...classes.flatMap((id) => tierOneWeapons[id] ?? []), ...basicArmor];
@@ -367,6 +381,20 @@ export class Campaign {
         this.normalItemDroppedThisFloor = true;
       }
 
+      else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 71 && this.floorNumber <= 79 && roll < 0.10) {
+        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierEightWeapons);
+        const pool = [...classes.flatMap((id) => tierEightWeapons[id] ?? []), ...tierEightArmor];
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
+        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
+        this.normalItemDroppedThisFloor = true;
+      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 81 && this.floorNumber <= 89 && roll < 0.10) {
+        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierNineWeapons);
+        const pool = [...classes.flatMap((id) => tierNineWeapons[id] ?? []), ...tierNineArmor];
+        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
+        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
+        this.normalItemDroppedThisFloor = true;
+      }
+
       // Itens especiais exclusivos: todos usam a mesma chance fixa de 5%.
       if (this.floorNumber === 5 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('shadow-claw', this.floorNumber);
@@ -398,6 +426,18 @@ export class Campaign {
       } else if (this.floorNumber === 65 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
         this.inventory.add('mad-scientist-seal', this.floorNumber);
         drops.push('Selo do Doutor');
+      } else if (this.floorNumber === 75 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('oz-heart', this.floorNumber);
+        drops.push('Coração de Oz');
+      } else if (this.floorNumber === 80 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('oz-heart', this.floorNumber);
+        drops.push('Coração de Oz');
+      } else if (this.floorNumber === 85 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('orochi-scale', this.floorNumber);
+        drops.push('Escama de Orochi');
+      } else if (this.floorNumber === 90 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
+        this.inventory.add('orochi-scale', this.floorNumber);
+        drops.push('Escama de Orochi');
       }
 
       // Recompensas garantidas de marcos da campanha.
