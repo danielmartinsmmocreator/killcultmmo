@@ -111,6 +111,8 @@ interface UnitView {
   facingMarker: Phaser.GameObjects.Graphics | null;
   /** "Zz" exibido enquanto a unidade está atordoada. */
   stunMarker: Phaser.GameObjects.Text;
+  /** Último HP sincronizado, para detectar ressurreição mesmo antes do fade de morte terminar. */
+  previousHp: number;
 }
 
 export class BattleScene extends Phaser.Scene {
@@ -671,6 +673,7 @@ export class BattleScene extends Phaser.Scene {
       barWidth: 60 + (size - 66),
       facingMarker,
       stunMarker,
+      previousHp: unit.hp,
     };
   }
 
@@ -706,8 +709,8 @@ export class BattleScene extends Phaser.Scene {
       container.setScale(1);
 
       if (unit.hp > 0) {
-        const wasHidden = !container.visible;
-        if (animate && wasHidden && unit.definition.team === 'monster') {
+        const wasDead = view.previousHp <= 0;
+        if (animate && wasDead && unit.definition.team === 'monster') {
           const cuca = this.gameState.monsters.find((candidate) => candidate.definition.id === 'cuca');
           const source = cuca && cuca.uid !== unit.uid ? this.unitViews.get(cuca.uid)?.container : undefined;
           if (source) this.playCucaResurrection(x, y, source.x, source.y);
@@ -763,6 +766,7 @@ export class BattleScene extends Phaser.Scene {
         }
       }
 
+      view.previousHp = unit.hp;
       this.drawHpBar(view, unit);
       this.updateFacing(view, unit);
       view.stunMarker
