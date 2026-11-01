@@ -48,7 +48,9 @@ export const SPAWN_SLOTS: readonly Position[] = [
   { col: 0, row: 0 },
   { col: 5, row: 0 },
   { col: 0, row: 1 },
-  { col: 5, row: 1 },];
+  { col: 5, row: 1 },
+  { col: 0, row: 2 }, { col: 1, row: 2 }, { col: 2, row: 2 },
+  { col: 3, row: 2 }, { col: 4, row: 2 }, { col: 5, row: 2 },];
 
 /** Reforça um tipo de monstro sem alterar sua identidade ou comportamento. */
 function stronger(base: UnitDefinition, hp: number, damage: number): UnitDefinition {
@@ -174,7 +176,7 @@ export const CAMPAIGN_FLOORS: readonly FloorConfig[] = [
   floor(57, 'A Cidade sob as Dunas', [DUNE_GUARDIAN, MIRAGE_SORCERER, SAND_DJINN, DESERT_BANDIT]),
   floor(58, 'Jardins da Lua Crescente', [SAND_DJINN, MIRAGE_SORCERER, BRONZE_SCORPION], [{ col:1,row:3 }, { col:4,row:2 }]),
   floor(59, 'Os Portões de Âmbar', [DUNE_GUARDIAN, DESERT_SERPENT, SAND_DJINN, MIRAGE_SORCERER], [{ col:2,row:3 }, { col:3,row:2 }]),
-  floor(60, 'O Trono das Mil e Uma Noites', [SULTAN_OF_NIGHTS, DUNE_GUARDIAN, SAND_DJINN], [], 'boss'),
+  floor(60, 'O Trono das Mil e Uma Noites', [SULTAN_OF_NIGHTS, DUNE_GUARDIAN, SAND_DJINN, ...Array.from({ length: 10 }, () => DESERT_BANDIT)], [], 'boss'),
   floor(61, 'Os Corredores do Sanatório', [STITCHED_THRALL, HOMUNCULUS, PLAGUE_SURGEON]),
   floor(62, 'Ala de Contenção', [IRON_AUTOMATON, STITCHED_THRALL, LIGHTNING_REVENANT], [{ col:1,row:2 }, { col:4,row:3 }]),
   floor(63, 'Laboratório de Transmutação', [HOMUNCULUS, PLAGUE_SURGEON, HOMUNCULUS, STITCHED_THRALL]),
