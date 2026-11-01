@@ -91,6 +91,11 @@ export class GameState {
   private allUnits: Unit[] = [];
   private obstacleList: Position[] = [];
   private currentTurn = 1;
+  private currentFloor = 0;
+  private sandTrapCells: Position[] = [];
+  private readonly revealedSandTraps = new Set<string>();
+  private frankensteinEnraged = false;
+  private readonly specialBossCycles = new Map<string, number>();
   /** Contador independente de ações do Gato Mistério neste encontro. */
   private readonly cheshireCycles = new Map<string, number>();
   /** Posição original dos acompanhantes da Cuca, que ela pode ressuscitar enquanto viver. */
@@ -151,6 +156,10 @@ export class GameState {
 
   get obstacles(): readonly Position[] {
     return this.obstacleList;
+  }
+
+  get revealedTraps(): readonly Position[] {
+    return this.sandTrapCells.filter((cell) => this.revealedSandTraps.has(`${cell.col},${cell.row}`));
   }
 
   get turn(): number {
@@ -420,8 +429,9 @@ export class GameState {
     if (this.currentPhase !== 'player') return false;
     if (this.targetingState) return false; // escolhendo alvo de habilidade: nada de mover
     const unit = this.selectedUnit;
-    if (!unit || unit.petrified) {
+    if (!unit || unit.petrified || (unit.trappedTurns ?? 0) > 0) {
       if (unit?.petrified) this.setNotice(`${unit.definition.name} está petrificado e não pode agir neste turno.`);
+      else if (unit && (unit.trappedTurns ?? 0) > 0) this.setNotice(`${unit.definition.name} está preso na areia movediça por mais ${unit.trappedTurns} turno(s), mas ainda pode atacar.`);
       return false;
     }
 
@@ -433,6 +443,15 @@ export class GameState {
     unit.facing = directionBetween(unit.position, option.position);
     unit.position = { col: option.position.col, row: option.position.row };
     this.addLog(`${unit.definition.name} moveu de ${from} para ${positionLabel(unit.position)}.`, 'hero');
+    if (this.currentFloor === 55 && this.sandTrapCells.some((cell) => positionsEqual(cell, unit.position))) {
+      const key = `${unit.position.col},${unit.position.row}`;
+      if (!this.revealedSandTraps.has(key)) {
+        this.revealedSandTraps.add(key);
+        unit.trappedTurns = 4;
+        this.addLog(`AREIA MOVEDIÇA! ${unit.definition.name} ficou preso por 3 turnos. Ainda pode atacar!`, 'monster');
+        this.effect = { id: 'telegraph', cells: [{ ...unit.position }] };
+      }
+    }
 
     this.noticeText = null;
     this.beginResolution();
@@ -724,6 +743,13 @@ export class GameState {
   private finishMonsterPhase(): void {
     this.updateOutcome();
     if (this.isOver) return;
+    for (const hero of this.heroRoster) {
+      if ((hero.trappedTurns ?? 0) > 0) {
+        hero.trappedTurns = Math.max(0, (hero.trappedTurns ?? 0) - 1);
+        if (hero.trappedTurns === 0) this.addLog(`${hero.definition.name} conseguiu se soltar da areia movediça!`, 'hero');
+      }
+    }
+    if (this.currentFloor === 80 && this.currentTurn % 3 === 0) this.teleportOzHeroes();
     this.currentTurn += 1;
     this.currentPhase = 'player';
     this.addLog(`Turno ${this.currentTurn} começou. Sua vez.`, 'info');
@@ -815,6 +841,12 @@ export class GameState {
         this.teleportCheshireCat(monster);
         return true;
       }
+    }
+
+    if (monster.definition.id === 'yamata-no-orochi') {
+      const cycle = (this.specialBossCycles.get(monster.uid) ?? 0) + 1;
+      this.specialBossCycles.set(monster.uid, cycle);
+      if (cycle % 2 === 0) { this.yamataSwordSweep(monster); return true; }
     }
 
     // Chefe com ataques telegrafados: anunciar o golpe é a ação dele neste turno.
@@ -981,6 +1013,18 @@ export class GameState {
         `PV ${target.hp}/${target.maxHp}.`,
       kind,
     );
+    if (attacker?.definition.id === 'the-seventh' && attacker.hp > 0 && target.definition.team === 'hero') {
+      const healing = Math.min(attacker.maxHp - attacker.hp, Math.floor(effectiveAmount * 0.10));
+      if (healing > 0) { attacker.hp += healing; this.addLog(`O Sétimo drenou a essência de ${target.definition.name} e recuperou ${healing} PV (10% do dano).`, 'monster'); this.healEvents.push({ targetUid: attacker.uid, amount: healing, position: { ...attacker.position } }); }
+    }
+    if (target.definition.id === 'frankenstein-abomination' && !this.frankensteinEnraged && target.hp > 0 && target.hp <= Math.floor(target.maxHp / 2)) {
+      this.frankensteinEnraged = true;
+      const healing = Math.floor(target.maxHp * 0.35);
+      target.hp = Math.min(target.maxHp, target.hp + healing);
+      target.damage = Math.ceil(target.damage * 1.5);
+      this.addLog(`A Abominação de Frankenstein reanima o próprio corpo! Recupera ${healing} PV e seu dano aumenta em 50%!`, 'monster');
+      this.healEvents.push({ targetUid: target.uid, amount: healing, position: { ...target.position } });
+    }
     if (attacker && attacker.definition.team === 'hero' && attacker.hp > 0 && target.definition.team === 'monster') {
       const lifesteal = this.specialBonusesFor(attacker).lifestealPercent;
       const healing = Math.min(attacker.maxHp - attacker.hp, Math.floor(effectiveAmount * lifesteal / 100));
@@ -1372,9 +1416,36 @@ export class GameState {
       unit.position,
       unit.definition.movement,
       // A posição só vale se a área inteira couber no tabuleiro e estiver livre.
-      (anchor) => !footprintFits(anchor, size) || footprintCells(anchor, size).some(isCellBlocked),
+      (anchor) => (unit.definition.team === 'hero' && (unit.trappedTurns ?? 0) > 0) || !footprintFits(anchor, size) || footprintCells(anchor, size).some(isCellBlocked),
       getMovementDirections(unit.definition),
     );
+  }
+
+  private teleportOzHeroes(): void {
+    const heroes = this.heroes;
+    const occupied = new Set(this.monsters.flatMap((unit) => unitCells(unit)).map((cell) => `${cell.col},${cell.row}`));
+    const free: Position[] = [];
+    for (let row = 0; row < BOARD_ROWS; row++) for (let col = 0; col < BOARD_COLS; col++) { const cell = { col, row }; if (!this.isObstacle(cell) && !occupied.has(`${col},${row}`)) free.push(cell); }
+    for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
+    if (free.length < heroes.length) return;
+    heroes.forEach((hero, index) => { hero.position = { ...free[index] }; });
+    this.addLog('O Mágico de Oz distorce o espaço! Seus heróis foram teletransportados e a formação foi embaralhada!', 'monster');
+    this.effect = { id: 'telegraph', cells: heroes.flatMap((hero) => unitCells(hero)) };
+  }
+
+  private yamataSwordSweep(boss: Unit): void {
+    const direction = boss.facing;
+    const perpendicular = direction.col !== 0 ? { col: 0, row: 1 } : { col: 1, row: 0 };
+    const cells: Position[] = [];
+    for (let distance = 1; distance <= 3; distance++) for (let width = -1; width <= 1; width++) {
+      const cell = { col: boss.position.col + direction.col * distance + perpendicular.col * width, row: boss.position.row + direction.row * distance + perpendicular.row * width };
+      if (isInsideBoard(cell)) cells.push(cell);
+    }
+    this.effect = { id: 'orochi-sweep', cells };
+    const victims = this.heroes.filter((hero) => unitCells(hero).some((cell) => cells.some((hit) => positionsEqual(hit, cell))));
+    this.addLog('Yamata-no-Orochi ergue a espada ancestral e desfere um corte colossal que varre o chão à sua frente!', 'monster');
+    victims.forEach((hero) => this.dealDamage(hero, Math.ceil(boss.damage * 1.5), 'monster', 'O corte da espada de Yamata-no-Orochi atingiu', boss));
+    if (victims.length === 0) this.addLog('O golpe de espada do Yamata não encontrou nenhum herói na área.', 'monster');
   }
 
   private combatContext(): AttackContext {
@@ -1399,6 +1470,18 @@ export class GameState {
     }
     this.allUnits = battle.units;
     this.obstacleList = battle.obstacles;
+    this.currentFloor = battle.floor ?? 0;
+    this.sandTrapCells = [];
+    this.revealedSandTraps.clear();
+    this.frankensteinEnraged = false;
+    this.specialBossCycles.clear();
+    if (this.currentFloor === 55) {
+      const occupied = new Set<string>([...battle.obstacles, ...battle.units.filter(isAlive).flatMap((unit) => unitCells(unit))].map((cell) => `${cell.col},${cell.row}`));
+      const candidates: Position[] = [];
+      for (let row = 0; row < BOARD_ROWS; row++) for (let col = 0; col < BOARD_COLS; col++) { const cell = { col, row }; if (!occupied.has(`${col},${row}`)) candidates.push(cell); }
+      for (let i = candidates.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [candidates[i], candidates[j]] = [candidates[j], candidates[i]]; }
+      this.sandTrapCells = candidates.slice(0, Math.min(10, candidates.length));
+    }
     this.cucaMinionSpawns.clear();
     const cuca = battle.units.find((unit) => unit.definition.id === 'cuca');
     if (cuca) {
