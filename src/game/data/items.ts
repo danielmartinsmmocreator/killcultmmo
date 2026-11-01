@@ -7,6 +7,8 @@ const F4 = 31;
 const F5 = 41;
 const F6 = 51;
 const F7 = 61;
+const F8 = 71;
+const F9 = 81;
 const W = ['warrior'] as const;
 const A = ['assassin'] as const;
 const M = ['mage'] as const;
@@ -165,6 +167,45 @@ export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = {
   'copper-conductor-helm': { id:'copper-conductor-helm', name:'Elmo do Condutor de Cobre', slot:'helmet', minLevel:F7, sellPrice:205, bonuses:{defense:22} },
   'surgeon-boots': { id:'surgeon-boots', name:'Botas do Cirurgião', slot:'boots', minLevel:F7, sellPrice:215, bonuses:{vitality:55,defense:9} },
   'mad-scientist-seal': { id:'mad-scientist-seal', name:'Selo do Doutor', slot:'amulet', minLevel:F7, sellPrice:390, bonuses:{strength:30,vitality:28,defense:12}, rarity: 'rare' },
+
+
+  // Faixa 8 — equipamentos do Reino de Oz (andares 71–80).
+  'emerald-greatsword': { id:'emerald-greatsword', name:'Espada Grande Esmeralda', slot:'weapon', minLevel:F8, allowedClasses:W, sellPrice:300, bonuses:{strength:82} },
+  'tin-forged-axe': { id:'tin-forged-axe', name:'Machado Forjado em Lata', slot:'weapon', minLevel:F8, allowedClasses:W, sellPrice:315, bonuses:{strength:86} },
+  'yellow-brick-shield': { id:'yellow-brick-shield', name:'Escudo da Estrada Dourada', slot:'off-hand', minLevel:F8, allowedClasses:W, sellPrice:285, bonuses:{defense:29} },
+  'witchfang-daggers': { id:'witchfang-daggers', name:'Adagas Presa da Bruxa', slot:'weapon', minLevel:F8, allowedClasses:A, sellPrice:310, bonuses:{strength:85} },
+  'monkey-claw': { id:'monkey-claw', name:'Garras do Macaco Alado', slot:'weapon', minLevel:F8, allowedClasses:A, sellPrice:295, bonuses:{strength:80} },
+  'emerald-wand': { id:'emerald-wand', name:'Varinha Esmeralda', slot:'weapon', minLevel:F8, allowedClasses:M, sellPrice:315, bonuses:{strength:86} },
+  'oz-illusion-staff': { id:'oz-illusion-staff', name:'Cajado das Ilusões de Oz', slot:'weapon', minLevel:F8, allowedClasses:M, sellPrice:325, bonuses:{strength:90} },
+  'poppy-grimoire': { id:'poppy-grimoire', name:'Grimório das Papoulas', slot:'off-hand', minLevel:F8, allowedClasses:M, sellPrice:290, bonuses:{strength:78} },
+  'emerald-scepter': { id:'emerald-scepter', name:'Cetro da Cidade Esmeralda', slot:'weapon', minLevel:F8, allowedClasses:C, sellPrice:305, bonuses:{strength:82} },
+  'lionheart-staff': { id:'lionheart-staff', name:'Cajado do Coração de Leão', slot:'weapon', minLevel:F8, allowedClasses:C, sellPrice:325, bonuses:{strength:88} },
+  'good-witch-tome': { id:'good-witch-tome', name:'Tomo da Boa Bruxa', slot:'off-hand', minLevel:F8, allowedClasses:C, sellPrice:295, bonuses:{vitality:82} },
+  'flying-monkey-bow': { id:'flying-monkey-bow', name:'Arco do Macaco Alado', slot:'weapon', minLevel:F8, allowedClasses:R, sellPrice:330, bonuses:{strength:92} },
+  'rainbow-longbow': { id:'rainbow-longbow', name:'Arco Longo do Arco-Íris', slot:'weapon', minLevel:F8, allowedClasses:R, sellPrice:340, bonuses:{strength:95} },
+  'emerald-plate': { id:'emerald-plate', name:'Armadura da Cidade Esmeralda', slot:'chest', minLevel:F8, sellPrice:320, bonuses:{vitality:95,defense:18} },
+  'witch-hat': { id:'witch-hat', name:'Chapéu da Bruxa do Oeste', slot:'helmet', minLevel:F8, sellPrice:250, bonuses:{defense:26} },
+  'yellow-brick-boots': { id:'yellow-brick-boots', name:'Botas de Tijolos Amarelos', slot:'boots', minLevel:F8, sellPrice:265, bonuses:{vitality:68,defense:11} },
+  'oz-heart': { id:'oz-heart', name:'Coração de Oz', slot:'amulet', minLevel:F8, sellPrice:470, bonuses:{strength:38,vitality:35,defense:15}, rarity:'rare' },
+
+  // Faixa 9 — equipamentos do Folclore Japonês (andares 81–90).
+  'oni-kanabo': { id:'oni-kanabo', name:'Kanabo do Oni', slot:'weapon', minLevel:F9, allowedClasses:W, sellPrice:360, bonuses:{strength:100} },
+  'orochi-fangblade': { id:'orochi-fangblade', name:'Lâmina Presa de Orochi', slot:'weapon', minLevel:F9, allowedClasses:W, sellPrice:375, bonuses:{strength:105} },
+  'tengu-war-fan': { id:'tengu-war-fan', name:'Leque de Guerra Tengu', slot:'off-hand', minLevel:F9, allowedClasses:W, sellPrice:345, bonuses:{defense:33} },
+  'kitsune-claws': { id:'kitsune-claws', name:'Garras da Kitsune', slot:'weapon', minLevel:F9, allowedClasses:A, sellPrice:370, bonuses:{strength:103} },
+  'jorogumo-silk-daggers': { id:'jorogumo-silk-daggers', name:'Adagas de Seda da Jorogumo', slot:'weapon', minLevel:F9, allowedClasses:A, sellPrice:350, bonuses:{strength:96} },
+  'oni-fire-staff': { id:'oni-fire-staff', name:'Cajado da Chama Oni', slot:'weapon', minLevel:F9, allowedClasses:M, sellPrice:375, bonuses:{strength:105} },
+  'yuki-scepter': { id:'yuki-scepter', name:'Cetro da Yuki-onna', slot:'weapon', minLevel:F9, allowedClasses:M, sellPrice:360, bonuses:{strength:100} },
+  'eight-heads-grimoire': { id:'eight-heads-grimoire', name:'Grimório das Oito Cabeças', slot:'off-hand', minLevel:F9, allowedClasses:M, sellPrice:345, bonuses:{strength:94} },
+  'kami-scepter': { id:'kami-scepter', name:'Cetro dos Kami', slot:'weapon', minLevel:F9, allowedClasses:C, sellPrice:365, bonuses:{strength:100} },
+  'sakura-prayer-staff': { id:'sakura-prayer-staff', name:'Cajado da Prece de Sakura', slot:'weapon', minLevel:F9, allowedClasses:C, sellPrice:380, bonuses:{strength:108} },
+  'purification-scroll': { id:'purification-scroll', name:'Pergaminho de Purificação', slot:'off-hand', minLevel:F9, allowedClasses:C, sellPrice:350, bonuses:{vitality:95} },
+  'tengu-feather-bow': { id:'tengu-feather-bow', name:'Arco de Penas Tengu', slot:'weapon', minLevel:F9, allowedClasses:R, sellPrice:385, bonuses:{strength:110} },
+  'moonlit-yumi': { id:'moonlit-yumi', name:'Yumi do Luar', slot:'weapon', minLevel:F9, allowedClasses:R, sellPrice:395, bonuses:{strength:114} },
+  'oni-scale-armor': { id:'oni-scale-armor', name:'Armadura de Escamas Oni', slot:'chest', minLevel:F9, sellPrice:380, bonuses:{vitality:112,defense:21} },
+  'tengu-mask': { id:'tengu-mask', name:'Máscara do Tengu', slot:'helmet', minLevel:F9, sellPrice:290, bonuses:{defense:30} },
+  'kitsune-sandals': { id:'kitsune-sandals', name:'Sandálias da Kitsune', slot:'boots', minLevel:F9, sellPrice:305, bonuses:{vitality:78,defense:13} },
+  'orochi-scale': { id:'orochi-scale', name:'Escama de Orochi', slot:'amulet', minLevel:F9, sellPrice:540, bonuses:{strength:45,vitality:42,defense:18}, rarity:'rare' },
 
   // IDs antigos mantidos para não quebrar drops já configurados.
   'bloodsteel-sword': { id: 'bloodsteel-sword', name: 'Espada de Aço Sanguíneo', slot: 'weapon', minLevel: F2, sellPrice: 20, bonuses: { strength: 7 } },
