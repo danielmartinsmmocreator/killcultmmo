@@ -8,7 +8,6 @@ import { PlayerInventory } from './progression';
 import { ITEM_DEFINITIONS } from '../data/items';
 
 
-const SPECIAL_ITEM_DROP_CHANCE = 0.05;
 
 /**
  * Situação da campanha:
@@ -319,7 +318,6 @@ export class Campaign {
     this.rewardMessages.length = 0;
     this.rewardGold = 0;
     this.rewardDrops.length = 0;
-    this.normalItemDroppedThisFloor = false;
     for (const hero of this.partyUnits) {
       hero.hp = hero.maxHp;
       hero.abilityUsed = false;
