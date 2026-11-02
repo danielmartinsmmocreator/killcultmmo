@@ -58,7 +58,7 @@ export class PreparationScreen {
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
     if (this.selectedUids.size === 0) available.slice(0, 3).forEach((hero) => this.selectedUids.add(hero.uid));
     this.selectedHero = available.find((hero) => this.selectedUids.has(hero.uid)) ?? available[0] ?? campaign.party[0];
-    available.forEach((hero, index) => this.positions.set(hero.uid, { col: index % 6, row: 5 }));
+    available.forEach((hero, index) => this.positions.set(hero.uid, { col: index % 6, row: 2 }));
     this.render();
   }
 
@@ -247,7 +247,7 @@ export class PreparationScreen {
     const board = document.createElement('div');
     board.className = 'prep-board-grid';
     board.style.cssText='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:540px;margin:auto;';
-    for (let row = 0; row < 6; row++) for (let col = 0; col < 6; col++) {
+    for (let row = 0; row < 3; row++) for (let col = 0; col < 6; col++) {
       const occupant = [...this.selectedUids].map((uid) => this.campaign.party.find((hero) => hero.uid === uid)!).find((hero) => {
         const pos = this.positions.get(hero.uid);
         return pos?.col === col && pos?.row === row;
@@ -269,9 +269,9 @@ export class PreparationScreen {
           cell.textContent = occupant.definition.name.slice(0, 2).toUpperCase();
         }
       } else {
-        cell.textContent = row >= 3 ? '·' : '';
+        cell.textContent = '·';
       }
-      cell.disabled = row < 3 && !occupant;
+      cell.disabled = !occupant;
       cell.addEventListener('click', () => {
         // Clicar no sprite seleciona esse herói; o painel de equipamento/inventário acompanha a seleção.
         if (occupant) {
@@ -280,7 +280,7 @@ export class PreparationScreen {
           this.render();
           return;
         }
-        if (row < 3) return;
+        return;
         const collision = [...this.selectedUids].map((uid) => this.positions.get(uid)).some((pos) => pos && pos.col === col && pos.row === row && !(pos.col === this.positions.get(this.selectedHero.uid)?.col && pos.row === this.positions.get(this.selectedHero.uid)?.row));
         if (collision) { this.message = 'Essa casa já está ocupada por outro herói.'; this.render(); return; }
         this.positions.set(this.selectedHero.uid, { col, row });
@@ -529,7 +529,7 @@ export class PreparationScreen {
   }
 
   private findFreePosition(): Position | null {
-    for (let row = 3; row < 6; row++) for (let col = 0; col < 6; col++) {
+    for (let row = 0; row < 3; row++) for (let col = 0; col < 6; col++) {
       const used = [...this.selectedUids].some((uid) => {
         if (uid === this.selectedHero.uid) return false;
         const pos = this.positions.get(uid);
