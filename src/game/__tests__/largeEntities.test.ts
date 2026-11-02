@@ -21,7 +21,7 @@ import { ABYSS_IDOL, GOBLIN_CHIEF } from '../data/bosses';
 import { CAMPAIGN_FLOORS } from '../data/encounters';
 import type { FloorConfig } from '../data/encounters';
 import { ARCHER, ASSASSIN, CLERIC, HERO_DEFINITIONS, MAGE, WARRIOR } from '../data/heroes';
-import { GOBLIN, MONSTER_DEFINITIONS, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, MONSTER_DEFINITIONS, SKELETON, SLIME } from './legacyMonsterFixtures';
 import { SIZE_1X1, SIZE_2X2 } from '../data/sizes';
 import type { Position, TelegraphedAttack, UnitDefinition } from '../types';
 import { castAbility, context, stateWith, unit, uids } from './helpers';
