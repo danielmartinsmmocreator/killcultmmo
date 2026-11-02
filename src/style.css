@@ -1212,7 +1212,7 @@ button.unit-card:disabled:hover {
   gap: 12px;
   overflow: hidden;
   color: #f5e9d0;
-  background: linear-gradient(rgba(10,8,16,.56),rgba(10,8,16,.62)), url('/assets/backgrounds/dungeon.png') center/cover, #17131d;
+  background: linear-gradient(145deg,#24202b,#101521 62%,#35251f);
   font-family: system-ui, sans-serif;
 }
 .preparation-screen .prep-profile {
