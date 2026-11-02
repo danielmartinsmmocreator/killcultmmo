@@ -1010,3 +1010,51 @@ button {
   .log-section { flex-basis: 150px; }
   .monsters-section { flex: 1 0 180px; }
 }
+
+
+/* Ajuste de proporção da batalha: mais área útil para o tabuleiro e centralização real. */
+@media (min-width: 761px) {
+  #app:has(.battle-rail) {
+    grid-template-columns: clamp(190px, 17vw, 250px) minmax(0, 1fr) clamp(190px, 17vw, 250px);
+  }
+
+  #game-container {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  #game-container canvas {
+    position: relative !important;
+    inset: auto !important;
+    margin: 0 !important;
+    transform: none !important;
+    justify-self: center;
+    align-self: center;
+  }
+
+  .battle-rail {
+    padding: 7px;
+    gap: 6px;
+  }
+
+  .unit-card {
+    grid-template-columns: 30px minmax(0, 1fr);
+    gap: 5px;
+    padding: 6px;
+  }
+
+  .unit-card .badge {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1100px) {
+  #app:has(.battle-rail) {
+    grid-template-columns: clamp(170px, 19vw, 210px) minmax(0, 1fr) clamp(170px, 19vw, 210px);
+  }
+}
