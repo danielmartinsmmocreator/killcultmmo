@@ -8,6 +8,9 @@ import assassinSprite from '../assets/sprites/assassin.png';
 import archerSprite from '../assets/sprites/archer.png';
 import mageSprite from '../assets/sprites/mage.png';
 import clericSprite from '../assets/sprites/cleric.png';
+const PORTRAITS = import.meta.glob('../assets/portraits/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const PLAYER_ICONS = import.meta.glob('../assets/icons/*', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const CLASS_PORTRAITS: Record<string, string> = Object.fromEntries(Object.entries(PORTRAITS).map(([path, url]) => [path.split('/').pop()?.replace(/^portrait-/, '').replace(/\.[^.]+$/, ''), url]));
 
 const HERO_SPRITES: Record<string, string> = {
   warrior: warriorSprite,
@@ -62,14 +65,15 @@ export class PreparationScreen {
   private render(): void {
     const page = document.createElement('main');
     page.className = 'preparation-screen';
-    page.style.cssText = 'width:min(100%,1180px);margin:auto;padding:clamp(12px,2vw,24px);color:#f3f4f6;font-family:system-ui,sans-serif;';
+    page.style.cssText = 'box-sizing:border-box;width:100%;height:100dvh;min-height:620px;overflow:hidden;padding:12px 18px;color:#f3f4f6;font-family:system-ui,sans-serif;background:linear-gradient(#111827dd,#111827cc),url(/assets/dungeon-bg.png) center/cover;';
+    const responsive=document.createElement('style'); responsive.textContent=`.preparation-screen *{box-sizing:border-box}.preparation-screen .prep-layout{height:calc(100dvh - 150px);min-height:440px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px}.preparation-screen .prep-menu{display:flex;flex-direction:column;justify-content:center;gap:10px}.preparation-screen .prep-menu button{padding:15px;border:0;border-radius:28px;background:#211321;color:#ffe16b;font-weight:900;letter-spacing:.08em;cursor:pointer}.preparation-screen .prep-right{min-width:0;display:grid;grid-template-rows:minmax(220px,1fr) auto;gap:10px}.preparation-screen .prep-board{width:min(100%,min(54vh,620px));align-self:center}.preparation-screen .prep-heroes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.preparation-screen .prep-hero{min-width:0;border:1px solid #80664e;border-radius:7px;overflow:hidden;background:#171522;text-align:center}.preparation-screen .prep-hero img{width:100%;height:clamp(82px,14vh,140px);object-fit:cover;object-position:top;display:block}.preparation-screen .prep-hero button{font-size:.7rem;padding:6px 2px}.preparation-screen .prep-hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:2px}.preparation-screen .prep-expedition{position:fixed;right:3vw;bottom:16px;width:min(340px,32vw);padding:16px!important;border:0;border-radius:0!important;clip-path:polygon(0 0,82% 0,100% 50%,82% 100%,0 100%);background:#211321!important;color:#ffe16b!important;font-size:clamp(1.2rem,2vw,2rem)!important;font-weight:900}.preparation-screen .prep-profile{display:flex;align-items:center;gap:12px;margin-bottom:8px}.preparation-screen .prep-avatar{width:78px;height:78px;border-radius:50%;object-fit:cover;border:3px solid #147765}.preparation-screen .prep-modal{position:fixed;inset:0;z-index:3000;background:#05070ddd;display:flex;align-items:center;justify-content:center;padding:18px}.preparation-screen .prep-modal[hidden]{display:none}.preparation-screen .prep-modal-card{max-width:650px;width:100%;max-height:85dvh;overflow:auto;padding:18px;background:#171522;border:1px solid #a88b50;border-radius:12px}.preparation-screen .prep-icons{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.preparation-screen .prep-icons img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;cursor:pointer;border:3px solid transparent}.preparation-screen .prep-icons img:hover{border-color:#ffe16b}@media(max-width:850px){.preparation-screen{height:auto!important;min-height:100dvh;overflow:visible!important}.preparation-screen .prep-layout{height:auto;display:flex;flex-direction:column}.preparation-screen .prep-menu{display:grid;grid-template-columns:repeat(3,1fr)}.preparation-screen .prep-right{display:flex;flex-direction:column}.preparation-screen .prep-board{width:min(100%,560px)}.preparation-screen .prep-heroes{grid-template-columns:repeat(2,minmax(0,1fr))}.preparation-screen .prep-expedition{position:static;clip-path:none;width:100%;margin-top:12px}}`; page.append(responsive);
     const eyebrow = document.createElement('p');
-    eyebrow.textContent = 'ROGUELIKE ALFA · BASE DE OPERAÇÕES';
+    eyebrow.textContent = 'KILL CULT MMO · BASE DE OPERAÇÕES';
     eyebrow.style.cssText = 'color:#a78bfa;font-weight:800;letter-spacing:.16em;font-size:.75rem;margin:0 0 8px;';
     const headingRow = document.createElement('div');
     headingRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;';
     const heading = document.createElement('h1');
-    heading.textContent = 'Preparar expedição';
+    heading.textContent = 'BASE DE OPERAÇÕES';
     heading.style.cssText = 'font-size:clamp(2rem,4vw,3rem);margin:0;';
     const devButton = document.createElement('button');
     devButton.type = 'button';
@@ -77,12 +81,23 @@ export class PreparationScreen {
     devButton.style.cssText = 'padding:9px 13px;border:1px solid #8b7be8;border-radius:8px;background:#25233d;color:#fff;font-weight:800;cursor:pointer;';
     headingRow.append(heading, devButton);
     const subtitle = document.createElement('p');
-    subtitle.textContent = 'Monte sua equipe, posicione os heróis e confira seus equipamentos antes de entrar na masmorra.';
+    subtitle.textContent = 'Monte sua equipe, prepare os equipamentos e escolha sua formação.';
     subtitle.style.cssText = 'color:#aeb8c8;line-height:1.4;margin:6px 0 12px;max-width:760px;';
     const goldBalance = document.createElement('div');
     goldBalance.textContent = `🪙 Ouro disponível: ${this.campaign.gold}`;
     goldBalance.style.cssText = 'display:inline-flex;align-items:center;padding:8px 12px;margin:0 0 12px;border:1px solid #a16207;border-radius:9px;background:#422006;color:#fde68a;font-weight:800;';
-    page.append(eyebrow, headingRow, subtitle, goldBalance);
+    const profile=document.createElement('section'); profile.className='prep-profile';
+    const iconFiles=Object.entries(PLAYER_ICONS).sort(([a],[b])=>a.localeCompare(b));
+    const chosenIcon=Number(localStorage.getItem('killcult-player-icon')||'1');
+    const avatar=document.createElement('img'); avatar.className='prep-avatar'; avatar.alt='Ícone do jogador'; avatar.src=iconFiles[Math.max(0,Math.min(iconFiles.length-1,chosenIcon-1))]?.[1]||'';
+    const profileInfo=document.createElement('div'); const playerName=document.createElement('strong'); playerName.textContent='NOME DO JOGADOR · EM BREVE'; playerName.style.cssText='display:block;color:#ffe16b;font-size:clamp(1.1rem,2vw,1.8rem);letter-spacing:.08em;';
+    const worldLevel=this.campaign.party.reduce((sum,hero)=>sum+(hero.progression?.level??1),0); const levelLine=document.createElement('div'); levelLine.textContent=`ANDAR ${this.campaign.floorNumber} · NÍVEL MUNDIAL ${worldLevel}`; levelLine.style.cssText='color:#ffe16b;font-size:.75rem;margin-top:5px;';
+    const settings=document.createElement('button'); settings.type='button'; settings.textContent='⚙ Configurações'; settings.style.cssText=STYLE.button+'margin-top:6px;padding:5px 10px;';
+    const settingsModal=document.createElement('div'); settingsModal.className='prep-modal'; settingsModal.hidden=true; const settingsCard=document.createElement('div'); settingsCard.className='prep-modal-card'; const settingsTitle=document.createElement('h2'); settingsTitle.textContent='Escolha seu ícone'; const iconGrid=document.createElement('div'); iconGrid.className='prep-icons';
+    iconFiles.forEach(([file,url],index)=>{const img=document.createElement('img');img.src=url;img.alt='Ícone '+(index+1);img.title='Selecionar ícone '+(index+1);img.addEventListener('click',()=>{localStorage.setItem('killcult-player-icon',String(index+1));avatar.src=url;settingsModal.hidden=true;});iconGrid.append(img);});
+    const closeSettings=document.createElement('button');closeSettings.type='button';closeSettings.textContent='Fechar';closeSettings.style.cssText=STYLE.button+'margin-top:12px;';closeSettings.addEventListener('click',()=>settingsModal.hidden=true);settingsModal.addEventListener('click',e=>{if(e.target===settingsModal)settingsModal.hidden=true;});settings.addEventListener('click',()=>settingsModal.hidden=false);
+    settingsCard.append(settingsTitle,iconGrid,closeSettings);settingsModal.append(settingsCard);profileInfo.append(playerName,levelLine,settings);profile.append(avatar,profileInfo);
+    page.append(eyebrow,profile,headingRow,subtitle,goldBalance,settingsModal);
 
     const devPanel = document.createElement('section');
     devPanel.hidden = true;
@@ -206,56 +221,24 @@ export class PreparationScreen {
     page.append(devPanel);
 
     const columns = document.createElement('div');
-    columns.style.cssText = 'display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1.2fr);gap:12px;align-items:start;';
+    columns.className='prep-layout'; columns.style.cssText='';
     const left = document.createElement('section');
-    left.style.cssText = STYLE.card;
+    left.className='prep-menu'; left.style.cssText='';
     const rosterTitle = document.createElement('h2');
-    rosterTitle.textContent = `Sua equipe · ${this.selectedUids.size}/3`;
+    rosterTitle.textContent = 'MENU';
     rosterTitle.style.cssText = 'margin:0 0 6px;font-size:1.15rem;';
     const rosterHint = document.createElement('p');
-    rosterHint.textContent = 'Escolha de 1 a 3 personagens. Clique no nome para selecionar e no botão para incluir/remover.';
+    rosterHint.textContent = '';
     rosterHint.style.cssText = 'color:#94a3b8;font-size:.85rem;line-height:1.4;margin:0 0 12px;';
     const roster = document.createElement('div');
-    roster.style.cssText = 'display:grid;gap:8px;';
-    for (const hero of this.campaign.party) {
-      const chosen = this.selectedUids.has(hero.uid);
-      const row = document.createElement('div');
-      row.style.cssText = `display:flex;gap:8px;align-items:center;padding:10px;border:1px solid ${chosen ? '#8b5cf6' : '#394150'};border-radius:8px;background:${chosen ? '#2b2341' : '#101723'};opacity:${hero.hp > 0 ? '1' : '.55'};`;
-      const select = document.createElement('button');
-      select.type = 'button';
-      select.textContent = `${hero.definition.name} · Nv. ${hero.progression?.level ?? 1}${hero.hp <= 0 ? ' · Caído' : ''}`;
-      select.style.cssText = 'flex:1;text-align:left;border:0;background:transparent;color:#fff;cursor:pointer;padding:4px;';
-      select.disabled = hero.hp <= 0;
-      select.addEventListener('click', () => { this.selectedHero = hero; this.message = ''; this.render(); });
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.textContent = chosen ? 'Remover' : 'Adicionar';
-      toggle.style.cssText = STYLE.button;
-      toggle.disabled = hero.hp <= 0 || (!chosen && this.selectedUids.size >= 3);
-      toggle.addEventListener('click', () => {
-        if (chosen) {
-          if (this.selectedUids.size <= 1) { this.message = 'A equipe precisa ter pelo menos um herói.'; }
-          else { this.selectedUids.delete(hero.uid); this.message = ''; }
-        } else {
-          this.selectedUids.add(hero.uid); this.selectedHero = hero; this.message = '';
-          const used = [...this.selectedUids].map((uid) => this.positions.get(uid)).filter(Boolean) as Position[];
-          const pos = this.positions.get(hero.uid)!;
-          if (used.filter((p) => p.col === pos.col && p.row === pos.row).length > 1) {
-            const free = this.findFreePosition();
-            if (free) this.positions.set(hero.uid, free);
-          }
-        }
-        this.render();
-      });
-      row.append(select, toggle);
-      roster.append(row);
-    }
+    roster.style.cssText='display:grid;gap:10px;';
+    for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
     left.append(rosterTitle, rosterHint, roster);
 
     const right = document.createElement('div');
-    right.style.cssText = 'display:grid;gap:12px;';
+    right.className='prep-right'; right.style.cssText='';
     const boardCard = document.createElement('section');
-    boardCard.style.cssText = STYLE.card;
+    boardCard.style.cssText=STYLE.card+'background:#09080d;border:8px solid #050509;border-radius:0;'; boardCard.className='prep-board';
     const boardTitle = document.createElement('h2');
     boardTitle.textContent = 'Formação inicial';
     boardTitle.style.cssText = 'margin:0 0 5px;font-size:1.15rem;';
@@ -263,7 +246,7 @@ export class PreparationScreen {
     boardHint.textContent = `Personagem selecionado: ${this.selectedHero.definition.name}. Clique em uma casa livre das três linhas inferiores para posicioná-lo.`;
     boardHint.style.cssText = 'color:#94a3b8;font-size:.83rem;line-height:1.4;margin:0 0 12px;';
     const board = document.createElement('div');
-    board.style.cssText = 'display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:540px;margin:auto;';
+    board.style.cssText='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:540px;margin:auto;';
     for (let row = 0; row < 6; row++) for (let col = 0; col < 6; col++) {
       const occupant = [...this.selectedUids].map((uid) => this.campaign.party.find((hero) => hero.uid === uid)!).find((hero) => {
         const pos = this.positions.get(hero.uid);
@@ -308,6 +291,17 @@ export class PreparationScreen {
     }
     boardCard.append(boardTitle, boardHint, board);
     right.append(boardCard);
+    const heroStrip=document.createElement('section');heroStrip.className='prep-heroes';
+    for(const hero of this.campaign.party){const chosen=this.selectedUids.has(hero.uid);const card=document.createElement('article');card.className='prep-hero';card.style.borderColor=chosen?'#ffe16b':'#80664e';
+      const portrait=document.createElement('img');portrait.src=CLASS_PORTRAITS[hero.definition.id]||HERO_SPRITES[hero.definition.id];portrait.alt=hero.definition.name;portrait.title=hero.definition.name;portrait.addEventListener('click',()=>{this.selectedHero=hero;this.render();});card.append(portrait);
+      const title=document.createElement('div');title.textContent=hero.definition.name+' · Nv. '+(hero.progression?.level??1);title.style.cssText='font-size:.75rem;color:#ffe16b;padding:4px;';card.append(title);
+      const actions=document.createElement('div');actions.className='prep-hero-actions';
+      const add=document.createElement('button');add.type='button';add.textContent=chosen?'Remover':'Adicionar';add.style.cssText=STYLE.button;add.disabled=hero.hp<=0||(!chosen&&this.selectedUids.size>=3);add.addEventListener('click',()=>{if(chosen){if(this.selectedUids.size>1)this.selectedUids.delete(hero.uid);else this.message='A equipe precisa ter pelo menos um herói.';}else{this.selectedUids.add(hero.uid);this.selectedHero=hero;const pos=this.findFreePosition();if(pos)this.positions.set(hero.uid,pos);}this.render();});
+      const inv=document.createElement('button');inv.type='button';inv.textContent='Inventário';inv.style.cssText=STYLE.button;inv.addEventListener('click',()=>{this.selectedHero=hero;this.inventoryOpen=true;this.render();});
+      const attrs=document.createElement('button');attrs.type='button';attrs.textContent='Atributos';attrs.style.cssText=STYLE.button;attrs.addEventListener('click',()=>{this.selectedHero=hero;this.render();this.message='Abra o painel de atributos do herói selecionado.';});
+      actions.append(add,inv,attrs);card.append(actions);heroStrip.append(card);
+    }
+    right.append(heroStrip);
 
     const equipmentCard = document.createElement('section');
     equipmentCard.className = 'inventory-window-content';
@@ -417,6 +411,8 @@ export class PreparationScreen {
       .filter((item) => {
         const def = ITEM_DEFINITIONS[item.definitionId];
         if (!def) return false;
+        if ((this.selectedHero.progression?.level ?? 1) < (def.minLevel ?? 1)) return false;
+        if (def.allowedClasses && !def.allowedClasses.includes(this.selectedHero.definition.id as 'warrior'|'assassin'|'mage'|'cleric'|'archer')) return false;
         if (this.inventorySlotFilter !== 'all' && def.slot !== this.inventorySlotFilter) return false;
         if (this.inventoryRarityFilter !== 'all' && (def.rarity ?? 'common') !== this.inventoryRarityFilter) return false;
         if (this.inventoryClassFilter !== 'all' && def.allowedClasses && !def.allowedClasses.includes(this.inventoryClassFilter)) return false;
@@ -491,7 +487,7 @@ export class PreparationScreen {
     const inventoryHeader = document.createElement('div');
     inventoryHeader.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;';
     const inventoryWindowTitle = document.createElement('strong');
-    inventoryWindowTitle.textContent = 'Inventário do personagem';
+    inventoryWindowTitle.textContent = `Inventário · ${this.selectedHero.definition.name} · Nv. ${this.selectedHero.progression?.level ?? 1}`;
     const closeInventory = document.createElement('button');
     closeInventory.type = 'button';
     closeInventory.textContent = 'Fechar ✕';
@@ -503,7 +499,7 @@ export class PreparationScreen {
     inventoryDialog.append(inventoryHeader, equipmentCard);
     inventoryWindow.append(inventoryDialog);
     inventoryButton.addEventListener('click', () => { this.inventoryOpen = true; inventoryWindow.style.display = 'flex'; });
-    right.append(inventoryButton);
+    inventoryButton.hidden=true; right.append(inventoryButton);
     page.append(inventoryWindow);
     columns.append(left, right);
     page.append(columns);
@@ -517,7 +513,7 @@ export class PreparationScreen {
     warning.textContent = this.message || 'A formação pode ser alterada antes de cada expedição.';
     warning.style.cssText = `margin:0 0 12px;color:${this.message ? '#fca5a5' : '#94a3b8'};font-size:.9rem;`;
     const start = document.createElement('button');
-    start.type = 'button'; start.textContent = 'Entrar na masmorra'; start.style.cssText = 'width:100%;padding:14px;border:0;border-radius:8px;background:#7c3aed;color:white;font-weight:800;font-size:1rem;cursor:pointer;';
+    start.type='button'; start.textContent='EXPEDIÇÃO ➜'; start.className='prep-expedition'; start.style.cssText='';
     start.disabled = this.selectedUids.size < 1 || this.selectedUids.size > 3;
     start.addEventListener('click', () => {
       const positions = Object.fromEntries([...this.positions.entries()]);
