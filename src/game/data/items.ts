@@ -443,5 +443,6 @@ add('vizier-seal','Selo do Vizir','amulet',51,'legendary',undefined,{"strength":
 add('mad-scientist-seal','Selo do Doutor','amulet',61,'legendary',undefined,{"strength":35,"vitality":30,"defense":15},6100);
 add('oz-heart','Coração de Oz','amulet',71,'legendary',undefined,{"strength":40,"vitality":35,"defense":18},7100);
 add('orochi-scale','Escama de Orochi','amulet',81,'legendary',undefined,{"strength":45,"vitality":40,"defense":20},8100);
+add('sisyphus-stone','Pedra do Fardo Eterno','amulet',91,'legendary',undefined,{"strength":50,"vitality":50,"defense":25},9100);
 
 export const ITEM_DEFINITIONS: Readonly<Record<string, ItemDefinition>> = Object.freeze(definitions);
