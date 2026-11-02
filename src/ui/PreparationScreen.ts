@@ -65,8 +65,40 @@ export class PreparationScreen {
   private render(): void {
     const page = document.createElement('main');
     page.className = 'preparation-screen';
-    page.style.cssText = 'box-sizing:border-box;width:100%;height:100dvh;min-height:620px;overflow:hidden;padding:12px 18px;color:#f3f4f6;font-family:system-ui,sans-serif;background:linear-gradient(145deg,#24202b,#101521 62%,#35251f);';
-    const responsive=document.createElement('style'); responsive.textContent=`.preparation-screen *{box-sizing:border-box}.preparation-screen .prep-layout{height:calc(100dvh - 150px);min-height:440px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:18px}.preparation-screen .prep-menu{display:flex;flex-direction:column;justify-content:center;gap:10px}.preparation-screen .prep-menu button{padding:15px;border:0;border-radius:28px;background:#211321;color:#ffe16b;font-weight:900;letter-spacing:.08em;cursor:pointer}.preparation-screen .prep-right{min-width:0;display:grid;grid-template-rows:minmax(220px,1fr) auto;gap:10px}.preparation-screen .prep-board{width:min(100%,min(54vh,620px));align-self:center}.preparation-screen .prep-heroes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}.preparation-screen .prep-hero{min-width:0;border:1px solid #80664e;border-radius:7px;overflow:hidden;background:#171522;text-align:center}.preparation-screen .prep-hero img{width:100%;height:clamp(82px,14vh,140px);object-fit:cover;object-position:top;display:block}.preparation-screen .prep-hero button{font-size:.7rem;padding:6px 2px}.preparation-screen .prep-hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:2px}.preparation-screen .prep-expedition{position:fixed;right:3vw;bottom:16px;width:min(340px,32vw);padding:16px!important;border:0;border-radius:0!important;clip-path:polygon(0 0,82% 0,100% 50%,82% 100%,0 100%);background:#211321!important;color:#ffe16b!important;font-size:clamp(1.2rem,2vw,2rem)!important;font-weight:900}.preparation-screen .prep-profile{display:flex;align-items:center;gap:12px;margin-bottom:8px}.preparation-screen .prep-avatar{width:78px;height:78px;border-radius:50%;object-fit:cover;border:3px solid #147765}.preparation-screen .prep-modal{position:fixed;inset:0;z-index:3000;background:#05070ddd;display:flex;align-items:center;justify-content:center;padding:18px}.preparation-screen .prep-modal[hidden]{display:none}.preparation-screen .prep-modal-card{max-width:650px;width:100%;max-height:85dvh;overflow:auto;padding:18px;background:#171522;border:1px solid #a88b50;border-radius:12px}.preparation-screen .prep-icons{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}.preparation-screen .prep-icons img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;cursor:pointer;border:3px solid transparent}.preparation-screen .prep-icons img:hover{border-color:#ffe16b}@media(max-width:850px){.preparation-screen{height:auto!important;min-height:100dvh;overflow:visible!important}.preparation-screen .prep-layout{height:auto;display:flex;flex-direction:column}.preparation-screen .prep-menu{display:grid;grid-template-columns:repeat(3,1fr)}.preparation-screen .prep-right{display:flex;flex-direction:column}.preparation-screen .prep-board{width:min(100%,560px)}.preparation-screen .prep-heroes{grid-template-columns:repeat(2,minmax(0,1fr))}.preparation-screen .prep-expedition{position:static;clip-path:none;width:100%;margin-top:12px}}`; page.append(responsive);
+    page.style.cssText = 'box-sizing:border-box;width:100%;height:100dvh;min-height:560px;overflow:hidden;padding:10px 16px;color:#f3f4f6;font-family:system-ui,sans-serif;background:linear-gradient(145deg,#24202b,#101521 62%,#35251f);';
+    const responsive=document.createElement('style'); responsive.textContent=`
+      .preparation-screen *{box-sizing:border-box}
+      .preparation-screen>p,.preparation-screen>div[style*="justify-content:space-between"],.preparation-screen>h1{display:none!important}
+      .preparation-screen .prep-profile{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:10px;background:#211321;border-radius:48px 22px 22px 48px;max-width:440px}
+      .preparation-screen .prep-avatar{width:88px;height:88px;flex:0 0 88px;border-radius:50%;object-fit:cover;border:3px solid #147765}
+      .preparation-screen .prep-layout{height:calc(100dvh - 118px);min-height:430px;display:grid;grid-template-columns:minmax(220px,27%) minmax(0,1fr);gap:20px;align-items:stretch}
+      .preparation-screen .prep-menu{display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:0}
+      .preparation-screen .prep-menu h2{color:#ffe16b;text-align:center}
+      .preparation-screen .prep-menu button{min-height:48px;padding:12px 16px;border:0;border-radius:28px;background:#211321;color:#ffe16b;font-weight:900;letter-spacing:.08em;cursor:pointer;font-size:clamp(.85rem,1.2vw,1.1rem)}
+      .preparation-screen .prep-menu button:hover{background:#38213a;transform:translateX(3px)}
+      .preparation-screen .prep-menu .prep-dev-button{margin-top:12px;border:1px solid #8b7be8;background:#25233d;color:#fff}
+      .preparation-screen .prep-right{min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:10px;align-items:center}
+      .preparation-screen .prep-board{width:min(100%,min(57vh,650px));max-height:100%;justify-self:center;align-self:center;padding:10px!important}
+      .preparation-screen .prep-board h2{color:#ffe16b;text-align:center}
+      .preparation-screen .prep-board p{margin:4px 0 8px!important;text-align:center}
+      .preparation-screen .prep-board-grid{width:100%;max-width:none!important;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px!important}
+      .preparation-screen .prep-board-grid button{min-width:0;aspect-ratio:1;max-height:calc((100dvh - 300px)/6);border-radius:2px!important}
+      .preparation-screen .prep-heroes{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-self:end}
+      .preparation-screen .prep-hero{min-width:0;border:1px solid #80664e;border-radius:7px;overflow:hidden;background:#171522;text-align:center}
+      .preparation-screen .prep-hero img{width:100%;height:clamp(74px,13vh,128px);object-fit:contain;object-position:center bottom;display:block;background:#111522}
+      .preparation-screen .prep-hero button{font-size:clamp(.58rem,.8vw,.75rem);padding:6px 2px;white-space:nowrap}
+      .preparation-screen .prep-hero-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}
+      .preparation-screen .prep-expedition{position:static;justify-self:end;width:min(310px,42%);padding:12px 24px!important;border:0;border-radius:0!important;clip-path:polygon(0 0,82% 0,100% 50%,82% 100%,0 100%);background:#211321!important;color:#ffe16b!important;font-size:clamp(1.05rem,1.8vw,1.7rem)!important;font-weight:900;white-space:nowrap}
+      .preparation-screen .prep-modal{position:fixed;inset:0;z-index:3000;background:#05070ddd;display:flex;align-items:center;justify-content:center;padding:18px}
+      .preparation-screen .prep-modal[hidden]{display:none}
+      .preparation-screen .prep-modal-card{max-width:650px;width:100%;max-height:85dvh;overflow:auto;padding:18px;background:#171522;border:1px solid #a88b50;border-radius:12px}
+      .preparation-screen .prep-icons{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+      .preparation-screen .prep-icons img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;cursor:pointer;border:3px solid transparent}
+      .preparation-screen .prep-icons img:hover{border-color:#ffe16b}
+      .preparation-screen .inventory-window{z-index:4000!important}
+      .preparation-screen .prep-footer{display:none!important}
+      @media(max-width:850px){.preparation-screen{height:auto!important;min-height:100dvh;overflow:visible!important}.preparation-screen .prep-layout{height:auto;display:flex;flex-direction:column}.preparation-screen .prep-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.preparation-screen .prep-menu h2{grid-column:1/-1}.preparation-screen .prep-menu button{min-height:42px;padding:8px;font-size:.75rem}.preparation-screen .prep-right{display:flex;flex-direction:column}.preparation-screen .prep-board{width:min(100%,560px)}.preparation-screen .prep-board-grid button{max-height:none}.preparation-screen .prep-heroes{grid-template-columns:repeat(2,minmax(0,1fr))}.preparation-screen .prep-expedition{width:100%;clip-path:none;justify-self:stretch}.preparation-screen .prep-profile{max-width:none}.preparation-screen .prep-avatar{width:64px;height:64px;flex-basis:64px}}
+    `; page.append(responsive);
     const eyebrow = document.createElement('p');
     eyebrow.textContent = 'KILL CULT MMO · BASE DE OPERAÇÕES';
     eyebrow.style.cssText = 'color:#a78bfa;font-weight:800;letter-spacing:.16em;font-size:.75rem;margin:0 0 8px;';
@@ -97,7 +129,7 @@ export class PreparationScreen {
     iconFiles.forEach(([,url],index)=>{const img=document.createElement('img');img.src=url;img.alt='Ícone '+(index+1);img.title='Selecionar ícone '+(index+1);img.addEventListener('click',()=>{localStorage.setItem('killcult-player-icon',String(index+1));avatar.src=url;settingsModal.hidden=true;});iconGrid.append(img);});
     const closeSettings=document.createElement('button');closeSettings.type='button';closeSettings.textContent='Fechar';closeSettings.style.cssText=STYLE.button+'margin-top:12px;';closeSettings.addEventListener('click',()=>settingsModal.hidden=true);settingsModal.addEventListener('click',e=>{if(e.target===settingsModal)settingsModal.hidden=true;});settings.addEventListener('click',()=>settingsModal.hidden=false);
     settingsCard.append(settingsTitle,iconGrid,closeSettings);settingsModal.append(settingsCard);profileInfo.append(playerName,levelLine,settings);profile.append(avatar,profileInfo);
-    page.append(eyebrow,profile,headingRow,subtitle,goldBalance,settingsModal);
+    page.append(profile,settingsModal);
 
     const devPanel = document.createElement('section');
     devPanel.hidden = true;
@@ -233,7 +265,7 @@ export class PreparationScreen {
     const roster = document.createElement('div');
     roster.style.cssText='display:grid;gap:10px;';
     for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
-    left.append(rosterTitle, rosterHint, roster);
+    left.append(rosterTitle, rosterHint, roster, devButton); devButton.className='prep-dev-button';
 
     const right = document.createElement('div');
     right.className='prep-right'; right.style.cssText='';
@@ -504,7 +536,7 @@ export class PreparationScreen {
     columns.append(left, right);
     page.append(columns);
 
-    const footer = document.createElement('section');
+    const footer = document.createElement('section'); footer.className='prep-footer';
     footer.style.cssText = 'margin-top:12px;padding:16px;border:1px solid #394150;border-radius:10px;background:#111827;';
     const summary = document.createElement('p');
     summary.textContent = `${this.selectedUids.size} herói(s) selecionado(s) · Andar inicial: 1 · Máximo por equipe: 3`;
@@ -521,8 +553,8 @@ export class PreparationScreen {
       if (!ok) { this.message = 'Confira a equipe: selecione de 1 a 3 heróis vivos e deixe cada um em uma casa diferente.'; this.render(); return; }
       this.onStart();
     });
-    footer.append(summary, warning, start);
-    page.append(footer);
+    footer.append(summary, warning);
+    right.append(start);
     this.root.replaceChildren(page);
     // Recriar a tela após equipar/vender mantém o inventário aberto até o jogador fechá-lo.
     if (this.inventoryOpen) inventoryWindow.style.display = 'flex';
