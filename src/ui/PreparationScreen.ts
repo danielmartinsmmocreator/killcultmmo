@@ -238,12 +238,6 @@ export class PreparationScreen {
     right.className='prep-right'; right.style.cssText='';
     const boardCard = document.createElement('section');
     boardCard.style.cssText=STYLE.card+'background:#09080d;border:8px solid #050509;border-radius:0;'; boardCard.className='prep-board';
-    const boardTitle = document.createElement('h2');
-    boardTitle.textContent = 'Formação inicial';
-    boardTitle.style.cssText = 'margin:0 0 5px;font-size:1.15rem;';
-    const boardHint = document.createElement('p');
-    boardHint.textContent = `Personagem selecionado: ${this.selectedHero.definition.name}. Clique em uma casa livre das três linhas inferiores para posicioná-lo.`;
-    boardHint.style.cssText = 'color:#94a3b8;font-size:.83rem;line-height:1.4;margin:0 0 12px;';
     const board = document.createElement('div');
     board.className = 'prep-board-grid';
     board.style.cssText='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:540px;margin:auto;';
@@ -289,7 +283,7 @@ export class PreparationScreen {
       });
       board.append(cell);
     }
-    boardCard.append(boardTitle, boardHint, board);
+    boardCard.append(board);
     right.append(boardCard);
     const heroStrip=document.createElement('section');heroStrip.className='prep-heroes';
     for(const hero of this.campaign.party){const chosen=this.selectedUids.has(hero.uid);const card=document.createElement('article');card.className='prep-hero';card.style.borderColor=chosen?'#ffe16b':'#80664e';
