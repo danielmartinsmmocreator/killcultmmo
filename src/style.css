@@ -133,17 +133,18 @@ button {
   align-items: center;
   justify-content: center;
   width: 47%;
-  min-height: 78px;
+  min-height: 0;
+  aspect-ratio: 3.3 / 1;
   padding: 12px 18px;
   border: 0;
-  border-radius: 48px;
+  border-radius: 0;
   background-color: transparent;
-  background-image: url('./assets/capturas/button.png');
-  background-position: center;
+  background-image: url('./assets/backgrounds/button.png');
+  background-position: center bottom;
   background-repeat: no-repeat;
-  background-size: 100% 100%;
-  color: #3b1d0d;
-  text-shadow: 1px 1px 0 #e8b56e, -1px -1px 0 #e8b56e;
+  background-size: 100% auto;
+  color: #ffe16b;
+  text-shadow: 1px 1px 0 #190d19, -1px -1px 0 #190d19;
   font-size: clamp(12px, 1.55vw, 23px);
   line-height: 1.35;
   text-align: center;
@@ -457,7 +458,8 @@ button {
   .prep-menu > div button:nth-child(odd),
   .prep-menu > div button:nth-child(even) {
     width: 100%;
-    min-height: 48px;
+    min-height: 0;
+    aspect-ratio: 3.3 / 1;
     margin: 0;
     font-size: 10px;
   }
