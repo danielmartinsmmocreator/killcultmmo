@@ -3,7 +3,7 @@ import { chooseMonsterMove } from '../core/ai';
 import { positionKey } from '../core/board';
 import { findAttackTargets } from '../core/combat';
 import { ASSASSIN, WARRIOR } from '../data/heroes';
-import { GOBLIN, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, SKELETON, SLIME } from './legacyMonsterFixtures';
 import { context, stateWith, unit } from './helpers';
 
 describe('IA dos monstros', () => {
