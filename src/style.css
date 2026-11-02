@@ -112,7 +112,7 @@ button {
 
 .prep-menu {
   min-width: 0;
-  padding-top: 218px;
+  padding-top: 160px;
 }
 
 .prep-game-title,
@@ -124,7 +124,7 @@ button {
 .prep-menu > div {
   display: grid !important;
   grid-template-columns: 1fr;
-  gap: 3px !important;
+  gap: 2px !important;
   width: 100%;
 }
 
@@ -132,10 +132,10 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42.3%;
+  width: 32%;
   min-height: 0;
   aspect-ratio: 2.22 / 1;
-  padding: 12px 18px;
+  padding: 8px 12px;
   border: 0;
   border-radius: 0;
   background-color: transparent;
@@ -145,7 +145,7 @@ button {
   background-size: 100% 100%;
   color: #ffe16b;
   text-shadow: 1px 1px 0 #190d19, -1px -1px 0 #190d19;
-  font-size: clamp(12px, 1.55vw, 23px);
+  font-size: clamp(10px, 1.25vw, 18px);
   line-height: 1.35;
   text-align: center;
   text-transform: uppercase;
@@ -391,13 +391,13 @@ button {
   }
 
   .prep-menu > div {
-    gap: 3px !important;
+    gap: 2px !important;
   }
 
   .prep-menu > div button {
     min-height: 58px;
-    width: 47.7%;
-    padding: 8px;
+    width: 38%;
+    padding: 6px;
     font-size: clamp(9px, 1.5vw, 14px);
   }
 
