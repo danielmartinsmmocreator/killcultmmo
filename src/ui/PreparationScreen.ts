@@ -87,7 +87,7 @@ export class PreparationScreen {
     goldBalance.textContent = `🪙 Ouro disponível: ${this.campaign.gold}`;
     goldBalance.style.cssText = 'display:inline-flex;align-items:center;padding:8px 12px;margin:0 0 12px;border:1px solid #a16207;border-radius:9px;background:#422006;color:#fde68a;font-weight:800;';
     const profile=document.createElement('section'); profile.className='prep-profile';
-    const iconFiles=Object.entries(PLAYER_ICONS).sort(([a],[b])=>a.localeCompare(b, undefined, { numeric: true });
+    const iconFiles=Object.entries(PLAYER_ICONS).sort(([a],[b])=>a.localeCompare(b, undefined, { numeric: true }));
     const chosenIcon=Number(localStorage.getItem('killcult-player-icon')||'1');
     const avatar=document.createElement('img'); avatar.className='prep-avatar'; avatar.alt='Ícone do jogador'; avatar.src=iconFiles[Math.max(0,Math.min(iconFiles.length-1,chosenIcon-1))]?.[1]||'';
     const profileInfo=document.createElement('div'); const playerName=document.createElement('strong'); playerName.textContent='NOME DO JOGADOR · EM BREVE'; playerName.style.cssText='display:block;color:#ffe16b;font-size:clamp(1.1rem,2vw,1.8rem);letter-spacing:.08em;';
