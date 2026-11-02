@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findAttackTargets } from '../core/combat';
 import { ARCHER, ASSASSIN, CLERIC, MAGE, WARRIOR } from '../data/heroes';
-import { GOBLIN } from '../data/monsters';
+import { GOBLIN } from './legacyMonsterFixtures';
 import { DOWN, LEFT, RIGHT, UP, context, uids, unit } from './helpers';
 
 describe('Guerreiro', () => {
