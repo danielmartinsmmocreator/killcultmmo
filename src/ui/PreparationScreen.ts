@@ -252,7 +252,7 @@ export class PreparationScreen {
       const cell = document.createElement('button');
       cell.type = 'button';
       cell.title = occupant ? `${occupant.definition.name} · clique para ver equipamentos e inventário` : `Coluna ${col + 1}, linha ${row + 1}`;
-      cell.style.cssText = `display:flex;align-items:center;justify-content:center;aspect-ratio:1;overflow:hidden;padding:2px;border:1px solid ${occupant?.uid === this.selectedHero.uid ? '#facc15' : occupant ? '#8b5cf6' : '#394150'};border-radius:6px;background:${occupant ? '#293449' : row >= 3 ? '#263244' : '#101723'};color:white;font-weight:800;cursor:${occupant || row >= 3 ? 'pointer' : 'not-allowed'};`;
+      cell.style.cssText = `display:flex;align-items:center;justify-content:center;aspect-ratio:1;overflow:hidden;padding:2px;border:1px solid ${occupant?.uid === this.selectedHero.uid ? '#facc15' : occupant ? '#8b5cf6' : '#394150'};border-radius:6px;background:${occupant ? '#293449' : row >= 3 ? '#263244' : '#101723'};color:white;font-weight:800;cursor:pointer;`;
       if (occupant) {
         const sprite = HERO_SPRITES[occupant.definition.id];
         if (sprite) {
@@ -268,7 +268,7 @@ export class PreparationScreen {
       } else {
         cell.textContent = '·';
       }
-      cell.disabled = !occupant;
+      cell.disabled = false;
       cell.addEventListener('click', () => {
         // Clicar no sprite seleciona esse herói; o painel de equipamento/inventário acompanha a seleção.
         if (occupant) {
@@ -277,7 +277,6 @@ export class PreparationScreen {
           this.render();
           return;
         }
-        return;
         const collision = [...this.selectedUids].map((uid) => this.positions.get(uid)).some((pos) => pos && pos.col === col && pos.row === row && !(pos.col === this.positions.get(this.selectedHero.uid)?.col && pos.row === this.positions.get(this.selectedHero.uid)?.row));
         if (collision) { this.message = 'Essa casa já está ocupada por outro herói.'; this.render(); return; }
         this.positions.set(this.selectedHero.uid, { col, row });
