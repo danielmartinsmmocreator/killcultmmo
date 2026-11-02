@@ -137,8 +137,13 @@ button {
   padding: 12px 18px;
   border: 0;
   border-radius: 48px;
-  background: #190d19;
-  color: #ffe16b;
+  background-color: transparent;
+  background-image: url('./assets/capturas/button.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  color: #3b1d0d;
+  text-shadow: 1px 1px 0 #e8b56e, -1px -1px 0 #e8b56e;
   font-size: clamp(12px, 1.55vw, 23px);
   line-height: 1.35;
   text-align: center;
@@ -156,7 +161,7 @@ button {
 }
 
 .prep-menu > div button:hover {
-  background: #2a1729;
+  filter: brightness(1.12);
   transform: translateY(-2px);
 }
 
