@@ -41,6 +41,7 @@ export class PreparationScreen {
   private inventoryRangeFilter: number | null | 'unknown' = null;
   private inventorySlotFilter: EquipmentSlot | 'all' = 'all';
   private inventoryClassFilter: 'all' | 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer' = 'all';
+  private inventoryRarityFilter: 'all' | 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' = 'all';
   private inventorySort: 'floor-asc' | 'floor-desc' | 'rarity-desc' | 'rarity-asc' = 'floor-desc';
   private devUnlocked = false;
   private devPanelOpen = false;
@@ -390,10 +391,21 @@ export class PreparationScreen {
       this.inventoryRangeFilter = value === 'all' ? null : value === 'unknown' ? 'unknown' : Number(value);
       this.render();
     });
+    makeFilter('Raridade', this.inventoryRarityFilter, [
+      { value: 'all', label: 'Todas as raridades' },
+      { value: 'common', label: 'Comum' },
+      { value: 'rare', label: 'Raro' },
+      { value: 'epic', label: 'Épico' },
+      { value: 'legendary', label: 'Lendário' },
+      { value: 'mythic', label: 'Mítico' },
+    ], (value) => {
+      this.inventoryRarityFilter = value as typeof this.inventoryRarityFilter;
+      this.render();
+    });
     makeFilter('Organizar por', this.inventorySort, [
       { value: 'floor-desc', label: 'Faixa: mais recente' },
       { value: 'floor-asc', label: 'Faixa: mais antiga' },
-      { value: 'rarity-desc', label: 'Raridade: raros primeiro' },
+      { value: 'rarity-desc', label: 'Raridade: melhores primeiro' },
       { value: 'rarity-asc', label: 'Raridade: comuns primeiro' },
     ], (value) => {
       this.inventorySort = value as typeof this.inventorySort;
@@ -406,6 +418,7 @@ export class PreparationScreen {
         const def = ITEM_DEFINITIONS[item.definitionId];
         if (!def) return false;
         if (this.inventorySlotFilter !== 'all' && def.slot !== this.inventorySlotFilter) return false;
+        if (this.inventoryRarityFilter !== 'all' && (def.rarity ?? 'common') !== this.inventoryRarityFilter) return false;
         if (this.inventoryClassFilter !== 'all' && def.allowedClasses && !def.allowedClasses.includes(this.inventoryClassFilter)) return false;
         if (this.inventoryClassFilter !== 'all' && !def.allowedClasses && def.slot === 'off-hand' && this.inventoryClassFilter === 'archer') return false;
         if (this.inventoryRangeFilter === 'unknown' && item.obtainedAtFloor !== undefined) return false;
@@ -419,8 +432,9 @@ export class PreparationScreen {
       .sort((a, b) => {
         const floorA = a.obtainedAtFloor ?? 0;
         const floorB = b.obtainedAtFloor ?? 0;
-        const rarityA = ITEM_DEFINITIONS[a.definitionId]?.rarity === 'rare' ? 1 : 0;
-        const rarityB = ITEM_DEFINITIONS[b.definitionId]?.rarity === 'rare' ? 1 : 0;
+        const rarityOrder: Record<string, number> = { common: 0, rare: 1, epic: 2, legendary: 3, mythic: 4 };
+        const rarityA = rarityOrder[ITEM_DEFINITIONS[a.definitionId]?.rarity ?? 'common'] ?? 0;
+        const rarityB = rarityOrder[ITEM_DEFINITIONS[b.definitionId]?.rarity ?? 'common'] ?? 0;
         if (this.inventorySort === 'rarity-desc') return rarityB - rarityA || floorB - floorA;
         if (this.inventorySort === 'rarity-asc') return rarityA - rarityB || floorB - floorA;
         return this.inventorySort === 'floor-asc' ? floorA - floorB : floorB - floorA;
@@ -435,9 +449,11 @@ export class PreparationScreen {
       const bonus = Object.entries(def.bonuses).map(([key, amount]) => `${key === 'strength' ? 'Força' : key === 'vitality' ? 'Vitalidade' : 'Defesa'} +${amount}`).join(' · ');
       const special = def.defensePercent ? `Defesa +${def.defensePercent}%` : def.lifestealPercent ? `Vampirismo ${def.lifestealPercent}%` : '';
       const origin = item.obtainedAtFloor === undefined ? 'Origem antiga/desconhecida' : `Obtido no andar ${item.obtainedAtFloor}`;
-      const rarityLabel = def.rarity === 'rare' ? 'RARO' : 'COMUM';
-      button.textContent = `[${rarityLabel}] ${def.name} · ${SLOTS.find((s) => s.id === def.slot)?.label ?? def.slot} · ${[bonus, special, origin].filter(Boolean).join(' · ') || 'Sem bônus'}`;
-      button.style.cssText = STYLE.button + `text-align:left;font-size:.8rem;flex:1;${def.rarity === 'rare' ? 'border-color:#c084fc;color:#e9d5ff;' : ''}`;
+      const rarity = def.rarity ?? 'common';
+      const rarityLabels: Record<string, string> = { common: 'COMUM', rare: 'RARO', epic: 'ÉPICO', legendary: 'LENDÁRIO', mythic: 'MÍTICO' };
+      button.textContent = `[${rarityLabels[rarity] ?? 'COMUM'}] ${def.name} · ${SLOTS.find((s) => s.id === def.slot)?.label ?? def.slot} · ${[bonus, special, origin].filter(Boolean).join(' · ') || 'Sem bônus'}`;
+      const rarityStyles: Record<string, string> = { rare: 'border-color:#c084fc;color:#e9d5ff;', epic: 'border-color:#f59e0b;color:#fde68a;', legendary: 'border-color:#f97316;color:#fed7aa;', mythic: 'border-color:#22d3ee;color:#a5f3fc;' };
+      button.style.cssText = STYLE.button + `text-align:left;font-size:.8rem;flex:1;${rarityStyles[rarity] ?? ''}`;
       button.disabled = this.selectedHero.hp <= 0 || (this.selectedHero.progression?.level ?? 1) < (def.minLevel ?? 1) || (!!def.allowedClasses && !def.allowedClasses.includes(this.selectedHero.definition.id as 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer'));
       button.addEventListener('click', () => {
         if (this.campaign.inventory.equip(this.selectedHero, item.instanceId, ITEM_DEFINITIONS)) this.render();
