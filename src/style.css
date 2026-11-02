@@ -82,6 +82,10 @@ button {
   white-space: nowrap;
 }
 
+.prep-profile button {
+  display: none;
+}
+
 .prep-profile > div > div {
   display: inline-block;
   margin-top: 6px;
@@ -164,6 +168,7 @@ button {
 .prep-right {
   position: relative;
   min-width: 0;
+  min-height: 100vh;
   padding: 28px 2.5% 150px 0;
 }
 
