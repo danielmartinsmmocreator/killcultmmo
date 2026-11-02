@@ -247,13 +247,13 @@ export class PreparationScreen {
     for (let row = 3; row < 6; row++) for (let col = 0; col < 6; col++) {
       const occupant = [...this.selectedUids].map((uid) => this.campaign.party.find((hero) => hero.uid === uid)!).find((hero) => {
         const pos = this.positions.get(hero.uid);
-        return pos?.col === col && pos?.row === row + 3;
+        return pos?.col === col && pos?.row === row;
       });
       const cell = document.createElement('button');
       cell.type = 'button';
       if (occupant?.uid === this.selectedHero.uid) cell.classList.add('prep-board-selected');
       cell.title = occupant ? `${occupant.definition.name} · clique para ver equipamentos e inventário` : `Coluna ${col + 1}, linha ${row + 1}`;
-      cell.style.cssText = `display:flex;align-items:center;justify-content:center;aspect-ratio:1;overflow:hidden;padding:2px;border:1px solid ${occupant?.uid === this.selectedHero.uid ? '#facc15' : occupant ? '#8b5cf6' : '#394150'};border-radius:6px;background:${occupant ? '#293449' : row >= 3 ? '#263244' : '#101723'};color:white;font-weight:800;cursor:pointer;`;
+      cell.style.cssText = `display:flex;align-items:center;justify-content:center;aspect-ratio:1;overflow:hidden;padding:2px;border:1px solid ${occupant?.uid === this.selectedHero.uid ? '#facc15' : occupant ? '#8b5cf6' : '#394150'};border-radius:6px;background:${occupant ? '#293449' : '#263244'};color:white;font-weight:800;cursor:pointer;`;
       if (occupant) {
         const sprite = HERO_SPRITES[occupant.definition.id];
         if (sprite) {
@@ -278,9 +278,9 @@ export class PreparationScreen {
           this.render();
           return;
         }
-        const collision = [...this.selectedUids].map((uid) => this.positions.get(uid)).some((pos) => pos && pos.col === col && pos.row === row + 3 && !(pos.col === this.positions.get(this.selectedHero.uid)?.col && pos.row === this.positions.get(this.selectedHero.uid)?.row));
+        const collision = [...this.selectedUids].map((uid) => this.positions.get(uid)).some((pos) => pos && pos.col === col && pos.row === row && !(pos.col === this.positions.get(this.selectedHero.uid)?.col && pos.row === this.positions.get(this.selectedHero.uid)?.row));
         if (collision) { this.message = 'Essa casa já está ocupada por outro herói.'; this.render(); return; }
-        this.positions.set(this.selectedHero.uid, { col, row: row + 3 });
+        this.positions.set(this.selectedHero.uid, { col, row });
         this.message = '';
         this.render();
       });
@@ -526,7 +526,7 @@ export class PreparationScreen {
   }
 
   private findFreePosition(): Position | null {
-    for (let row = 0; row < 3; row++) for (let col = 0; col < 6; col++) {
+    for (let row = 3; row < 6; row++) for (let col = 0; col < 6; col++) {
       const used = [...this.selectedUids].some((uid) => {
         if (uid === this.selectedHero.uid) return false;
         const pos = this.positions.get(uid);
