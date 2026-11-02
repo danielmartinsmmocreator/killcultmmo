@@ -24,7 +24,7 @@ body,
 body {
   min-height: 100vh;
   overflow-x: hidden;
-  background: #171016 url('./assets/backgrounds/faixa-1.jfif') center center / cover fixed no-repeat;
+  background: #171016 url('./assets/backgrounds/cenario.jfif') center center / cover fixed no-repeat;
 }
 
 button {
