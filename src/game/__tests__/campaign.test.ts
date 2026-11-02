@@ -4,7 +4,7 @@ import { findAttackTargets } from '../core/combat';
 import { HERO_FORMATION } from '../data/battleSetup';
 import { CAMPAIGN_FLOORS } from '../data/encounters';
 import { ITEM_DEFINITIONS } from '../data/items';
-import { GOBLIN } from '../data/monsters';
+import { GOBLIN } from './legacyMonsterFixtures';
 import type { Position, Unit } from '../types';
 import { castAbility } from './helpers';
 
