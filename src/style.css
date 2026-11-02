@@ -224,7 +224,7 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: min(100%, 680px);
+  width: min(100%, 760px);
   max-width: 100%;
   min-width: 0;
   max-height: 100%;
@@ -320,7 +320,9 @@ button {
 .prep-hero img {
   display: block;
   width: 100%;
-  height: clamp(66px, 10vh, 112px);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  max-height: 150px;
   object-fit: contain;
   object-position: center bottom;
   background: #11131d;
@@ -538,7 +540,7 @@ button {
   }
 
   .prep-board {
-    width: min(100%, 560px);
+    width: min(100%, 680px);
     align-self: center;
   }
 
@@ -547,7 +549,9 @@ button {
   }
 
   .prep-hero img {
-    height: 110px;
+    height: auto;
+    max-height: 140px;
+    aspect-ratio: 1 / 1;
   }
 
   .prep-hero button {
