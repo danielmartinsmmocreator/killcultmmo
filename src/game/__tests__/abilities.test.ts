@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GameState } from '../core/GameState';
 import { ABILITY_BALANCE } from '../core/abilities';
 import { ARCHER, ASSASSIN, CLERIC, MAGE, WARRIOR } from '../data/heroes';
-import { GOBLIN, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, SKELETON, SLIME } from './legacyMonsterFixtures';
 import type { GameEvent, Position, Unit } from '../types';
 import { castAbility, stateWith, unit, withMaxHp } from './helpers';
 
