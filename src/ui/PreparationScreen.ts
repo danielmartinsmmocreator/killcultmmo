@@ -223,6 +223,9 @@ export class PreparationScreen {
     columns.className='prep-layout'; columns.style.cssText='';
     const left = document.createElement('section');
     left.className='prep-menu'; left.style.cssText='';
+    const gameTitle = document.createElement('h1');
+    gameTitle.className = 'prep-game-title';
+    gameTitle.textContent = 'KILLcult MMO';
     const rosterTitle = document.createElement('h2');
     rosterTitle.textContent = 'MENU';
     rosterTitle.style.cssText = 'margin:0 0 6px;font-size:1.15rem;';
@@ -232,15 +235,15 @@ export class PreparationScreen {
     const roster = document.createElement('div');
     roster.style.cssText='display:grid;gap:10px;';
     for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
-    left.append(rosterTitle, rosterHint, roster, devButton); devButton.className='prep-dev-button';
+    left.append(gameTitle, rosterTitle, roster, devButton); devButton.className='prep-dev-button';
 
     const right = document.createElement('div');
     right.className='prep-right'; right.style.cssText='';
     const boardCard = document.createElement('section');
-    boardCard.style.cssText=STYLE.card+'background:#09080d;border:8px solid #050509;border-radius:0;'; boardCard.className='prep-board';
+    boardCard.style.cssText=''; boardCard.className='prep-board';
     const board = document.createElement('div');
     board.className = 'prep-board-grid';
-    board.style.cssText='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:540px;margin:auto;';
+    board.style.cssText='';
     for (let row = 0; row < 3; row++) for (let col = 0; col < 6; col++) {
       const occupant = [...this.selectedUids].map((uid) => this.campaign.party.find((hero) => hero.uid === uid)!).find((hero) => {
         const pos = this.positions.get(hero.uid);
