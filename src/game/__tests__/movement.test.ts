@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ARCHER, ASSASSIN, CLERIC, MAGE, WARRIOR } from '../data/heroes';
-import { GOBLIN, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, SKELETON, SLIME } from './legacyMonsterFixtures';
 import type { Position, Unit, UnitDefinition } from '../types';
 import { stateWith, unit } from './helpers';
 
