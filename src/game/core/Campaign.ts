@@ -268,7 +268,12 @@ export class Campaign {
       const classIds = new Set(this.activeParty.map((hero) => hero.definition.id));
       const tierItems = Object.values(ITEM_DEFINITIONS).filter((item) => item.minLevel === tierStart);
       const addRandomDrop = (rarity: 'common' | 'rare' | 'epic' | 'legendary'): void => {
-        const pool = tierItems.filter((item) =>
+        // A última faixa regular disponível continua valendo nos andares 91–99.
+        const eligibleTier = tierItems.some((item) => item.rarity === rarity)
+          ? tierStart
+          : tierStart > 1 ? tierStart - 10 : tierStart;
+        const pool = Object.values(ITEM_DEFINITIONS).filter((item) =>
+          item.minLevel === eligibleTier &&
           item.rarity === rarity &&
           (!item.allowedClasses || item.allowedClasses.some((classId) => classIds.has(classId))),
         );
