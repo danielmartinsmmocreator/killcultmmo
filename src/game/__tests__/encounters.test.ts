@@ -6,7 +6,7 @@ import { HERO_FORMATION } from '../data/battleSetup';
 import { ABYSS_IDOL, GOBLIN_CHIEF, MEDUSA, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../data/bosses';
 import { CAMPAIGN_FLOORS, SPAWN_SLOTS } from '../data/encounters';
 import type { FloorConfig } from '../data/encounters';
-import { GOBLIN, GORGON, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, GORGON, SKELETON, SLIME } from './legacyMonsterFixtures';
 import type { Position } from '../types';
 
 const BASE: FloorConfig = {
