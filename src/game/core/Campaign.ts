@@ -40,7 +40,6 @@ export class Campaign {
   private readonly rewardMessages: string[] = [];
   private rewardGold = 0;
   private readonly rewardDrops: string[] = [];
-  private normalItemDroppedThisFloor = false;
   /** Itens já consolidados em extrações anteriores; os novos são temporários até extrair. */
   private retainedItemIds = new Set<string>();
   /** Ouro consolidado em extrações anteriores; o ganho durante a incursão é temporário. */
@@ -169,7 +168,6 @@ export class Campaign {
     this.rewardMessages.length = 0;
     this.rewardGold = 0;
     this.rewardDrops.length = 0;
-    this.normalItemDroppedThisFloor = false;
     prepareParty(this.activeParty);
     this.battle.loadEncounter(this.createEncounter());
     return true;
