@@ -264,199 +264,31 @@ export class Campaign {
       this.gold += reward;
       this.rewardGold += reward;
       const drops: string[] = [];
-      const roll = Math.random();
-      // Armas de classe: chance comum de drop, com pool específico por faixa.
-      const tierOneWeapons: Record<string, string[]> = {
-        warrior: ['short-sword', 'axe'], assassin: ['knife', 'dagger', 'offhand-knife', 'offhand-dagger'],
-        mage: ['wand', 'staff', 'magic-tome'], cleric: ['glove', 'consecrated-staff', 'cleric-tome'],
-        archer: ['shortbow', 'longbow'],
+      const tierStart = Math.floor((this.floorNumber - 1) / 10) * 10 + 1;
+      const classIds = new Set(this.activeParty.map((hero) => hero.definition.id));
+      const tierItems = Object.values(ITEM_DEFINITIONS).filter((item) => item.minLevel === tierStart);
+      const addRandomDrop = (rarity: 'common' | 'rare' | 'epic' | 'legendary'): void => {
+        const pool = tierItems.filter((item) =>
+          item.rarity === rarity &&
+          (!item.allowedClasses || item.allowedClasses.some((classId) => classIds.has(classId))),
+        );
+        if (pool.length === 0) return;
+        const chosen = pool[Math.floor(Math.random() * pool.length)];
+        const instance = this.inventory.add(chosen.id, this.floorNumber);
+        drops.push(ITEM_DEFINITIONS[instance.definitionId]?.name ?? chosen.name);
       };
-      const basicArmor = ['leather-boots', 'padded-chest', 'iron-helmet'];
-      const tierTwoWeapons: Record<string, string[]> = {
-        warrior: ['long-sword', 'double-axe', 'iron-shield'], assassin: ['sharp-knife', 'sharp-dagger', 'offhand-sharp-knife', 'offhand-sharp-dagger'],
-        mage: ['magic-wand', 'magic-staff', 'damage-tome'], cleric: ['white-glove', 'superior-consecrated-staff', 'vitality-tome'],
-        archer: ['expert-shortbow', 'expert-longbow'],
-      };
-      const tierThreeWeapons: Record<string, string[]> = {
-        warrior: ['curved-sword', 'bronze-spear', 'hoplite-shield'],
-        assassin: ['bloodied-dagger', 'curved-dagger', 'offhand-curved-dagger'],
-        mage: ['serpent-staff', 'oracle-tome'],
-        cleric: ['laurel-staff', 'sacred-sigil'],
-        archer: ['centaur-bow', 'composite-bow'],
-      };
-      const tierThreeArmor = ['hoplite-armor', 'bronze-helmet', 'greaves'];
-      const tierFourWeapons: Record<string, string[]> = {
-        warrior: ['queen-rapier', 'crooked-axe', 'card-shield'],
-        assassin: ['cheshire-daggers', 'rabbit-fang'],
-        mage: ['mad-tea-wand', 'caterpillar-staff', 'mushroom-grimoire'],
-        cleric: ['rose-scepter', 'looking-glass', 'queen-guard-staff'],
-        archer: ['playing-card-bow', 'rabbit-ear-bow'],
-      };
-      const tierFourArmor = ['rose-armor', 'mushroom-cap', 'rabbit-boots'];
-      const tierFiveWeapons: Record<string, string[]> = {
-        warrior: ['boitata-spear', 'mapinguari-cleaver', 'curupira-shield'],
-        assassin: ['mula-hooves', 'saci-daggers'],
-        mage: ['boitata-staff', 'iara-trident', 'enchanted-forest-grimoire'],
-        cleric: ['iara-scepter', 'cuca-bone-staff', 'healing-leaf-tome'],
-        archer: ['curupira-bow', 'saci-wind-bow'],
-      };
-      const tierFiveArmor = ['mapinguari-hide', 'boitata-crest', 'saci-boots'];
-      const tierSixWeapons: Record<string, string[]> = {
-        warrior: ['dune-scimitar', 'sultan-greatsword', 'sandguard-shield'],
-        assassin: ['serpent-fang-daggers', 'mirage-stiletto'],
-        mage: ['djinnfire-staff', 'moonlit-scepter', 'thousand-tales-grimoire'],
-        cleric: ['oasis-scepter', 'golden-lamp-staff', 'desert-prayer-tome'],
-        archer: ['crescent-bow', 'caravan-hunter-bow'],
-      };
-      const tierSixArmor = ['sandweave-armor', 'djinn-circlet', 'oasis-sandals'];
-      const tierSevenWeapons: Record<string, string[]> = {
-        warrior: ['surgical-cleaver', 'iron-heart-blade', 'coilguard-shield'],
-        assassin: ['vivisection-daggers', 'voltneedle'],
-        mage: ['tesla-coil-staff', 'homunculus-core', 'alchemist-rod'],
-        cleric: ['plague-scepter', 'serum-grimoire', 'lifeweaver-staff'],
-        archer: ['lightning-railbow', 'surgeon-crossbow'],
-      };
-      const tierSevenArmor = ['stitched-coat', 'copper-conductor-helm', 'surgeon-boots'];
 
-      const tierEightWeapons: Record<string, string[]> = {
-        warrior: ['emerald-greatsword', 'tin-forged-axe', 'yellow-brick-shield'], assassin: ['witchfang-daggers', 'monkey-claw'],
-        mage: ['emerald-wand', 'oz-illusion-staff', 'poppy-grimoire'], cleric: ['emerald-scepter', 'lionheart-staff', 'good-witch-tome'],
-        archer: ['flying-monkey-bow', 'rainbow-longbow'],
-      };
-      const tierEightArmor = ['emerald-plate', 'witch-hat', 'yellow-brick-boots'];
-      const tierNineWeapons: Record<string, string[]> = {
-        warrior: ['oni-kanabo', 'orochi-fangblade', 'tengu-war-fan'], assassin: ['kitsune-claws', 'jorogumo-silk-daggers'],
-        mage: ['oni-fire-staff', 'yuki-scepter', 'eight-heads-grimoire'], cleric: ['kami-scepter', 'sakura-prayer-staff', 'purification-scroll'],
-        archer: ['tengu-feather-bow', 'moonlit-yumi'],
-      };
-      const tierNineArmor = ['oni-scale-armor', 'tengu-mask', 'kitsune-sandals'];
-
-      if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 1 && this.floorNumber <= 9 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierOneWeapons);
-        const pool = [...classes.flatMap((id) => tierOneWeapons[id] ?? []), ...basicArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 11 && this.floorNumber <= 19 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierTwoWeapons);
-        const pool = [...classes.flatMap((id) => tierTwoWeapons[id] ?? []), ...basicArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 21 && this.floorNumber <= 29 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierThreeWeapons);
-        const pool = [...classes.flatMap((id) => tierThreeWeapons[id] ?? []), ...tierThreeArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 31 && this.floorNumber <= 39 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierFourWeapons);
-        const pool = [...classes.flatMap((id) => tierFourWeapons[id] ?? []), ...tierFourArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
+      // Monstros comuns podem deixar equipamentos de qualquer uma das três raridades.
+      // Cada chance é independente, então um monstro pode deixar mais de um item.
+      if (rank === 'normal') {
+        if (Math.random() < 0.05) addRandomDrop('common');
+        if (Math.random() < 0.025) addRandomDrop('rare');
+        if (Math.random() < 0.01) addRandomDrop('epic');
       }
 
-      else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 41 && this.floorNumber <= 49 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierFiveWeapons);
-        const pool = [...classes.flatMap((id) => tierFiveWeapons[id] ?? []), ...tierFiveArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      }
-
-      else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 51 && this.floorNumber <= 59 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierSixWeapons);
-        const pool = [...classes.flatMap((id) => tierSixWeapons[id] ?? []), ...tierSixArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      }
-
-      else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 61 && this.floorNumber <= 69 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierSevenWeapons);
-        const pool = [...classes.flatMap((id) => tierSevenWeapons[id] ?? []), ...tierSevenArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      }
-
-      else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 71 && this.floorNumber <= 79 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierEightWeapons);
-        const pool = [...classes.flatMap((id) => tierEightWeapons[id] ?? []), ...tierEightArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      } else if (!this.normalItemDroppedThisFloor && rank === 'normal' && this.floorNumber >= 81 && this.floorNumber <= 89 && roll < 0.10) {
-        const classes = this.activeParty.map((hero) => hero.definition.id).filter((id) => id in tierNineWeapons);
-        const pool = [...classes.flatMap((id) => tierNineWeapons[id] ?? []), ...tierNineArmor];
-        const item = this.inventory.add(pool[Math.floor(Math.random() * pool.length)], this.floorNumber);
-        drops.push(ITEM_DEFINITIONS[item.definitionId]?.name ?? item.definitionId);
-        this.normalItemDroppedThisFloor = true;
-      }
-
-      // Itens especiais exclusivos: todos usam a mesma chance fixa de 5%.
-      if (this.floorNumber === 5 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('shadow-claw', this.floorNumber);
-        drops.push('Garra do Sombrio');
-      } else if (this.floorNumber === 10 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('cthulhu-tentacle', this.floorNumber);
-        drops.push('Tentáculo de Cthulhu');
-      } else if (this.floorNumber === 15 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('winter-cloak', this.floorNumber);
-        drops.push('Capa do Inverno');
-      } else if (this.floorNumber === 20 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('seventh-fang', this.floorNumber);
-        drops.push('Dente do Sétimo');
-      } else if (this.floorNumber === 25 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('medusa-eye', this.floorNumber);
-        drops.push('Olho de Medusa');
-      } else if (this.floorNumber === 30 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('hades-pendant', this.floorNumber);
-        drops.push('Pingente de Hades');
-      } else if (this.floorNumber === 35 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('cheshire-grin', this.floorNumber);
-        drops.push('Sorriso de Cheshire');
-      } else if (this.floorNumber === 45 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('curupira-charm', this.floorNumber);
-        drops.push('Amuleto das Pegadas Invertidas');
-      } else if (this.floorNumber === 55 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('vizier-seal', this.floorNumber);
-        drops.push('Selo do Vizir');
-      } else if (this.floorNumber === 65 && rank === 'mini-boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('mad-scientist-seal', this.floorNumber);
-        drops.push('Selo do Doutor');
-      } else if (this.floorNumber === 80 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('oz-heart', this.floorNumber);
-        drops.push('Coração de Oz');
-      } else if (this.floorNumber === 90 && rank === 'boss' && Math.random() < SPECIAL_ITEM_DROP_CHANCE) {
-        this.inventory.add('orochi-scale', this.floorNumber);
-        drops.push('Escama de Orochi');
-      }
-
-      // Recompensas garantidas de marcos da campanha.
-      if (this.floorNumber === 5 && rank === 'mini-boss') {
-        this.inventory.add('leather-boots', this.floorNumber);
-        drops.push('Botas de Couro');
-      } else if (this.floorNumber === 10 && rank === 'boss') {
-        this.inventory.add('padded-chest', this.floorNumber);
-        drops.push('Peitoral Acolchoado');
-        this.inventory.add('rusty-sword', this.floorNumber);
-        drops.push('Espada Enferrujada');
-      } else if (this.floorNumber === 15 && rank === 'mini-boss') {
-        this.inventory.add('double-axe', this.floorNumber);
-        drops.push('Machado duplo');
-        this.inventory.add('iron-shield', this.floorNumber);
-        drops.push('Escudo de ferro');
-        this.inventory.add('iron-helmet', this.floorNumber);
-        drops.push('Capacete de Ferro');
-      } else if (this.floorNumber === 20 && rank === 'boss') {
-        this.inventory.add('seventh-edge', this.floorNumber);
-        drops.push('Lâmina do Sétimo');
-        this.inventory.add('wooden-buckler', this.floorNumber);
-        drops.push('Broquel de Madeira');
-        this.inventory.add('traveler-pants', this.floorNumber);
-        drops.push('Calça de Viajante');
+      // Lendários são exclusivos dos chefes principais e têm chance de 1%.
+      if (rank === 'boss' && this.floorNumber % 10 === 0) {
+        if (Math.random() < 0.01) addRandomDrop('legendary');
       }
 
       this.rewardDrops.push(...drops);
