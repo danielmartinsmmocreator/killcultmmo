@@ -65,40 +65,7 @@ export class PreparationScreen {
   private render(): void {
     const page = document.createElement('main');
     page.className = 'preparation-screen';
-    page.style.cssText = 'box-sizing:border-box;width:100%;height:100dvh;min-height:560px;overflow:hidden;padding:10px 16px;color:#f3f4f6;font-family:system-ui,sans-serif;background:linear-gradient(145deg,#24202b,#101521 62%,#35251f);';
-    const responsive=document.createElement('style'); responsive.textContent=`
-      .preparation-screen *{box-sizing:border-box}
-      .preparation-screen>p,.preparation-screen>div[style*="justify-content:space-between"],.preparation-screen>h1{display:none!important}
-      .preparation-screen .prep-profile{display:flex;align-items:center;gap:12px;margin:0 0 18px;padding:10px;background:#211321;border-radius:48px 22px 22px 48px;max-width:440px}
-      .preparation-screen .prep-avatar{width:88px;height:88px;flex:0 0 88px;border-radius:50%;object-fit:cover;border:3px solid #147765}
-      .preparation-screen .prep-layout{height:calc(100dvh - 118px);min-height:430px;display:grid;grid-template-columns:minmax(220px,27%) minmax(0,1fr);gap:20px;align-items:stretch}
-      .preparation-screen .prep-menu{display:flex;flex-direction:column;justify-content:center;gap:12px;min-width:0}
-      .preparation-screen .prep-menu h2{color:#ffe16b;text-align:center}
-      .preparation-screen .prep-menu button{min-height:48px;padding:12px 16px;border:0;border-radius:28px;background:#211321;color:#ffe16b;font-weight:900;letter-spacing:.08em;cursor:pointer;font-size:clamp(.85rem,1.2vw,1.1rem)}
-      .preparation-screen .prep-menu button:hover{background:#38213a;transform:translateX(3px)}
-      .preparation-screen .prep-menu .prep-dev-button{margin-top:12px;border:1px solid #8b7be8;background:#25233d;color:#fff}
-      .preparation-screen .prep-right{min-width:0;min-height:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:10px;align-items:center}
-      .preparation-screen .prep-board{width:min(100%,min(57vh,650px));max-height:100%;justify-self:center;align-self:center;padding:10px!important}
-      .preparation-screen .prep-board h2{color:#ffe16b;text-align:center}
-      .preparation-screen .prep-board p{margin:4px 0 8px!important;text-align:center}
-      .preparation-screen .prep-board-grid{width:100%;max-width:none!important;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px!important}
-      .preparation-screen .prep-board-grid button{min-width:0;aspect-ratio:1;max-height:calc((100dvh - 300px)/6);border-radius:2px!important}
-      .preparation-screen .prep-heroes{width:100%;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;align-self:end}
-      .preparation-screen .prep-hero{min-width:0;border:1px solid #80664e;border-radius:7px;overflow:hidden;background:#171522;text-align:center}
-      .preparation-screen .prep-hero img{width:100%;height:clamp(74px,13vh,128px);object-fit:contain;object-position:center bottom;display:block;background:#111522}
-      .preparation-screen .prep-hero button{font-size:clamp(.58rem,.8vw,.75rem);padding:6px 2px;white-space:nowrap}
-      .preparation-screen .prep-hero-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px}
-      .preparation-screen .prep-expedition{position:static;justify-self:end;width:min(310px,42%);padding:12px 24px!important;border:0;border-radius:0!important;clip-path:polygon(0 0,82% 0,100% 50%,82% 100%,0 100%);background:#211321!important;color:#ffe16b!important;font-size:clamp(1.05rem,1.8vw,1.7rem)!important;font-weight:900;white-space:nowrap}
-      .preparation-screen .prep-modal{position:fixed;inset:0;z-index:3000;background:#05070ddd;display:flex;align-items:center;justify-content:center;padding:18px}
-      .preparation-screen .prep-modal[hidden]{display:none}
-      .preparation-screen .prep-modal-card{max-width:650px;width:100%;max-height:85dvh;overflow:auto;padding:18px;background:#171522;border:1px solid #a88b50;border-radius:12px}
-      .preparation-screen .prep-icons{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-      .preparation-screen .prep-icons img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:50%;cursor:pointer;border:3px solid transparent}
-      .preparation-screen .prep-icons img:hover{border-color:#ffe16b}
-      .preparation-screen .inventory-window{z-index:4000!important}
-      .preparation-screen .prep-footer{display:none!important}
-      @media(max-width:850px){.preparation-screen{height:auto!important;min-height:100dvh;overflow:visible!important}.preparation-screen .prep-layout{height:auto;display:flex;flex-direction:column}.preparation-screen .prep-menu{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.preparation-screen .prep-menu h2{grid-column:1/-1}.preparation-screen .prep-menu button{min-height:42px;padding:8px;font-size:.75rem}.preparation-screen .prep-right{display:flex;flex-direction:column}.preparation-screen .prep-board{width:min(100%,560px)}.preparation-screen .prep-board-grid button{max-height:none}.preparation-screen .prep-heroes{grid-template-columns:repeat(2,minmax(0,1fr))}.preparation-screen .prep-expedition{width:100%;clip-path:none;justify-self:stretch}.preparation-screen .prep-profile{max-width:none}.preparation-screen .prep-avatar{width:64px;height:64px;flex-basis:64px}}
-    `; page.append(responsive);
+    page.style.cssText = '';
     const eyebrow = document.createElement('p');
     eyebrow.textContent = 'KILL CULT MMO · BASE DE OPERAÇÕES';
     eyebrow.style.cssText = 'color:#a78bfa;font-weight:800;letter-spacing:.16em;font-size:.75rem;margin:0 0 8px;';
@@ -278,6 +245,7 @@ export class PreparationScreen {
     boardHint.textContent = `Personagem selecionado: ${this.selectedHero.definition.name}. Clique em uma casa livre das três linhas inferiores para posicioná-lo.`;
     boardHint.style.cssText = 'color:#94a3b8;font-size:.83rem;line-height:1.4;margin:0 0 12px;';
     const board = document.createElement('div');
+    board.className = 'prep-board-grid';
     board.style.cssText='display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;max-width:540px;margin:auto;';
     for (let row = 0; row < 6; row++) for (let col = 0; col < 6; col++) {
       const occupant = [...this.selectedUids].map((uid) => this.campaign.party.find((hero) => hero.uid === uid)!).find((hero) => {
