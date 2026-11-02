@@ -134,15 +134,15 @@ button {
   justify-content: center;
   width: 47%;
   min-height: 0;
-  aspect-ratio: 3.3 / 1;
+  aspect-ratio: 2.22 / 1;
   padding: 12px 18px;
   border: 0;
   border-radius: 0;
   background-color: transparent;
   background-image: url('./assets/backgrounds/button.png');
-  background-position: center bottom;
+  background-position: center;
   background-repeat: no-repeat;
-  background-size: 100% auto;
+  background-size: 100% 100%;
   color: #ffe16b;
   text-shadow: 1px 1px 0 #190d19, -1px -1px 0 #190d19;
   font-size: clamp(12px, 1.55vw, 23px);
@@ -459,7 +459,7 @@ button {
   .prep-menu > div button:nth-child(even) {
     width: 100%;
     min-height: 0;
-    aspect-ratio: 3.3 / 1;
+    aspect-ratio: 2.22 / 1;
     margin: 0;
     font-size: 10px;
   }
