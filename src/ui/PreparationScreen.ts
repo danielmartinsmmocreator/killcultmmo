@@ -58,7 +58,7 @@ export class PreparationScreen {
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
     if (this.selectedUids.size === 0) available.slice(0, 3).forEach((hero) => this.selectedUids.add(hero.uid));
     this.selectedHero = available.find((hero) => this.selectedUids.has(hero.uid)) ?? available[0] ?? campaign.party[0];
-    available.forEach((hero, index) => this.positions.set(hero.uid, { col: index % 6, row: 2 }));
+    available.forEach((hero, index) => this.positions.set(hero.uid, { col: index % 6, row: 5 }));
     this.render();
   }
 
@@ -244,10 +244,10 @@ export class PreparationScreen {
     const board = document.createElement('div');
     board.className = 'prep-board-grid';
     board.style.cssText='';
-    for (let row = 0; row < 3; row++) for (let col = 0; col < 6; col++) {
+    for (let row = 3; row < 6; row++) for (let col = 0; col < 6; col++) {
       const occupant = [...this.selectedUids].map((uid) => this.campaign.party.find((hero) => hero.uid === uid)!).find((hero) => {
         const pos = this.positions.get(hero.uid);
-        return pos?.col === col && pos?.row === row;
+        return pos?.col === col && pos?.row === row + 3;
       });
       const cell = document.createElement('button');
       cell.type = 'button';
@@ -278,9 +278,9 @@ export class PreparationScreen {
           this.render();
           return;
         }
-        const collision = [...this.selectedUids].map((uid) => this.positions.get(uid)).some((pos) => pos && pos.col === col && pos.row === row && !(pos.col === this.positions.get(this.selectedHero.uid)?.col && pos.row === this.positions.get(this.selectedHero.uid)?.row));
+        const collision = [...this.selectedUids].map((uid) => this.positions.get(uid)).some((pos) => pos && pos.col === col && pos.row === row + 3 && !(pos.col === this.positions.get(this.selectedHero.uid)?.col && pos.row === this.positions.get(this.selectedHero.uid)?.row));
         if (collision) { this.message = 'Essa casa já está ocupada por outro herói.'; this.render(); return; }
-        this.positions.set(this.selectedHero.uid, { col, row });
+        this.positions.set(this.selectedHero.uid, { col, row: row + 3 });
         this.message = '';
         this.render();
       });
