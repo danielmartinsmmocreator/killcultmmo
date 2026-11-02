@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GameState } from '../core/GameState';
 import { ARCHER, ASSASSIN, CLERIC, MAGE, WARRIOR } from '../data/heroes';
-import { GOBLIN, SKELETON, SLIME } from '../data/monsters';
+import { GOBLIN, SKELETON, SLIME } from './legacyMonsterFixtures';
 import { MEDUSA } from '../data/bosses';
 import type { GameEvent } from '../types';
 import { RIGHT, stateWith, unit } from './helpers';
