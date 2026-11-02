@@ -12,7 +12,7 @@ import { ABYSS_IDOL } from '../data/bosses';
 import type { FloorConfig } from '../data/encounters';
 import { ABYSS_PILLAR, ABYSS_SWEEP } from '../data/telegraphs';
 import { ARCHER, CLERIC, MAGE, WARRIOR } from '../data/heroes';
-import { GOBLIN, SLIME } from '../data/monsters';
+import { GOBLIN, SLIME } from './legacyMonsterFixtures';
 import type {
   Position,
   TelegraphConfig,
