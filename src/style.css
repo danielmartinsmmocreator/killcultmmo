@@ -1,15 +1,12 @@
+/* KILL CULT MMO — TELA DE PREPARAÇÃO
+   Folha reescrita do zero. O combate não é estilizado aqui. */
+
 :root {
-  color-scheme: dark;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  --bg: #0b1220;
-  --panel: #111827;
-  --panel-border: #1f2937;
-  --card: #1a2335;
-  --card-hover: #222d44;
-  --text: #e5e7eb;
-  --muted: #94a3b8;
-  --accent: #facc15;
-  --good: #4ade80;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #f5ead4;
+  background: #100d17;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
 }
 
 * {
@@ -18,1180 +15,46 @@
 
 html,
 body {
-  margin: 0;
+  width: 100%;
+  min-width: 320px;
   height: 100%;
-  background: var(--bg);
-  color: var(--text);
+  min-height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #100d17;
+}
+
+body {
+  color: #f5ead4;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
 }
 
 #app {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-
-#game-container {
-  flex: 1 1 auto;
-  min-width: 0;
-  min-height: 0;
-  height: 100%;
-}
-
-#game-container canvas {
   display: block;
-}
-
-#panel {
-  flex: 0 0 340px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  background: var(--panel);
-  border-left: 1px solid var(--panel-border);
-  overflow-y: auto;
-}
-
-
-#panel h1 {
-  margin: 0;
-  font-size: 1.25rem;
-  letter-spacing: 0.02em;
-}
-
-#panel h2 {
-  margin: 0 0 8px;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
-.turn-box {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: var(--card);
-  border-radius: 8px;
-}
-
-.turn-label {
-  color: var(--muted);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.turn-value {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.status {
-  margin: 0;
-  min-height: 2.6em;
-  font-size: 0.9rem;
-  color: var(--muted);
-  line-height: 1.3;
-}
-
-.unit-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.unit-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px 10px;
-  background: var(--card);
-  border: 2px solid transparent;
-  border-radius: 8px;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-}
-
-button.unit-card {
-  cursor: pointer;
-}
-
-button.unit-card:hover {
-  background: var(--card-hover);
-}
-
-.unit-card.selected {
-  border-color: var(--accent);
-  background: var(--card-hover);
-}
-
-.badge {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.8);
-  font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans Symbols", "DejaVu Sans", Arial, sans-serif;
-}
-
-.badge--monster {
-  border-radius: 8px;
-  border-color: #fca5a5;
-}
-
-.unit-info {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.unit-top {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  margin-bottom: 4px;
-}
-
-.unit-hp {
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.hp-bar {
-  height: 6px;
-  background: #0b1220;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.hp-fill {
-  height: 100%;
-  background: var(--good);
-}
-
-.log-section {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 150px;
-}
-
-.log {
-  flex: 1 1 0;
-  min-height: 0;
-  margin: 0;
-  padding: 8px;
-  list-style: none;
-  overflow-y: auto;
-  background: #0b1220;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  line-height: 1.35;
-}
-
-.log li {
-  padding: 2px 0;
-}
-
-.log-turn {
-  display: inline-block;
-  min-width: 2.6em;
-  margin-right: 6px;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.btn-reset {
-  flex: 0 0 auto;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #b91c1c;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-reset:hover {
-  background: #dc2626;
-}
-
-@media (max-width: 900px) {
-  #app {
-    flex-direction: column;
-    overflow-y: auto;
-    height: auto;
-    min-height: 100vh;
-  }
-
-  #game-container {
-    flex: 0 0 auto;
-    height: 100vw;
-    max-height: 70vh;
-  }
-
-  #panel {
-    flex: 0 0 auto;
-    border-left: none;
-    border-top: 1px solid var(--panel-border);
-  }
-}
-
-/* ===== Etapa 2: combate ===== */
-
-.banner {
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.banner--victory {
-  background: rgba(74, 222, 128, 0.15);
-  border: 2px solid var(--good);
-  color: var(--good);
-}
-
-.banner--defeat {
-  background: rgba(239, 68, 68, 0.15);
-  border: 2px solid #ef4444;
-  color: #fca5a5;
-}
-
-button.unit-card:disabled {
-  cursor: default;
-}
-
-button.unit-card:disabled:hover {
-  background: var(--card);
-}
-
-.unit-card.dead {
-  opacity: 0.45;
-}
-
-.unit-card.dead .unit-name {
-  text-decoration: line-through;
-}
-
-.hp-fill--mid {
-  background: var(--accent);
-}
-
-.hp-fill--low {
-  background: #ef4444;
-}
-
-.unit-stats {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  color: var(--muted);
-}
-
-.log li.log-hero {
-  color: #93c5fd;
-}
-
-.log li.log-monster {
-  color: #fca5a5;
-}
-
-.log li.log-death {
-  color: #f87171;
-  font-weight: 600;
-}
-
-.log li.log-result {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.actions {
-  display: flex;
-  flex: 0 0 auto;
-  gap: 8px;
-}
-
-.actions button {
-  flex: 1 1 0;
-}
-
-.btn-pass {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: #2563eb;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-pass:hover:not(:disabled) {
-  background: #3b82f6;
-}
-
-.btn-pass:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-/* ===== Etapa 3: indicador de fase ===== */
-
-.phase {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-align: center;
-  background: var(--card);
-  border: 2px solid transparent;
-}
-
-.phase[data-phase='player'] {
-  color: var(--good);
-  border-color: var(--good);
-}
-
-.phase[data-phase='heroes'] {
-  color: #93c5fd;
-  border-color: #3b82f6;
-}
-
-.phase[data-phase='monsters'] {
-  color: #fca5a5;
-  border-color: #ef4444;
-}
-
-.phase[data-phase='over'] {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-/* ===== Etapa 4: habilidades especiais ===== */
-
-.ability-box {
-  padding: 10px 12px;
-  background: var(--card);
-  border: 2px solid #7c3aed;
-  border-radius: 8px;
-}
-
-.ability-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.ability-name {
-  font-size: 1rem;
-  font-weight: 700;
-  color: #c4b5fd;
-}
-
-.ability-status {
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.ability-status--ready {
-  background: rgba(74, 222, 128, 0.18);
-  color: var(--good);
-}
-
-.ability-status--used {
-  background: rgba(148, 163, 184, 0.18);
-  color: var(--muted);
-}
-
-.ability-desc {
-  margin: 0 0 8px;
-  font-size: 0.82rem;
-  line-height: 1.35;
-  color: var(--muted);
-}
-
-.ability-hint {
-  margin: 0 0 8px;
-  font-size: 0.85rem;
-  line-height: 1.35;
-  color: #7dd3fc;
-}
-
-.notice {
-  margin: 0 0 8px;
-  padding: 6px 8px;
-  border-radius: 6px;
-  background: rgba(250, 204, 21, 0.12);
-  border: 1px solid var(--accent);
-  font-size: 0.82rem;
-  line-height: 1.3;
-  color: var(--accent);
-}
-
-.ability-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.ability-actions button {
-  flex: 1 1 0;
-  padding: 10px;
-  border: none;
-  border-radius: 8px;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.btn-ability {
-  background: #7c3aed;
-}
-
-.btn-ability:hover:not(:disabled) {
-  background: #8b5cf6;
-}
-
-.btn-confirm {
-  background: #16a34a;
-}
-
-.btn-confirm:hover:not(:disabled) {
-  background: #22c55e;
-}
-
-.btn-cancel {
-  background: #475569;
-}
-
-.btn-cancel:hover:not(:disabled) {
-  background: #64748b;
-}
-
-.ability-actions button:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-
-.log li.log-ability {
-  color: #c4b5fd;
-  font-weight: 600;
-}
-
-.log li.log-heal {
-  color: #86efac;
-}
-
-/* ===== Etapa 5: campanha ===== */
-
-.campaign-box {
-  padding: 10px 12px;
-  background: var(--card);
-  border-radius: 8px;
-}
-
-.floor-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.floor-label {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-
-.encounter-chip {
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.encounter-chip--normal {
-  background: rgba(148, 163, 184, 0.2);
-  color: var(--muted);
-}
-
-.encounter-chip--mini-boss {
-  background: rgba(250, 204, 21, 0.2);
-  color: #fde047;
-  border: 1px solid #facc15;
-}
-
-.encounter-chip--boss {
-  background: rgba(192, 132, 252, 0.22);
-  color: #e9d5ff;
-  border: 1px solid #c084fc;
-}
-
-.floor-name {
-  margin-top: 2px;
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.mode {
-  margin-top: 8px;
-  padding: 6px 10px;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-align: center;
-  background: #0b1220;
-  border: 2px solid transparent;
-}
-
-.mode[data-mode='fighting'] {
-  color: #93c5fd;
-  border-color: #3b82f6;
-}
-
-.mode[data-mode='floor-cleared'] {
-  color: var(--good);
-  border-color: var(--good);
-}
-
-.mode[data-mode='defeated'] {
-  color: #fca5a5;
-  border-color: #ef4444;
-}
-
-.mode[data-mode='completed'] {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.banner--cleared {
-  background: rgba(74, 222, 128, 0.15);
-  border: 2px solid var(--good);
-  color: var(--good);
-}
-
-.banner--completed {
-  background: rgba(250, 204, 21, 0.15);
-  border: 2px solid var(--accent);
-  color: var(--accent);
-}
-
-.btn-advance {
-  flex: 0 0 auto;
-  padding: 14px;
-  border: none;
-  border-radius: 8px;
-  background: #16a34a;
-  color: #fff;
-  font: inherit;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.btn-advance:hover {
-  background: #22c55e;
-}
-
-.btn-reset--highlight {
-  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.7);
-}
-
-.badge--mini-boss {
-  border-color: #facc15;
-  border-width: 3px;
-}
-
-.badge--boss {
-  border-color: #c084fc;
-  border-width: 3px;
-  box-shadow: 0 0 8px rgba(192, 132, 252, 0.8);
-}
-
-.unit-rank {
-  margin-left: 6px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  vertical-align: middle;
-}
-
-.unit-rank--mini-boss {
-  background: #facc15;
-  color: #422006;
-}
-
-.unit-rank--boss {
-  background: #c084fc;
-  color: #2e1065;
-}
-
-.log li.log-floor {
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid #1f2937;
-  color: #fcd34d;
-  font-weight: 700;
-}
-
-/* ===== Etapa 6: ataques telegrafados dos chefes ===== */
-
-.telegraph-box {
-  padding: 10px 12px;
-  background: rgba(239, 68, 68, 0.14);
-  border: 2px solid #ef4444;
-  border-radius: 8px;
-  animation: telegraph-pulse 1.4s ease-in-out infinite;
-}
-
-.telegraph-line {
-  margin: 0 0 6px;
-  font-size: 0.9rem;
-  line-height: 1.35;
-  color: #fecaca;
-}
-
-.telegraph-line strong {
-  color: #fca5a5;
-}
-
-.telegraph-hint {
-  margin: 0;
-  font-size: 0.8rem;
-  line-height: 1.3;
-  color: var(--muted);
-}
-
-@keyframes telegraph-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.45);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
-  }
-}
-
-.phase[data-phase='telegraphs'] {
-  color: #fca5a5;
-  border-color: #ef4444;
-}
-
-.log li.log-telegraph {
-  color: #fca5a5;
-  font-weight: 600;
-}
-
-
-/* Layout compacto: evita rolagem da página no desktop; áreas internas ficam contidas. */
-#app:not(:has(.preparation-screen)) { height: 100dvh; min-height: 0; overflow: hidden; }
-#app:not(:has(.preparation-screen)) #panel { min-height: 0; height: 100%; overflow: hidden; gap: 8px; padding: 10px; }
-#app:not(:has(.preparation-screen)) #panel > * { flex: 0 0 auto; }
-#app:not(:has(.preparation-screen)) .log-section { flex: 1 1 100px; min-height: 70px; overflow: hidden; }
-#app:not(:has(.preparation-screen)) .log { min-height: 0; }
-.btn-extract { width:100%; padding:12px; border:0; border-radius:8px; background:#a16207; color:#fff7ed; font:inherit; font-weight:800; cursor:pointer; }
-.btn-extract:hover { background:#ca8a04; }
-
-@media (min-width: 901px) {
-  .preparation-screen { padding-top: 14px !important; padding-bottom: 14px !important; }
-  .preparation-screen > p:nth-of-type(2) { margin-bottom: 8px !important; }
-  .preparation-screen > div { gap: 12px !important; }
-  .preparation-screen section { padding: 10px !important; }
-  .preparation-screen button { padding-top: 7px; padding-bottom: 7px; }
-  .preparation-screen footer { margin-top: 10px !important; padding: 10px !important; }
-}
-@media (max-width: 900px) {
-  #app:not(:has(.preparation-screen)) { height:auto; min-height:100dvh; overflow:visible; }
-  #app:not(:has(.preparation-screen)) #game-container { height: min(100vw, 58dvh); max-height:none; flex:0 0 auto; }
-  #app:not(:has(.preparation-screen)) #panel { height:auto; overflow:visible; }
-}
-@media (max-width: 640px) {
-  .preparation-screen { padding:12px !important; }
-  .preparation-screen > div { grid-template-columns:minmax(0,1fr) !important; }
-  .preparation-screen section { padding:10px !important; }
-}
-
-
-/* Combate: layout tático compacto, sem aparência de dashboard. */
-@media (min-width: 901px) {
-  #app:not(:has(.preparation-screen)) {
-    display: grid;
-    grid-template-columns: minmax(190px, 0.78fr) minmax(360px, 1.5fr) minmax(220px, 0.9fr);
-    grid-template-rows: minmax(0, 1fr);
-    gap: 10px;
-    padding: 10px;
-    height: 100dvh;
-    overflow: hidden;
-    background: #090d14;
-  }
-  #app:not(:has(.preparation-screen)) #game-container {
-    grid-column: 2;
-    grid-row: 1;
-    min-height: 0;
-    height: 100%;
-    background: #080b11;
-    border: 1px solid #354052;
-  }
-  #app:not(:has(.preparation-screen)) #panel {
-    display: contents;
-  }
-  #panel:not(:has(.preparation-screen)) > * {
-    min-width: 0;
-    margin: 0;
-    border-radius: 0 !important;
-  }
-  #panel:not(:has(.preparation-screen)) > :nth-child(1),
-  #panel:not(:has(.preparation-screen)) > :nth-child(2),
-  #panel:not(:has(.preparation-screen)) > :nth-child(3),
-  #panel:not(:has(.preparation-screen)) > :nth-child(13) {
-    grid-column: 1;
-  }
-  #panel:not(:has(.preparation-screen)) > :nth-child(1) { grid-row: 1; align-self: end; font-size: 1.1rem; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(2) { grid-row: 2; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(3) { grid-row: 3; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(13) { grid-row: 4 / span 3; min-height: 0; overflow-y: auto; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(14),
-  #panel:not(:has(.preparation-screen)) > :nth-child(15),
-  #panel:not(:has(.preparation-screen)) > :nth-child(16) {
-    grid-column: 3;
-  }
-  #panel:not(:has(.preparation-screen)) > :nth-child(14) { grid-row: 1 / span 2; min-height: 0; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(15) { grid-row: 3 / span 2; min-height: 0; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(16) { grid-row: 5 / span 2; min-height: 0; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(4),
-  #panel:not(:has(.preparation-screen)) > :nth-child(5),
-  #panel:not(:has(.preparation-screen)) > :nth-child(6),
-  #panel:not(:has(.preparation-screen)) > :nth-child(7),
-  #panel:not(:has(.preparation-screen)) > :nth-child(8),
-  #panel:not(:has(.preparation-screen)) > :nth-child(9),
-  #panel:not(:has(.preparation-screen)) > :nth-child(10),
-  #panel:not(:has(.preparation-screen)) > :nth-child(11),
-  #panel:not(:has(.preparation-screen)) > :nth-child(12) {
-    grid-column: 3;
-  }
-  #panel:not(:has(.preparation-screen)) > :nth-child(4) { grid-row: 7; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(5) { grid-row: 8; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(6) { grid-row: 9; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(7) { grid-row: 10; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(8) { grid-row: 11; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(9) { grid-row: 12; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(10) { grid-row: 13; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(11) { grid-row: 14; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(12) { grid-row: 15; }
-  #panel:not(:has(.preparation-screen)) .log-section { max-height: 20vh; min-height: 0; }
-  #panel:not(:has(.preparation-screen)) .log { max-height: 14vh; }
-}
-#panel:not(:has(.preparation-screen)) .turn-box,
-#panel:not(:has(.preparation-screen)) .campaign-box,
-#panel:not(:has(.preparation-screen)) .ability-box,
-#panel:not(:has(.preparation-screen)) .unit-card,
-#panel:not(:has(.preparation-screen)) .phase,
-#panel:not(:has(.preparation-screen)) .banner,
-#panel:not(:has(.preparation-screen)) .mode,
-#panel:not(:has(.preparation-screen)) .log,
-#panel:not(:has(.preparation-screen)) button {
-  border-radius: 0 !important;
-}
-#panel:not(:has(.preparation-screen)) .unit-card { padding: 5px 7px; gap: 7px; }
-#panel:not(:has(.preparation-screen)) .badge { width: 28px; height: 28px; border-radius: 0; }
-#panel:not(:has(.preparation-screen)) .ability-box,
-#panel:not(:has(.preparation-screen)) .campaign-box { padding: 8px; }
-#panel:not(:has(.preparation-screen)) .actions,
-#panel:not(:has(.preparation-screen)) .ability-actions { gap: 5px; }
-#panel:not(:has(.preparation-screen)) button { padding: 8px; }
-
-@media (max-width: 900px) {
-  #app:not(:has(.preparation-screen)) { display:flex; flex-direction:column; gap:0; padding:0; }
-  #app:not(:has(.preparation-screen)) #game-container { order:0; width:100%; height:min(100vw, 52dvh); max-height:none; border:0; border-bottom:1px solid #354052; }
-  #app:not(:has(.preparation-screen)) #panel { order:1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; padding:8px; border:0; overflow:visible; }
-  #panel:not(:has(.preparation-screen)) > * { min-width:0; border-radius:0 !important; margin:0; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(1),
-  #panel:not(:has(.preparation-screen)) > :nth-child(2),
-  #panel:not(:has(.preparation-screen)) > :nth-child(3),
-  #panel:not(:has(.preparation-screen)) > :nth-child(6),
-  #panel:not(:has(.preparation-screen)) > :nth-child(7),
-  #panel:not(:has(.preparation-screen)) > :nth-child(10),
-  #panel:not(:has(.preparation-screen)) > :nth-child(11),
-  #panel:not(:has(.preparation-screen)) > :nth-child(12),
-  #panel:not(:has(.preparation-screen)) > :nth-child(13),
-  #panel:not(:has(.preparation-screen)) > :nth-child(14),
-  #panel:not(:has(.preparation-screen)) > :nth-child(15),
-  #panel:not(:has(.preparation-screen)) > :nth-child(16) { grid-column:1 / -1; }
-  #panel:not(:has(.preparation-screen)) .log-section { min-height:90px; max-height:140px; }
-  #panel:not(:has(.preparation-screen)) .log { max-height:90px; }
-}
-
-@media (min-width: 901px) {
-  #panel:not(:has(.preparation-screen)) > :nth-child(8),
-  #panel:not(:has(.preparation-screen)) > :nth-child(9),
-  #panel:not(:has(.preparation-screen)) > :nth-child(16) { grid-column:1; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(8) { grid-row:7; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(9) { grid-row:8; }
-  #panel:not(:has(.preparation-screen)) > :nth-child(16) { grid-row:9; }
-}
-
-
-/* Correção estrutural do layout: tabuleiro grande + duas rails estáveis. */
-@media (min-width: 901px) {
-  #app:not(:has(.preparation-screen)) {
-    display: grid;
-    grid-template-columns: minmax(220px, 0.8fr) minmax(0, 2.2fr) minmax(240px, 0.9fr);
-    grid-template-rows: minmax(0, 1fr);
-    align-items: stretch;
-    gap: 10px;
-    height: 100dvh;
-    min-height: 0;
-    padding: 10px;
-    overflow: hidden;
-  }
-  #app:not(:has(.preparation-screen)) #game-container {
-    grid-column: 2;
-    grid-row: 1;
-    width: 100%;
-    height: 100%;
-    min-width: 0;
-    min-height: 0;
-  }
-  #app:not(:has(.preparation-screen)) #panel { display: contents; }
-  #panel:not(:has(.preparation-screen)) .battle-rail {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    overflow: hidden;
-    padding: 4px;
-    background: #101722;
-    border: 1px solid #354052;
-  }
-  #panel:not(:has(.preparation-screen)) .battle-rail--left { grid-column: 1; grid-row: 1; }
-  #panel:not(:has(.preparation-screen)) .battle-rail--right { grid-column: 3; grid-row: 1; }
-  #panel:not(:has(.preparation-screen)) .battle-rail > * { flex: 0 0 auto; min-width: 0; margin: 0; }
-  #panel:not(:has(.preparation-screen)) .battle-rail .log-section { flex: 1 1 120px; min-height: 80px; overflow: hidden; }
-  #panel:not(:has(.preparation-screen)) .battle-rail .log { min-height: 0; overflow-y: auto; }
-}
-#panel:not(:has(.preparation-screen)) .battle-rail,
-#panel:not(:has(.preparation-screen)) .battle-rail * {
-  border-radius: 0 !important;
-}
-#panel:not(:has(.preparation-screen)) .battle-rail h2 { margin: 0 0 4px; }
-#panel:not(:has(.preparation-screen)) .battle-rail .unit-card { padding: 4px 6px; gap: 6px; }
-#panel:not(:has(.preparation-screen)) .battle-rail .badge { width: 26px; height: 26px; }
-#panel:not(:has(.preparation-screen)) .battle-rail .campaign-box,
-#panel:not(:has(.preparation-screen)) .battle-rail .ability-box { padding: 7px; }
-#panel:not(:has(.preparation-screen)) .battle-rail button { padding: 7px; }
-
-@media (max-width: 900px) {
-  #app:not(:has(.preparation-screen)) {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    height: auto;
-    min-height: 100dvh;
-    overflow: visible;
-    padding: 0;
-  }
-  #app:not(:has(.preparation-screen)) #game-container {
-    order: 0;
-    flex: 0 0 auto;
-    width: 100%;
-    height: min(100vw, 62dvh);
-    max-height: none;
-    min-height: 280px;
-  }
-  #app:not(:has(.preparation-screen)) #panel {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    width: 100%;
-    padding: 8px;
-    overflow: visible;
-  }
-  #panel:not(:has(.preparation-screen)) .battle-rail {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    min-width: 0;
-  }
-  #panel:not(:has(.preparation-screen)) .battle-rail--left { grid-column: 1; }
-  #panel:not(:has(.preparation-screen)) .battle-rail--right { grid-column: 2; }
-  #panel:not(:has(.preparation-screen)) .battle-rail .log-section { min-height: 100px; }
-}
-@media (max-width: 560px) {
-  #app:not(:has(.preparation-screen)) #panel { grid-template-columns: minmax(0, 1fr); }
-  #panel:not(:has(.preparation-screen)) .battle-rail--left,
-  #panel:not(:has(.preparation-screen)) .battle-rail--right { grid-column: 1; }
-}
-
-/* Mobile: combate inteiro em uma única tela, sem rolagem da página. */
-@media (max-width: 560px) {
-  html, body, #app {
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-    max-height: 100dvh;
-    overflow: hidden;
-  }
-
-  #app:not(:has(.preparation-screen)) {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    width: 100%;
-    height: 100dvh;
-    min-height: 0;
-    max-height: 100dvh;
-    padding: 0;
-    gap: 0;
-    overflow: hidden;
-  }
-
-  #app:not(:has(.preparation-screen)) #game-container {
-    order: 0;
-    flex: 0 0 min(45dvh, 100vw);
-    width: 100%;
-    height: min(45dvh, 100vw);
-    min-height: 0;
-    max-height: min(45dvh, 100vw);
-    overflow: hidden;
-  }
-
-  #app:not(:has(.preparation-screen)) #panel {
-    order: 1;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: minmax(0, 1fr);
-    align-items: stretch;
-    flex: 1 1 0;
-    width: 100%;
-    height: 0;
-    min-height: 0;
-    max-height: 55dvh;
-    padding: 4px;
-    gap: 4px;
-    overflow: hidden;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail {
-    display: flex;
-    flex-direction: column;
-    grid-row: 1;
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    padding: 4px;
-    gap: 4px;
-    overflow: hidden;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail--left { grid-column: 1; }
-  #panel:not(:has(.preparation-screen)) .battle-rail--right { grid-column: 2; }
-  #panel:not(:has(.preparation-screen)) .battle-rail > * {
-    flex: 0 0 auto;
-    min-width: 0;
-    max-width: 100%;
-    margin: 0;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail h2 {
-    font-size: .78rem;
-    line-height: 1.1;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .turn-box,
-  #panel:not(:has(.preparation-screen)) .battle-rail .campaign-box,
-  #panel:not(:has(.preparation-screen)) .battle-rail .ability-box,
-  #panel:not(:has(.preparation-screen)) .battle-rail .phase,
-  #panel:not(:has(.preparation-screen)) .battle-rail .mode,
-  #panel:not(:has(.preparation-screen)) .battle-rail .banner {
-    padding: 5px;
-    font-size: .68rem;
-    line-height: 1.15;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .unit-card {
-    padding: 3px 4px;
-    gap: 4px;
-    font-size: .68rem;
-    line-height: 1.1;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .unit-stats {
-    margin-top: 2px;
-    font-size: .62rem;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .badge {
-    width: 22px;
-    height: 22px;
-    flex: 0 0 22px;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail button {
-    min-height: 30px;
-    padding: 5px 4px;
-    font-size: .68rem;
-    line-height: 1.1;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .actions,
-  #panel:not(:has(.preparation-screen)) .battle-rail .ability-actions {
-    display: flex;
-    gap: 4px;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .log-section {
-    display: none;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .ability-desc,
-  #panel:not(:has(.preparation-screen)) .battle-rail .ability-hint,
-  #panel:not(:has(.preparation-screen)) .battle-rail .telegraph-hint {
-    font-size: .65rem;
-    line-height: 1.15;
-    margin-bottom: 4px;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .floor-label {
-    font-size: .95rem;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .floor-name {
-    font-size: .65rem;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .notice {
-    padding: 4px;
-    margin-bottom: 4px;
-    font-size: .65rem;
-  }
-
-
-
-.inventory-window-content { margin: 0 !important; }
-.inventory-window-content .inventory-window-content { max-width: 100%; }
-
-
-/* Mobile: o espaço da lista de monstros vira o controle de passar a vez. */
-@media (max-width: 560px) {
-  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section > h2,
-  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section .unit-list {
-    display: none;
-  }
-  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section .actions {
-    display: flex;
-    width: 100%;
-    margin: 0;
-  }
-  #panel:not(:has(.preparation-screen)) .battle-rail--right .monsters-section .btn-pass {
-    width: 100%;
-    min-height: 42px;
-    font-size: .82rem;
-    font-weight: 800;
-  }
-}
-
-/* Correção mobile: o combate pode ultrapassar a altura da viewport e deve rolar. */
-@media (max-width: 560px) {
-  html,
-  body {
-    width: 100%;
-    height: auto;
-    min-height: 100%;
-    max-height: none;
-    overflow-x: hidden;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-  }
-
-  #app:not(:has(.preparation-screen)) {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    width: 100%;
-    height: auto;
-    min-height: 100dvh;
-    max-height: none;
-    overflow: visible;
-  }
-
-  #app:not(:has(.preparation-screen)) #game-container {
-    flex: 0 0 auto;
-    width: 100%;
-    height: min(100vw, 45dvh);
-    min-height: 0;
-    max-height: none;
-    overflow: hidden;
-  }
-
-  #app:not(:has(.preparation-screen)) #panel {
-    flex: 0 0 auto;
-    width: 100%;
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    overflow: visible;
-    align-items: stretch;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail {
-    height: auto;
-    min-height: 0;
-    max-height: none;
-    overflow: visible;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .log-section {
-    display: flex;
-    flex: 0 0 auto;
-    min-height: 100px;
-    max-height: 180px;
-  }
-
-  #panel:not(:has(.preparation-screen)) .battle-rail .log {
-    min-height: 0;
-    max-height: 140px;
-    overflow-y: auto;
-  }
-}
-
-
-/* PREPARATION SCREEN — layout isolado da interface de combate */
-#app:has(.preparation-screen) {
-  display: block !important;
   width: 100%;
   height: 100dvh;
   min-height: 0;
-  overflow: hidden;
+  margin: 0;
   padding: 0;
+  overflow: hidden;
   background: #100d17;
 }
-#app:has(.preparation-screen) > #game-container { display: none !important; }
-#app:has(.preparation-screen) > #panel {
+
+/* O painel do jogo deixa de ser uma coluna lateral durante a preparação. */
+#app > #game-container {
+  display: none !important;
+}
+
+#app > #panel {
   display: block !important;
   position: relative;
   width: 100% !important;
@@ -1199,207 +62,376 @@ button.unit-card:disabled:hover {
   height: 100dvh !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  flex: none !important;
-  margin: 0;
+  margin: 0 !important;
   padding: 0 !important;
-  overflow: hidden;
+  flex: none !important;
+  overflow: hidden !important;
   border: 0 !important;
-  background: transparent;
+  background: transparent !important;
 }
+
+/* Estrutura principal: perfil no topo; menu e área de jogo abaixo. */
 .preparation-screen {
-  display: grid !important;
+  position: relative;
+  display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
-  gap: 14px;
-  width: 100% !important;
-  max-width: none !important;
-  height: 100dvh !important;
-  min-height: 0 !important;
+  gap: 18px;
+  width: 100%;
+  height: 100dvh;
+  min-width: 0;
+  min-height: 0;
   margin: 0;
-  padding: 18px 24px;
+  padding: clamp(14px, 2vw, 28px);
   overflow: hidden;
-  color: #f5e9d0;
-  background: linear-gradient(145deg,#24202b,#101521 62%,#35251f);
-  font-family: system-ui, sans-serif;
+  color: #f5ead4;
+  background:
+    radial-gradient(ellipse at 78% 45%, rgba(95, 54, 71, .24), transparent 48%),
+    linear-gradient(135deg, #28202b 0%, #171622 48%, #100f19 100%);
 }
-.preparation-screen .prep-profile {
+
+/* Perfil do jogador. */
+.prep-profile {
   display: flex;
   align-items: center;
-  gap: 14px;
-  width: min(440px, 100%);
+  gap: 16px;
+  width: fit-content;
+  max-width: 100%;
   min-height: 82px;
   margin: 0;
-  padding: 7px 18px 7px 7px;
-  border: 1px solid #563c3b;
-  border-radius: 48px 24px 24px 48px;
-  background: #281923;
+  padding: 7px 22px 7px 7px;
+  border: 1px solid #60434a;
+  border-radius: 48px 22px 22px 48px;
+  background: linear-gradient(110deg, #38212c, #211923);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
 }
-.preparation-screen .prep-avatar {
+
+.prep-avatar {
+  display: block;
   width: 68px;
   height: 68px;
   flex: 0 0 68px;
   object-fit: cover;
-  border: 3px solid #16745f;
+  border: 3px solid #b99a55;
   border-radius: 50%;
+  background: #17131d;
 }
-.preparation-screen .prep-layout {
-  display: grid !important;
-  grid-template-columns: minmax(220px, 0.7fr) minmax(0, 1.8fr);
-  gap: clamp(16px, 2vw, 30px);
+
+.prep-profile strong {
+  display: block;
+  color: #ffe16b;
+  font-size: clamp(1rem, 1.5vw, 1.45rem);
+  letter-spacing: .06em;
+}
+
+.prep-profile button {
+  margin-top: 6px;
+  padding: 6px 12px;
+  border: 1px solid #735b68;
+  border-radius: 7px;
+  background: #2d2432;
+  color: #f7e8ce;
+}
+
+/* Duas colunas: navegação à esquerda e formação à direita. */
+.prep-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, .68fr) minmax(0, 2fr);
+  gap: clamp(18px, 2.5vw, 42px);
   width: 100%;
   height: 100%;
   min-width: 0;
   min-height: 0;
   align-items: stretch;
 }
-.preparation-screen .prep-menu {
+
+.prep-menu {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 12px;
+  gap: 13px;
   min-width: 0;
-  padding: 8px 4px;
+  padding: 18px clamp(4px, 1vw, 16px);
 }
-.preparation-screen .prep-menu h2 {
-  color: #ffdf62;
-  text-align: center;
-  font-size: 1.25rem;
-}
-.preparation-screen .prep-menu button {
-  width: 100%;
-  min-height: 48px;
-  padding: 10px 16px;
-  border: 0;
-  border-radius: 28px;
-  background: #211321;
-  color: #ffe16b;
-  font: inherit;
+
+.prep-menu h2 {
+  margin: 0 0 8px;
+  color: #e7c66e;
+  font-size: 1.2rem;
   font-weight: 900;
-  letter-spacing: .06em;
-  cursor: pointer;
+  letter-spacing: .2em;
+  text-align: center;
 }
-.preparation-screen .prep-menu button:hover { background: #3a2438; }
-.preparation-screen .prep-menu .prep-dev-button {
-  margin-top: 10px;
-  border: 1px solid #8b7be8;
-  background: #25233d;
-  color: #fff;
+
+.prep-menu p {
+  margin: 0;
 }
-.preparation-screen .prep-right {
+
+.prep-menu > div {
+  display: grid;
+  gap: 10px;
+}
+
+.prep-menu button {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: 1px solid #61404e;
+  border-radius: 9px;
+  background: linear-gradient(100deg, #382334, #251b2b);
+  color: #f6d879;
+  font-size: .92rem;
+  font-weight: 850;
+  letter-spacing: .07em;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .2);
+  transition: background .15s ease, transform .15s ease, border-color .15s ease;
+}
+
+.prep-menu button:hover {
+  transform: translateX(3px);
+  border-color: #c39c52;
+  background: #493044;
+}
+
+.prep-menu .prep-dev-button {
+  width: auto;
+  min-height: 38px;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-color: #65569a;
+  background: #29243e;
+  color: #e3d9ff;
+  font-size: .78rem;
+  text-align: center;
+}
+
+/* Área de formação. */
+.prep-right {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto auto;
-  align-items: center;
   justify-items: stretch;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   width: 100%;
   height: 100%;
   min-width: 0;
   min-height: 0;
 }
-.preparation-screen .prep-board {
+
+.prep-board {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: min(100%, 680px);
   max-width: 100%;
+  min-width: 0;
   max-height: 100%;
   justify-self: center;
   align-self: center;
-  padding: 10px !important;
-  border: 8px solid #050409 !important;
-  border-radius: 0 !important;
-  background: #09070c !important;
+  padding: clamp(10px, 1.3vw, 18px);
+  border: 8px solid #09070d;
+  border-radius: 4px;
+  background: linear-gradient(145deg, #17131d, #09080e);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, .45), inset 0 0 0 1px #51404c;
 }
-.preparation-screen .prep-board h2 { color: #ffe16b; text-align: center; }
-.preparation-screen .prep-board p { margin: 4px 0 8px !important; text-align: center; }
-.preparation-screen .prep-board-grid {
+
+.prep-board h2 {
+  margin: 0 0 6px;
+  color: #f2d47b;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.prep-board p {
+  margin: 0 0 10px;
+  color: #b8adbb;
+  font-size: .8rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.prep-board-grid {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
   width: 100%;
-  max-width: none !important;
-  gap: 3px !important;
+  max-width: none;
   margin: 0 auto;
 }
-.preparation-screen .prep-board-grid button {
+
+.prep-board-grid button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   min-width: 0;
-  max-height: none;
   aspect-ratio: 1;
+  max-height: none;
   padding: 2px;
-  border-radius: 2px !important;
+  overflow: hidden;
+  border: 1px solid #514451;
+  border-radius: 3px;
+  background: #171b28;
+  color: #e9d9b8;
 }
-.preparation-screen .prep-heroes {
+
+.prep-board-grid button:disabled {
+  opacity: .75;
+  cursor: not-allowed;
+}
+
+.prep-board-grid button:not(:disabled):hover {
+  border-color: #f1d36f !important;
+  background: #3a3040 !important;
+}
+
+.prep-board-grid img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+/* Cinco cartões de personagens, em uma única faixa no desktop. */
+.prep-heroes {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
   width: 100%;
-  gap: 7px;
+  min-width: 0;
   align-self: end;
 }
-.preparation-screen .prep-hero {
+
+.prep-hero {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  text-align: center;
   border: 1px solid #80664e;
-  border-radius: 7px;
-  background: #171522;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #24202d, #15131d);
+  text-align: center;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, .25);
 }
-.preparation-screen .prep-hero img {
+
+.prep-hero img {
   display: block;
   width: 100%;
-  height: clamp(68px, 11vh, 112px);
+  height: clamp(66px, 10vh, 112px);
   object-fit: contain;
   object-position: center bottom;
-  background: #111522;
+  background: #11131d;
+  cursor: pointer;
 }
-.preparation-screen .prep-hero-actions {
+
+.prep-hero > div:not(.prep-hero-actions) {
+  min-height: 28px;
+  padding: 5px 2px;
+  color: #ffe16b;
+  font-size: clamp(.65rem, .85vw, .82rem);
+}
+
+.prep-hero-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 2px;
+  gap: 3px;
+  padding: 4px;
 }
-.preparation-screen .prep-hero button {
+
+.prep-hero button {
   min-width: 0;
   padding: 6px 2px;
-  font-size: clamp(.58rem, .8vw, .75rem);
+  border: 1px solid #57465d;
+  border-radius: 4px;
+  background: #2b2434;
+  color: #eee0c8;
+  font-size: clamp(.55rem, .72vw, .72rem);
+  font-weight: 700;
   white-space: nowrap;
 }
-.preparation-screen .prep-expedition {
+
+.prep-hero button:hover:not(:disabled) {
+  border-color: #d3ad60;
+  background: #46364a;
+}
+
+.prep-hero button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* Botão de entrada na expedição. */
+.prep-expedition {
   position: static;
   justify-self: end;
-  width: min(310px, 48%);
-  padding: 12px 24px !important;
-  border: 0;
-  border-radius: 0 !important;
-  clip-path: polygon(0 0,82% 0,100% 50%,82% 100%,0 100%);
-  background: #211321 !important;
-  color: #ffe16b !important;
-  font-size: clamp(1.05rem, 1.8vw, 1.7rem) !important;
-  font-weight: 900;
-  white-space: nowrap;
+  width: min(320px, 48%);
+  min-height: 52px;
+  padding: 12px 28px;
+  border: 1px solid #b9974c;
+  border-radius: 3px;
+  background: linear-gradient(100deg, #4a2937, #2c1d30);
+  color: #ffe16b;
+  font-size: clamp(1rem, 1.5vw, 1.45rem);
+  font-weight: 950;
+  letter-spacing: .08em;
+  clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+  box-shadow: 0 5px 16px rgba(0, 0, 0, .35);
 }
-.preparation-screen .prep-modal {
+
+.prep-expedition:hover:not(:disabled) {
+  background: linear-gradient(100deg, #684052, #44304b);
+}
+
+.prep-expedition:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* Janelas modais e inventário. */
+.prep-modal,
+.inventory-window {
   position: fixed;
   inset: 0;
-  z-index: 3000;
+  z-index: 4000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 18px;
-  background: #05070ddd;
-}
-.preparation-screen .prep-modal[hidden] { display: none !important; }
-.preparation-screen .prep-modal-card {
-  width: min(650px, 100%);
-  max-height: 85dvh;
   overflow: auto;
-  padding: 18px;
-  border: 1px solid #a88b50;
-  border-radius: 12px;
-  background: #171522;
+  background: rgba(5, 5, 12, .86);
+  backdrop-filter: blur(5px);
 }
-.preparation-screen .prep-icons {
+
+.prep-modal[hidden] {
+  display: none !important;
+}
+
+.prep-modal-card {
+  width: min(650px, 100%);
+  max-height: 88dvh;
+  overflow: auto;
+  padding: 20px;
+  border: 1px solid #a88b50;
+  border-radius: 10px;
+  background: #1b1722;
+  color: #f5ead4;
+}
+
+.prep-modal-card h2 {
+  margin: 0 0 14px;
+  color: #f2d47b;
+}
+
+.prep-icons {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
-.preparation-screen .prep-icons img {
+
+.prep-icons img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
@@ -1407,47 +439,123 @@ button.unit-card:disabled:hover {
   border-radius: 50%;
   cursor: pointer;
 }
-.preparation-screen .prep-icons img:hover { border-color: #ffe16b; }
-.preparation-screen .inventory-window { z-index: 4000 !important; }
-.preparation-screen .prep-footer { display: none !important; }
 
+.prep-icons img:hover {
+  border-color: #ffe16b;
+}
+
+.inventory-window {
+  display: none;
+  z-index: 5000;
+}
+
+.inventory-window > div {
+  width: min(900px, 100%);
+  max-height: 90dvh;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid #8060a7;
+  background: #171522;
+  color: #f5ead4;
+}
+
+/* Oculta o rodapé antigo: o botão de expedição fica junto à formação. */
+.prep-footer {
+  display: none !important;
+}
+
+/* Mobile: empilha as áreas e permite rolagem vertical. */
 @media (max-width: 760px) {
-  #app:has(.preparation-screen),
-  #app:has(.preparation-screen) > #panel {
-    height: auto !important;
-    min-height: 100dvh;
-    overflow: visible;
+  html,
+  body,
+  #app {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
-  .preparation-screen {
+
+  #app > #panel {
     height: auto !important;
     min-height: 100dvh !important;
+    overflow: visible !important;
+  }
+
+  .preparation-screen {
+    height: auto;
+    min-height: 100dvh;
     grid-template-rows: auto auto;
+    gap: 14px;
     overflow: visible;
     padding: 12px;
   }
-  .preparation-screen .prep-layout {
+
+  .prep-profile {
+    width: 100%;
+    min-height: 70px;
+  }
+
+  .prep-avatar {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+  }
+
+  .prep-layout {
     height: auto;
     grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
+    gap: 16px;
   }
-  .preparation-screen .prep-menu {
+
+  .prep-menu {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 7px;
+    padding: 0;
   }
-  .preparation-screen .prep-menu h2 { grid-column: 1 / -1; }
-  .preparation-screen .prep-menu button {
+
+  .prep-menu h2 {
+    grid-column: 1 / -1;
+  }
+
+  .prep-menu button {
     min-height: 42px;
-    padding: 8px;
-    font-size: .78rem;
+    padding: 8px 5px;
+    font-size: .72rem;
+    text-align: center;
   }
-  .preparation-screen .prep-right {
+
+  .prep-menu .prep-dev-button {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .prep-right {
     height: auto;
     display: flex;
     flex-direction: column;
     align-items: stretch;
   }
-  .preparation-screen .prep-board { width: min(100%, 560px); align-self: center; }
-  .preparation-screen .prep-heroes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .preparation-screen .prep-expedition { width: 100%; clip-path: none; }
+
+  .prep-board {
+    width: min(100%, 560px);
+    align-self: center;
+  }
+
+  .prep-heroes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .prep-hero img {
+    height: 110px;
+  }
+
+  .prep-hero button {
+    font-size: .68rem;
+  }
+
+  .prep-expedition {
+    width: 100%;
+    clip-path: none;
+  }
 }
