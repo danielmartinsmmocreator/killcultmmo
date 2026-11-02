@@ -1,21 +1,5 @@
 import type { UnitDefinition } from '../types';
 
-/**
- * Monstros antigos mantidos para a batalha inicial e compatibilidade com testes.
- * Os novos tipos são usados na campanha principal.
- */
-export const GOBLIN: UnitDefinition = {
-  id: 'goblin',
-  name: 'Goblin',
-  team: 'monster',
-  symbol: 'G',
-  color: 0x991b1b,
-  maxHp: 12,
-  damage: 4,
-  movement: 2,
-  attack: { directions: 'orthogonal', range: 1 },
-};
-
 export const SKELETON: UnitDefinition = {
   id: 'skeleton',
   name: 'Esqueleto',
@@ -24,18 +8,6 @@ export const SKELETON: UnitDefinition = {
   color: 0x7f1d1d,
   maxHp: 16,
   damage: 5,
-  movement: 1,
-  attack: { directions: 'orthogonal', range: 1 },
-};
-
-export const SLIME: UnitDefinition = {
-  id: 'slime',
-  name: 'Gosma',
-  team: 'monster',
-  symbol: 'S',
-  color: 0x9f1239,
-  maxHp: 14,
-  damage: 3,
   movement: 1,
   attack: { directions: 'orthogonal', range: 1 },
 };
@@ -250,7 +222,7 @@ export const JOROGUMO: UnitDefinition = { id:'jorogumo', name:'Jorogumo', team:'
 export const KITSUNE: UnitDefinition = { id:'kitsune', name:'Kitsune', team:'monster', symbol:'狐', color:0xea580c, maxHp:6300, damage:205, movement:2, attack:{directions:'orthogonal',range:2} };
 
 export const MONSTER_DEFINITIONS: readonly UnitDefinition[] = [
-  GOBLIN, SKELETON, SLIME, CULTIST, INSANE, ACOLYTE, DEFORMED_DEVOTEE, ABYSSAL_SCALED,
+  SKELETON, CULTIST, INSANE, ACOLYTE, DEFORMED_DEVOTEE, ABYSSAL_SCALED,
   SCALED_GUARDIAN, RLYEH_HORROR, VAMPIRIC_THRALL, BLOOD_BAT, NIGHT_HUNTER, BLOOD_KNIGHT,
   WEREWOLF, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH,
   CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT, SACI, BOITATA,
