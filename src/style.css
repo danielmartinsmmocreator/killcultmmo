@@ -124,7 +124,7 @@ button {
 .prep-menu > div {
   display: grid !important;
   grid-template-columns: 1fr;
-  gap: 6px !important;
+  gap: 3px !important;
   width: 100%;
 }
 
@@ -132,7 +132,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 47%;
+  width: 42.3%;
   min-height: 0;
   aspect-ratio: 2.22 / 1;
   padding: 12px 18px;
@@ -391,12 +391,12 @@ button {
   }
 
   .prep-menu > div {
-    gap: 6px !important;
+    gap: 3px !important;
   }
 
   .prep-menu > div button {
     min-height: 58px;
-    width: 53%;
+    width: 47.7%;
     padding: 8px;
     font-size: clamp(9px, 1.5vw, 14px);
   }
