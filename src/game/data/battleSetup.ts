@@ -1,7 +1,7 @@
 import type { Position, Unit, UnitDefinition } from '../types';
 import { createHeroProgression } from '../core/progression';
 import { ARCHER, ASSASSIN, CLERIC, MAGE, WARRIOR } from './heroes';
-import { GOBLIN, SKELETON, SLIME } from './monsters';
+import { SKELETON } from './monsters';
 
 export interface SetupEntry {
   definition: UnitDefinition;
@@ -55,9 +55,7 @@ export const HERO_FORMATION: readonly SetupEntry[] = [
 const FIRST_BATTLE: readonly SetupEntry[] = [
   ...HERO_FORMATION,
   // Monstros
-  { definition: GOBLIN, position: { col: 1, row: 1 } },
   { definition: SKELETON, position: { col: 4, row: 1 } },
-  { definition: SLIME, position: { col: 2, row: 0 } },
 ];
 
 /**
