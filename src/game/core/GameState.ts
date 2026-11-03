@@ -736,7 +736,8 @@ export class GameState {
     if (!Number.isInteger(saved.floor) || Number(saved.floor) !== this.currentFloor) return false;
     if (!['player', 'heroes', 'telegraphs', 'monsters', 'over'].includes(String(saved.phase))) return false;
     if (!['ongoing', 'victory', 'defeat'].includes(String(saved.outcome))) return false;
-    const definitions = new Map(this.allUnits.map((unit) => [unit.uid, unit.definition]));
+    const definitions = new Map<string, Unit['definition']>();
+    for (const unit of this.allUnits) definitions.set(unit.uid, unit.definition);
     if (saved.units.length !== this.allUnits.length) return false;
     const pending: { unit: Unit; mutable: Record<string, unknown> }[] = [];
     const seen = new Set<string>();
