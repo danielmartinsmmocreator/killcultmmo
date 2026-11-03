@@ -144,6 +144,21 @@ export class Campaign {
     }
   }
 
+  /** Estado completo dos equipamentos permanentes, no formato aceito pela RPC do Supabase. */
+  getPersistedEquipment(): { character_id: string; inventory_item_id: string; slot: string }[] {
+    const result: { character_id: string; inventory_item_id: string; slot: string }[] = [];
+    for (const hero of this.partyUnits) {
+      const characterId = this.getPersistedCharacterId(hero.definition.id);
+      if (!characterId) continue;
+      for (const [slot, instanceId] of Object.entries(hero.equipment ?? {})) {
+        if (!instanceId) continue;
+        const inventoryItemId = this.inventory.persistentIdOf(instanceId);
+        if (inventoryItemId) result.push({ character_id: characterId, inventory_item_id: inventoryItemId, slot });
+      }
+    }
+    return result;
+  }
+
   /** ID do registro do personagem no Supabase, associado à classe fixa do herói. */
   getPersistedCharacterId(classId: string): string | null {
     return this.persistedCharacterIds.get(classId) ?? null;
