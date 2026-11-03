@@ -7,6 +7,7 @@ import { SidePanel } from './ui/SidePanel';
 import { PreparationScreen } from './ui/PreparationScreen';
 import { AuthScreen } from './ui/AuthScreen';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
+import { loadPlayerData } from './lib/playerData';
 
 const gameContainer = document.getElementById('game-container');
 const panelRoot = document.getElementById('panel');
@@ -23,6 +24,8 @@ let game: Phaser.Game | null = null;
 let sidePanel: SidePanel | null = null;
 let authScreen: AuthScreen | null = null;
 let activeUserId: string | null = null;
+let loadingUserId: string | null = null;
+let playerNickname = 'JOGADOR';
 
 const sessionControls = document.createElement('div');
 sessionControls.style.cssText = 'position:fixed;top:10px;right:12px;z-index:3000;';
@@ -76,7 +79,7 @@ function showPreparation(resetCampaign = false): void {
   if (resetCampaign) campaign.restart(false);
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
-  new PreparationScreen(panel, campaign, startExpedition);
+  new PreparationScreen(panel, campaign, startExpedition, playerNickname);
   sessionControls.hidden = false;
 }
 
@@ -101,12 +104,56 @@ function startExpedition(): void {
   });
 }
 
-function enterGame(userId: string): void {
-  if (activeUserId === userId && campaign) return;
+function showPlayerDataError(userId: string, message: string): void {
+  destroyGame();
+  activeUserId = null;
+  sessionControls.hidden = true;
+  gameRoot.hidden = true;
+  gameRoot.style.display = 'none';
+  const screen = document.createElement('main');
+  screen.style.cssText = 'min-height:100dvh;display:grid;place-content:center;gap:14px;padding:24px;box-sizing:border-box;background:#10131d;color:#fff;font-family:Arial,sans-serif;text-align:center;';
+  const title = document.createElement('h1');
+  title.textContent = 'Não foi possível carregar seus dados';
+  title.style.cssText = 'margin:0;font-size:1.4rem;';
+  const detail = document.createElement('p');
+  detail.textContent = message;
+  detail.style.cssText = 'max-width:560px;color:#cbd5e1;line-height:1.5;';
+  const retry = document.createElement('button');
+  retry.type = 'button';
+  retry.textContent = 'Tentar novamente';
+  retry.style.cssText = 'padding:11px 16px;border:1px solid #8b7be8;border-radius:8px;background:#35265a;color:#fff;font-weight:700;cursor:pointer;';
+  retry.addEventListener('click', () => { void enterGame(userId); });
+  screen.append(title, detail, retry);
+  panel.replaceChildren(screen);
+}
+
+async function enterGame(userId: string): Promise<void> {
+  if ((activeUserId === userId && campaign) || loadingUserId === userId) return;
+  loadingUserId = userId;
   activeUserId = userId;
   destroyGame();
-  campaign = new Campaign();
-  showPreparation();
+  sessionControls.hidden = true;
+  gameRoot.hidden = true;
+  gameRoot.style.display = 'none';
+  const loading = document.createElement('main');
+  loading.style.cssText = 'min-height:100dvh;display:grid;place-items:center;padding:24px;box-sizing:border-box;background:#10131d;color:#fff;font-family:Arial,sans-serif;text-align:center;';
+  loading.textContent = 'Carregando seus personagens...';
+  panel.replaceChildren(loading);
+
+  try {
+    const playerData = await loadPlayerData(userId);
+    if (activeUserId !== userId) return;
+    playerNickname = playerData.nickname;
+    campaign = new Campaign();
+    campaign.loadPersistedCharacters(playerData.characters);
+    showPreparation();
+  } catch (error) {
+    if (activeUserId !== userId) return;
+    const message = error instanceof Error ? error.message : 'Erro desconhecido ao consultar o banco de dados.';
+    showPlayerDataError(userId, message);
+  } finally {
+    if (loadingUserId === userId) loadingUserId = null;
+  }
 }
 
 if (!supabase || !isSupabaseConfigured) {
@@ -114,7 +161,7 @@ if (!supabase || !isSupabaseConfigured) {
 } else {
   void supabase.auth.getSession().then(({ data, error }) => {
     if (error) console.error('Falha ao recuperar sessão:', error.message);
-    if (data.session) enterGame(data.session.user.id);
+    if (data.session) void enterGame(data.session.user.id);
     else showAuth();
   });
 
@@ -123,7 +170,7 @@ if (!supabase || !isSupabaseConfigured) {
       showAuth();
       return;
     }
-    enterGame(session.user.id);
+    void enterGame(session.user.id);
   });
 
   if (import.meta.hot) {
