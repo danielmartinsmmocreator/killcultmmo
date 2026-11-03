@@ -34,6 +34,7 @@ export class Campaign {
   private readonly floors: readonly FloorConfig[];
   private floorIndex = 0;
   private partyUnits: Unit[];
+  private readonly persistedCharacterIds = new Map<string, string>();
   private activePartyUids: string[] = [];
   private readonly rewardedMonsterUids = new Set<string>();
   private readonly rewardMessages: string[] = [];
@@ -85,6 +86,7 @@ export class Campaign {
     defense: number;
   }[]): void {
     for (const record of records) {
+      if (record.id) this.persistedCharacterIds.set(record.class_id, record.id);
       const hero = this.partyUnits.find((unit) => unit.definition.id === record.class_id);
       if (!hero?.progression) continue;
       hero.progression.level = Math.max(1, record.level);
@@ -96,6 +98,11 @@ export class Campaign {
         defense: Math.max(0, record.defense),
       };
     }
+  }
+
+  /** ID do registro do personagem no Supabase, associado à classe fixa do herói. */
+  getPersistedCharacterId(classId: string): string | null {
+    return this.persistedCharacterIds.get(classId) ?? null;
   }
 
   // ---------- Consultas ----------
