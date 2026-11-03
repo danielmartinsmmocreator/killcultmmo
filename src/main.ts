@@ -2,6 +2,7 @@ import './style.css';
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from './game/config';
 import { Campaign } from './game/core/Campaign';
+import type { ProgressionPersistenceEvent } from './game/core/GameState';
 import { BattleScene } from './game/scenes/BattleScene';
 import { SidePanel } from './ui/SidePanel';
 import { PreparationScreen } from './ui/PreparationScreen';
@@ -80,6 +81,24 @@ function showPreparation(resetCampaign = false): void {
   gameRoot.style.display = 'none';
   new PreparationScreen(panel, campaign, startExpedition, playerNickname);
   sessionControls.hidden = false;
+}
+
+async function persistProgressionEvent(event: ProgressionPersistenceEvent): Promise<void> {
+  if (!supabase || !campaign) return;
+  const characterId = campaign.getPersistedCharacterId(event.classId);
+  if (!characterId) {
+    console.error('Personagem sem ID persistido; evento de XP não foi salvo.');
+    return;
+  }
+  const { error } = await supabase.rpc('apply_character_xp_event', {
+    p_character_id: characterId,
+    p_event_id: event.eventId,
+    p_event_kind: event.kind,
+    p_monster_max_hp: event.kind === 'kill' ? event.monsterMaxHp : null,
+    p_monster_damage: event.kind === 'kill' ? event.monsterDamage : null,
+    p_monster_rank: event.kind === 'kill' ? event.monsterRank : null,
+  });
+  if (error) console.error('Falha ao salvar evento de progressão. Recarregue o jogo antes de continuar para sincronizar:', error.message);
 }
 
 async function persistAttributeAllocation(classId: string, attribute: 'strength' | 'vitality' | 'defense', points: number): Promise<boolean> {
@@ -168,7 +187,7 @@ async function enterGame(userId: string): Promise<void> {
     const playerData = await loadPlayerData(userId);
     if (activeUserId !== userId) return;
     playerNickname = playerData.nickname;
-    campaign = new Campaign();
+    campaign = new Campaign(undefined, (event) => { void persistProgressionEvent(event); });
     campaign.loadPersistedCharacters(playerData.characters);
     showPreparation();
   } catch (error) {
