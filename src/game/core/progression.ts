@@ -89,8 +89,8 @@ export class PlayerInventory {
       this.itemsByInstance.delete(instanceId);
     }
   }
-  add(definitionId: string, obtainedAtFloor?: number): InventoryItem {
-    const item: InventoryItem = { instanceId: `item-${this.nextId++}`, definitionId, ...(obtainedAtFloor === undefined ? {} : { obtainedAtFloor }) };
+  add(definitionId: string, obtainedAtFloor?: number, persistentId?: string): InventoryItem {
+    const item: InventoryItem = { instanceId: `item-${this.nextId++}`, definitionId, ...(persistentId ? { persistentId } : {}), ...(obtainedAtFloor === undefined ? {} : { obtainedAtFloor }) };
     this.itemsByInstance.set(item.instanceId, item);
     this.available.add(item.instanceId);
     return item;
@@ -128,6 +128,12 @@ export class PlayerInventory {
     return true;
   }
   definitionOf(instanceId: string): string | null { return this.itemsByInstance.get(instanceId)?.definitionId ?? null; }
+  persistentIdOf(instanceId: string): string | null { return this.itemsByInstance.get(instanceId)?.persistentId ?? null; }
+  restoreEquipment(hero: Unit, instanceId: string, slot: EquipmentSlot): boolean {
+    const item = this.itemsByInstance.get(instanceId);
+    if (!item || ITEM_DEFINITIONS[item.definitionId]?.slot !== slot) return false;
+    return this.equip(hero, instanceId, ITEM_DEFINITIONS);
+  }
   specialBonusesFor(hero: Unit): { defensePercent: number; lifestealPercent: number; ignoreFirstHitPerEncounter: boolean } {
     let defensePercent = 0;
     let lifestealPercent = 0;
