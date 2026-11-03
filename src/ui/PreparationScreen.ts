@@ -39,6 +39,7 @@ export class PreparationScreen {
   private readonly root: HTMLElement;
   private readonly campaign: Campaign;
   private readonly onStart: () => void;
+  private readonly playerNickname: string;
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: number | null | 'unknown' = null;
@@ -49,10 +50,11 @@ export class PreparationScreen {
   private devUnlocked = false;
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR') {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
+    this.playerNickname = playerNickname;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
@@ -89,7 +91,7 @@ export class PreparationScreen {
     const iconFiles=Object.entries(PLAYER_ICONS).sort(([a],[b])=>a.localeCompare(b, undefined, { numeric: true }));
     const chosenIcon=Number(localStorage.getItem('killcult-player-icon')||'1');
     const avatar=document.createElement('img'); avatar.className='prep-avatar'; avatar.alt='Ícone do jogador'; avatar.src=iconFiles[Math.max(0,Math.min(iconFiles.length-1,chosenIcon-1))]?.[1]||'';
-    const profileInfo=document.createElement('div'); const playerName=document.createElement('strong'); playerName.textContent='NOME DO JOGADOR'; playerName.style.cssText='display:block;color:#ffe16b;font-size:clamp(1.1rem,2vw,1.8rem);letter-spacing:.08em;';
+    const profileInfo=document.createElement('div'); const playerName=document.createElement('strong'); playerName.textContent=this.playerNickname; playerName.style.cssText='display:block;color:#ffe16b;font-size:clamp(1.1rem,2vw,1.8rem);letter-spacing:.08em;';
     const worldLevel=this.campaign.party.reduce((sum,hero)=>sum+(hero.progression?.level??1),0); const levelLine=document.createElement('div'); levelLine.textContent=`ANDAR ${this.campaign.floorNumber} · NÍVEL MUNDIAL ${worldLevel}`; levelLine.style.cssText='color:#ffe16b;font-size:.75rem;margin-top:5px;';
     const settings=document.createElement('button'); settings.type='button'; settings.textContent='⚙ Configurações'; settings.style.cssText=STYLE.button+'margin-top:6px;padding:5px 10px;';
     const settingsModal=document.createElement('div'); settingsModal.className='prep-modal'; settingsModal.hidden=true; const settingsCard=document.createElement('div'); settingsCard.className='prep-modal-card'; const settingsTitle=document.createElement('h2'); settingsTitle.textContent='Escolha seu ícone'; const iconGrid=document.createElement('div'); iconGrid.className='prep-icons';
