@@ -277,6 +277,43 @@ export class Campaign {
     return true;
   }
 
+  /** Formação persistente da equipe escolhida no menu, independente do estado da expedição. */
+  exportPartyFormation(): {
+    version: 1;
+    heroes: { classId: string; position: Position }[];
+  } {
+    return {
+      version: 1,
+      heroes: this.activeParty.map((hero) => ({
+        classId: hero.definition.id,
+        position: { ...hero.position },
+      })),
+    };
+  }
+
+  /** Restaura a última formação salva pelo jogador. */
+  restorePartyFormation(snapshot: unknown): boolean {
+    if (!snapshot || typeof snapshot !== 'object') return false;
+    const saved = snapshot as Record<string, unknown>;
+    if (saved.version !== 1 || !Array.isArray(saved.heroes) || saved.heroes.length < 1 || saved.heroes.length > 3) return false;
+
+    const heroUids: string[] = [];
+    const positions: Record<string, Position> = {};
+    for (const entry of saved.heroes) {
+      if (!entry || typeof entry !== 'object') return false;
+      const heroData = entry as Record<string, unknown>;
+      if (typeof heroData.classId !== 'string') return false;
+      const hero = this.partyUnits.find((unit) => unit.definition.id === heroData.classId);
+      if (!hero || hero.hp <= 0 || heroUids.includes(hero.uid)) return false;
+      if (!heroData.position || typeof heroData.position !== 'object') return false;
+      const position = heroData.position as Record<string, unknown>;
+      if (!Number.isInteger(position.col) || !Number.isInteger(position.row)) return false;
+      heroUids.push(hero.uid);
+      positions[hero.uid] = { col: Number(position.col), row: Number(position.row) };
+    }
+    return this.configureParty(heroUids, positions);
+  }
+
   /** Sincroniza o estado de batalha com a equipe selecionada, antes de a cena assinar eventos. */
   syncActiveEncounter(): void {
     // A cena ainda está sendo criada: atualiza os dados sem emitir evento para listeners antigos.
