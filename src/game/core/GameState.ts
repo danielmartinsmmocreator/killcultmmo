@@ -400,17 +400,23 @@ export class GameState {
   allocateSelectedAttributePoints(attribute: AttributeName, requestedPoints: number): boolean {
     if (this.currentPhase !== 'player' || this.targetingState) return false;
     const hero = this.selectedUnit;
+    return hero ? this.applyPersistedAttributeAllocation(hero.uid, attribute, requestedPoints) : false;
+  }
+
+  /** Aplica localmente uma alocação que já foi validada e gravada pelo servidor. */
+  applyPersistedAttributeAllocation(heroUid: string, attribute: AttributeName, requestedPoints: number): boolean {
+    const hero = this.allUnits.find((unit) => unit.uid === heroUid);
     if (!hero || hero.definition.team !== 'hero' || !hero.progression) return false;
     if (!Number.isInteger(requestedPoints) || requestedPoints < 1) return false;
-    const points = Math.min(requestedPoints, hero.progression.unspentAttributePoints);
-    if (points < 1 || !allocateAttributePoint(hero, attribute, points)) return false;
-    if (attribute === 'strength') hero.damage += points;
+    if (attribute !== 'strength' && attribute !== 'vitality' && attribute !== 'defense') return false;
+    if (!allocateAttributePoint(hero, attribute, requestedPoints)) return false;
+    if (attribute === 'strength') hero.damage += requestedPoints;
     else if (attribute === 'vitality') {
-      hero.maxHp += points * 5;
-      hero.hp = Math.min(hero.maxHp, hero.hp + points * 5);
+      hero.maxHp += requestedPoints * 5;
+      hero.hp = Math.min(hero.maxHp, hero.hp + requestedPoints * 5);
     }
     const label = attribute === 'strength' ? 'Força' : attribute === 'vitality' ? 'Vitalidade' : 'Defesa';
-    this.addLog(`${hero.definition.name} investiu ${points} ponto(s) em ${label}.`, 'hero');
+    this.addLog(`${hero.definition.name} investiu ${requestedPoints} ponto(s) em ${label}.`, 'hero');
     this.emit('select');
     return true;
   }
