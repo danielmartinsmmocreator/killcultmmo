@@ -1058,3 +1058,54 @@ button {
     grid-template-columns: clamp(170px, 19vw, 210px) minmax(0, 1fr) clamp(170px, 19vw, 210px);
   }
 }
+
+
+/* Configurações e catálogo de cosméticos oficiais do perfil. */
+.prep-settings-hint {
+  margin: 6px 0 12px;
+  color: #cbd5e1;
+  font: 13px/1.5 Arial, sans-serif;
+}
+.prep-settings-action,
+.prep-signout-button {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 12px;
+  border: 1px solid #80664e;
+  background: #30202a;
+  color: #ffe16b;
+  font: 700 13px Arial, sans-serif;
+  cursor: pointer;
+}
+.prep-signout-button {
+  margin-top: 18px;
+  border-color: #9f3434;
+  background: #581b24;
+  color: #fff;
+}
+.prep-cosmetic-title {
+  margin: 16px 0 6px;
+  color: #ffe16b;
+  font-size: 13px;
+}
+.prep-cosmetic-option {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid #80664e;
+  background: #241722;
+  color: #ffe16b;
+  font: 10px Arial, sans-serif;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+.prep-cosmetic-option img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.prep-icons[hidden],
+.prep-cosmetic-title[hidden] { display: none !important; }
