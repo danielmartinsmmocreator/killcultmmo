@@ -690,6 +690,99 @@ export class GameState {
     }
   }
 
+  /** Exporta o estado mutável completo do combate para persistência JSON. */
+  exportSnapshot(): Record<string, unknown> {
+    return {
+      version: 1,
+      units: this.allUnits.map((unit) => {
+        const { definition, ...state } = unit;
+        return { ...state, definitionId: definition.id };
+      }),
+      obstacles: this.obstacleList.map((cell) => ({ ...cell })),
+      turn: this.currentTurn,
+      floor: this.currentFloor,
+      sandTrapCells: this.sandTrapCells.map((cell) => ({ ...cell })),
+      revealedSandTraps: [...this.revealedSandTraps],
+      frankensteinEnraged: this.frankensteinEnraged,
+      specialBossCycles: [...this.specialBossCycles.entries()],
+      cheshireCycles: [...this.cheshireCycles.entries()],
+      cucaMinionSpawns: [...this.cucaMinionSpawns.entries()].map(([uid, pos]) => [uid, { ...pos }]),
+      phase: this.currentPhase,
+      outcome: this.currentOutcome,
+      selectedUnitUid: this.selectedUnitUid,
+      targeting: this.targetingState,
+      notice: this.noticeText,
+      pendingActors: [...this.pendingActors],
+      lastActorUid: this.lastActorUid,
+      intents: this.intents.map((intent) => ({ ...intent, cells: intent.cells.map((cell) => ({ ...cell })) })),
+      intentCounter: this.intentCounter,
+      log: this.logEntries.map((entry) => ({ ...entry })),
+      damageEvents: this.damageEvents.map((event) => ({ ...event, position: { ...event.position } })),
+      healEvents: this.healEvents.map((event) => ({ ...event, position: { ...event.position } })),
+      effect: this.effect ? { ...this.effect, cells: this.effect.cells.map((cell) => ({ ...cell })) } : null,
+      medusaProtectionUsed: [...this.medusaProtectionUsed],
+    };
+  }
+
+  /**
+   * Restaura o snapshot sobre o encontro-base já montado para o mesmo andar.
+   * As definições de unidades vêm dos dados locais do jogo, nunca do JSON do cliente.
+   */
+  restoreSnapshot(snapshot: unknown): boolean {
+    if (!snapshot || typeof snapshot !== 'object') return false;
+    const saved = snapshot as Record<string, unknown>;
+    if (saved.version !== 1 || !Array.isArray(saved.units)) return false;
+    const definitions = new Map(this.allUnits.map((unit) => [unit.uid, unit.definition]));
+    if (saved.units.length !== this.allUnits.length) return false;
+    const restored: Unit[] = [];
+    for (const entry of saved.units) {
+      if (!entry || typeof entry !== 'object') return false;
+      const state = entry as Record<string, unknown>;
+      const uid = state.uid;
+      const definition = typeof uid === 'string' ? definitions.get(uid) : undefined;
+      if (!definition || state.definitionId !== definition.id) return false;
+      const current = this.allUnits.find((unit) => unit.uid === uid);
+      if (!current) return false;
+      const { uid: _uid, definitionId: _definitionId, ...mutable } = state;
+      Object.assign(current, mutable);
+      restored.push(current);
+    }
+    if (!Number.isInteger(saved.turn) || Number(saved.turn) < 1) return false;
+    if (!['player', 'heroes', 'telegraphs', 'monsters', 'over'].includes(String(saved.phase))) return false;
+    if (!['ongoing', 'victory', 'defeat'].includes(String(saved.outcome))) return false;
+    this.allUnits = restored;
+    this.obstacleList = Array.isArray(saved.obstacles) ? saved.obstacles as Position[] : [];
+    this.currentTurn = Number(saved.turn);
+    this.currentFloor = Number(saved.floor) || 0;
+    this.sandTrapCells = Array.isArray(saved.sandTrapCells) ? saved.sandTrapCells as Position[] : [];
+    this.revealedSandTraps.clear();
+    if (Array.isArray(saved.revealedSandTraps)) saved.revealedSandTraps.forEach((key) => { if (typeof key === 'string') this.revealedSandTraps.add(key); });
+    this.frankensteinEnraged = saved.frankensteinEnraged === true;
+    this.specialBossCycles.clear();
+    if (Array.isArray(saved.specialBossCycles)) for (const pair of saved.specialBossCycles) if (Array.isArray(pair) && typeof pair[0] === 'string' && Number.isInteger(pair[1])) this.specialBossCycles.set(pair[0], Number(pair[1]));
+    this.cheshireCycles.clear();
+    if (Array.isArray(saved.cheshireCycles)) for (const pair of saved.cheshireCycles) if (Array.isArray(pair) && typeof pair[0] === 'string' && Number.isInteger(pair[1])) this.cheshireCycles.set(pair[0], Number(pair[1]));
+    this.cucaMinionSpawns.clear();
+    if (Array.isArray(saved.cucaMinionSpawns)) for (const pair of saved.cucaMinionSpawns) if (Array.isArray(pair) && typeof pair[0] === 'string' && pair[1] && typeof pair[1] === 'object') this.cucaMinionSpawns.set(pair[0], pair[1] as Position);
+    this.currentPhase = saved.phase as BattlePhase;
+    this.currentOutcome = saved.outcome as BattleOutcome;
+    this.selectedUnitUid = typeof saved.selectedUnitUid === 'string' ? saved.selectedUnitUid : null;
+    this.targetingState = saved.targeting && typeof saved.targeting === 'object' ? saved.targeting as AbilityTargeting : null;
+    this.noticeText = typeof saved.notice === 'string' ? saved.notice : null;
+    this.pendingActors = Array.isArray(saved.pendingActors) ? saved.pendingActors.filter((uid): uid is string => typeof uid === 'string') : [];
+    this.lastActorUid = typeof saved.lastActorUid === 'string' ? saved.lastActorUid : null;
+    this.intents = Array.isArray(saved.intents) ? saved.intents as TelegraphIntent[] : [];
+    this.intentCounter = Number.isInteger(saved.intentCounter) ? Number(saved.intentCounter) : 0;
+    this.logEntries = Array.isArray(saved.log) ? (saved.log as LogEntry[]).slice(-MAX_LOG_ENTRIES) : [];
+    this.damageEvents = Array.isArray(saved.damageEvents) ? saved.damageEvents as DamageEvent[] : [];
+    this.healEvents = Array.isArray(saved.healEvents) ? saved.healEvents as HealEvent[] : [];
+    this.effect = saved.effect && typeof saved.effect === 'object' ? saved.effect as AbilityEffect : null;
+    this.medusaProtectionUsed.clear();
+    if (Array.isArray(saved.medusaProtectionUsed)) saved.medusaProtectionUsed.forEach((uid) => { if (typeof uid === 'string') this.medusaProtectionUsed.add(uid); });
+    this.emit('reset');
+    return true;
+  }
+
   // ---------- Observadores ----------
 
   subscribe(listener: Listener): () => void {
