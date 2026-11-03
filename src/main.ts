@@ -230,16 +230,79 @@ async function persistAttributeAllocation(classId: string, attribute: 'strength'
   return true;
 }
 
-async function persistExpeditionFloor(floor: number): Promise<void> {
-  if (!supabase || !activeExpeditionId) return;
-  const { error } = await supabase.rpc('update_player_expedition_progress', {
-    p_expedition_id: activeExpeditionId,
-    p_current_floor: floor,
-  });
-  if (error) {
-    console.error('Falha ao atualizar o andar da expedição:', error);
-    window.alert('Não foi possível sincronizar o andamento da expedição. Verifique sua conexão.');
+const EXPEDITION_PROGRESS_PREFIX = 'killcult:pending-expedition-progress:';
+let expeditionProgressSyncPromise: Promise<void> | null = null;
+
+function expeditionProgressKey(userId: string, expeditionId: string): string {
+  return EXPEDITION_PROGRESS_PREFIX + userId + ':' + expeditionId;
+}
+
+function readPendingExpeditionFloor(userId: string, expeditionId: string): number | null {
+  try {
+    const value = Number(window.localStorage.getItem(expeditionProgressKey(userId, expeditionId)));
+    return Number.isInteger(value) && value >= 1 && value <= 100 ? value : null;
+  } catch (error) {
+    console.error('Não foi possível ler o progresso pendente da expedição:', error);
+    return null;
   }
+}
+
+function storePendingExpeditionFloor(userId: string, expeditionId: string, floor: number): boolean {
+  try {
+    const key = expeditionProgressKey(userId, expeditionId);
+    const previous = readPendingExpeditionFloor(userId, expeditionId) ?? 0;
+    window.localStorage.setItem(key, String(Math.max(previous, floor)));
+    return true;
+  } catch (error) {
+    console.error('Não foi possível guardar o progresso pendente da expedição:', error);
+    return false;
+  }
+}
+
+function clearPendingExpeditionFloor(userId: string, expeditionId: string): void {
+  try {
+    window.localStorage.removeItem(expeditionProgressKey(userId, expeditionId));
+  } catch (error) {
+    console.error('Não foi possível limpar o progresso local da expedição:', error);
+  }
+}
+
+async function flushPendingExpeditionProgress(): Promise<void> {
+  if (!supabase || !activeUserId || !activeExpeditionId || expeditionProgressSyncPromise) {
+    return expeditionProgressSyncPromise ?? Promise.resolve();
+  }
+  const userId = activeUserId;
+  const expeditionId = activeExpeditionId;
+  expeditionProgressSyncPromise = (async () => {
+    while (activeUserId === userId && activeExpeditionId === expeditionId) {
+      const floor = readPendingExpeditionFloor(userId, expeditionId);
+      if (floor === null) break;
+      const { error } = await supabase!.rpc('update_player_expedition_progress', {
+        p_expedition_id: expeditionId,
+        p_current_floor: floor,
+      });
+      if (error) {
+        console.error('Falha ao sincronizar progresso da expedição; o último andar foi mantido localmente:', error);
+        break;
+      }
+      // Só remove o valor confirmado se nenhum andar mais recente foi enfileirado durante a requisição.
+      if (readPendingExpeditionFloor(userId, expeditionId) === floor) {
+        clearPendingExpeditionFloor(userId, expeditionId);
+      }
+    }
+  })().finally(() => {
+    expeditionProgressSyncPromise = null;
+  });
+  return expeditionProgressSyncPromise;
+}
+
+async function persistExpeditionFloor(floor: number): Promise<void> {
+  if (!activeUserId || !activeExpeditionId) return;
+  if (!storePendingExpeditionFloor(activeUserId, activeExpeditionId, floor)) {
+    console.error('O progresso da expedição não pôde ser armazenado localmente.');
+    return;
+  }
+  await flushPendingExpeditionProgress();
 }
 
 function syncExpeditionActivity(floor: number): void {
@@ -266,6 +329,7 @@ async function extractExpeditionAndReturn(): Promise<void> {
     return;
   }
 
+  clearPendingExpeditionFloor(activeUserId, activeExpeditionId);
   activeExpeditionId = null;
   expeditionFinishPending = false;
   // A recarga recupera os IDs definitivos dos itens recém-inseridos e os equipamentos do banco.
@@ -294,6 +358,7 @@ async function finishExpeditionAndReturn(): Promise<void> {
     }
   }
 
+  clearPendingExpeditionFloor(activeUserId, activeExpeditionId);
   activeExpeditionId = null;
   expeditionFinishPending = false;
   showPreparation(true);
@@ -321,12 +386,14 @@ async function startExpedition(): Promise<void> {
     );
     if (!confirmed) return;
 
-    const { error: abandonError } = await supabase.rpc('abandon_player_expedition');
+    const { data: abandonedExpedition, error: abandonError } = await supabase.rpc('abandon_player_expedition');
     if (abandonError) {
       console.error('Falha ao encerrar expedição interrompida:', abandonError);
       window.alert('Não foi possível encerrar a expedição anterior. Nenhum dado foi alterado; tente novamente.');
       return;
     }
+    const abandonedId = (abandonedExpedition as { expedition_id?: string | null } | null)?.expedition_id;
+    if (abandonedId && activeUserId) clearPendingExpeditionFloor(activeUserId, abandonedId);
 
     const retry = await supabase.rpc('start_player_expedition', {
       p_character_ids: characterIds,
@@ -440,7 +507,10 @@ if (!supabase || !isSupabaseConfigured) {
   }
 }
 
-window.addEventListener('online', () => { void flushPendingProgressionEvents(); });
+window.addEventListener('online', () => {
+  void flushPendingProgressionEvents();
+  void flushPendingExpeditionProgress();
+});
 
 // Evita jogos duplicados quando o Vite recarrega o módulo (HMR).
 if (import.meta.hot && !supabase) {
