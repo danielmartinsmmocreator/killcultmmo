@@ -578,7 +578,7 @@ begin
   if v_user_id is null then
     raise exception 'Autenticação necessária.';
   end if;
-  if p_expedition_id is null or p_result <> 'combat_defeat' then
+  if p_expedition_id is null or p_result is distinct from 'combat_defeat' then
     raise exception 'Este encerramento só aceita derrota em combate. Use a operação de extração para receber recompensas.';
   end if;
 
