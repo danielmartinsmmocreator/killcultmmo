@@ -111,6 +111,29 @@ export class Campaign {
     }
   }
 
+  /** Recompensas temporárias que serão consolidadas se a extração for aceita pelo servidor. */
+  getPendingExtractionRewards(): { gold: number; items: { definition_id: string; obtained_at_floor: number }[] } {
+    return {
+      gold: Math.max(0, this.gold - this.retainedGold),
+      items: this.inventory.allItems
+        .filter((item) => !this.retainedItemIds.has(item.instanceId))
+        .map((item) => ({ definition_id: item.definitionId, obtained_at_floor: item.obtainedAtFloor ?? this.floorNumber })),
+    };
+  }
+
+  /** Carrega a carteira e os itens permanentes recebidos do Supabase. */
+  loadPersistedInventory(records: readonly { item_definition_id: string; obtained_at_floor: number | null }[], gold: number): void {
+    this.inventory.clear();
+    for (const record of records) {
+      if (ITEM_DEFINITIONS[record.item_definition_id]) {
+        this.inventory.add(record.item_definition_id, record.obtained_at_floor ?? undefined);
+      }
+    }
+    this.gold = Math.max(0, Number.isFinite(gold) ? Math.trunc(gold) : 0);
+    this.retainedGold = this.gold;
+    this.retainedItemIds = new Set(this.inventory.instanceIds);
+  }
+
   /** ID do registro do personagem no Supabase, associado à classe fixa do herói. */
   getPersistedCharacterId(classId: string): string | null {
     return this.persistedCharacterIds.get(classId) ?? null;
@@ -288,15 +311,11 @@ export class Campaign {
   /** Consolida os itens obtidos e retorna à base ao extrair em um marco válido. */
   extract(): boolean {
     if (!this.canExtract) return false;
-    this.lastExtractionRewards = {
-      gold: Math.max(0, this.gold - this.retainedGold),
-      items: this.inventory.allItems
-        .filter((item) => !this.retainedItemIds.has(item.instanceId))
-        .map((item) => ({ definition_id: item.definitionId, obtained_at_floor: item.obtainedAtFloor ?? this.floorNumber })),
-    };
+    this.lastExtractionRewards = this.getPendingExtractionRewards();
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.retainedGold = this.gold;
     this.restart(false);
+    this.lastExtractionRewards = this.lastExtractionRewards;
     this.lastExpeditionResult = 'extraction';
     return true;
   }
