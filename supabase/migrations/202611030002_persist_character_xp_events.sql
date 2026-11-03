@@ -79,6 +79,7 @@ begin
   if p_event_kind = 'kill' then
     if p_monster_max_hp is null or p_monster_max_hp < 1 or p_monster_max_hp > 100000
       or p_monster_damage is null or p_monster_damage < 0 or p_monster_damage > 10000
+      or p_monster_rank is null
       or p_monster_rank not in ('normal', 'mini-boss', 'boss') then
       raise exception 'Dados de monstro inválidos.';
     end if;
