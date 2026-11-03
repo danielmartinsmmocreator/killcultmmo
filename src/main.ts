@@ -401,6 +401,9 @@ function persistCampaignSnapshot(): void {
 
 function launchExpeditionBattle(restored = false): void {
   if (!campaign || !activeExpeditionId) return;
+  // Na campanha nova, aplica a equipe escolhida antes do primeiro snapshot.
+  // Na retomada, nunca recria o encontro: mantém o estado restaurado exatamente como salvo.
+  if (!restored) campaign.syncActiveEncounter();
   expeditionFinishPending = false;
   lastExpeditionActivitySyncAt = 0;
   panel.replaceChildren();
@@ -420,7 +423,7 @@ function launchExpeditionBattle(restored = false): void {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-    scene: [new BattleScene(campaign, !restored)],
+    scene: [new BattleScene(campaign, false)],
   });
   persistCampaignSnapshot();
 }
