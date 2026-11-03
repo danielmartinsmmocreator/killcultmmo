@@ -96,14 +96,16 @@ export class SidePanel {
   private transitionScheduled = false;
   private readonly onRestart?: () => void;
   private readonly onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>;
+  private readonly onFloorChange?: (floor: number) => void;
   private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.onRestart = onRestart;
     this.onAllocateAttribute = onAllocateAttribute;
+    this.onFloorChange = onFloorChange;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -115,7 +117,9 @@ export class SidePanel {
     // "Avançar" só aparece com o andar concluído; cliques repetidos são recusados pela campanha.
     this.advanceButton.type = 'button';
     this.advanceButton.hidden = true;
-    this.advanceButton.addEventListener('click', () => this.campaign.advance());
+    this.advanceButton.addEventListener('click', () => {
+      if (this.campaign.advance()) this.onFloorChange?.(this.campaign.floorNumber);
+    });
     this.extractButton.type = 'button';
     this.extractButton.hidden = true;
     this.extractButton.addEventListener('click', () => {
@@ -334,7 +338,7 @@ export class SidePanel {
         this.transitionScheduled = false;
         const currentStatus = this.campaign.status;
         if (currentStatus === 'floor-cleared' && !this.campaign.canExtract && this.campaign.floorNumber === completedFloor) {
-          this.campaign.advance();
+          if (this.campaign.advance()) this.onFloorChange?.(this.campaign.floorNumber);
         } else if (currentStatus === 'defeated' || (currentStatus === 'completed' && !this.campaign.canExtract)) {
           this.onRestart?.();
         }
