@@ -77,6 +77,7 @@ export class Campaign {
 
   /** Aplica a progressão permanente carregada do banco aos cinco heróis já criados. */
   loadPersistedCharacters(records: readonly {
+    id: string;
     class_id: string;
     level: number;
     xp: number;
