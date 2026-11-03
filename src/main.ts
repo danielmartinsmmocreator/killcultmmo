@@ -440,6 +440,15 @@ async function startExpedition(): Promise<void> {
     return;
   }
 
+  const { error: formationError } = await supabase.rpc('save_player_party_formation', {
+    p_formation: campaign.exportPartyFormation(),
+  });
+  if (formationError) {
+    console.error('Falha ao salvar a formação:', formationError);
+    window.alert('Não foi possível salvar sua formação. A expedição não foi iniciada; tente novamente.');
+    return;
+  }
+
   const { data: expeditionId, error } = await supabase.rpc('start_player_expedition', {
     p_character_ids: characterIds,
   });
@@ -504,6 +513,7 @@ async function enterGame(userId: string): Promise<void> {
     campaign = new Campaign(undefined, (event) => { void persistProgressionEvent(event); });
     campaign.loadPersistedCharacters(playerData.characters);
     campaign.loadPersistedInventory(playerData.inventory, playerData.gold, playerData.equipped);
+    campaign.restorePartyFormation(playerData.partyFormation);
     void flushPendingProgressionEvents();
 
     const { data: activeData, error: activeError } = await supabase!.rpc('get_active_player_expedition');
