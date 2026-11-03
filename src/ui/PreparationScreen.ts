@@ -41,6 +41,7 @@ export class PreparationScreen {
   private readonly onStart: () => void;
   private readonly playerNickname: string;
   private readonly onEquipmentChange?: () => Promise<boolean>;
+  private readonly onSellItem?: (instanceId: string) => Promise<number>;
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: number | null | 'unknown' = null;
@@ -51,12 +52,13 @@ export class PreparationScreen {
   private devUnlocked = false;
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
     this.playerNickname = playerNickname;
     this.onEquipmentChange = onEquipmentChange;
+    this.onSellItem = onSellItem;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
@@ -469,9 +471,11 @@ export class PreparationScreen {
       sell.type = 'button';
       sell.textContent = `Vender drop · ${def.sellPrice} ouro`;
       sell.style.cssText = STYLE.button + 'font-size:.75rem;white-space:nowrap;background:#7f1d1d;';
-      sell.addEventListener('click', () => {
-        const value = this.campaign.sellInventoryItem(item.instanceId);
-        this.message = value > 0 ? `${def.name} vendido por ${value} ouro.` : 'Não foi possível vender esse item.';
+      sell.addEventListener('click', async () => {
+        sell.disabled = true;
+        sell.textContent = 'Vendendo...';
+        const value = this.onSellItem ? await this.onSellItem(item.instanceId) : 0;
+        this.message = value > 0 ? `${def.name} vendido por ${value} ouro.` : 'Não foi possível vender esse item. Verifique a conexão e tente novamente.';
         this.render();
       });
       row.append(button, sell);
