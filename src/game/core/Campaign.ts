@@ -74,6 +74,30 @@ export class Campaign {
     });
   }
 
+  /** Aplica a progressão permanente carregada do banco aos cinco heróis já criados. */
+  loadPersistedCharacters(records: readonly {
+    class_id: string;
+    level: number;
+    xp: number;
+    unspent_attribute_points: number;
+    strength: number;
+    vitality: number;
+    defense: number;
+  }[]): void {
+    for (const record of records) {
+      const hero = this.partyUnits.find((unit) => unit.definition.id === record.class_id);
+      if (!hero?.progression) continue;
+      hero.progression.level = Math.max(1, record.level);
+      hero.progression.xp = Math.max(0, record.xp);
+      hero.progression.unspentAttributePoints = Math.max(0, record.unspent_attribute_points);
+      hero.progression.attributes = {
+        strength: Math.max(0, record.strength),
+        vitality: Math.max(0, record.vitality),
+        defense: Math.max(0, record.defense),
+      };
+    }
+  }
+
   // ---------- Consultas ----------
 
   /** Número do andar atual (1 a `totalFloors`). */
