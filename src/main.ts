@@ -187,15 +187,10 @@ async function extractExpeditionAndReturn(): Promise<void> {
     return;
   }
 
-  if (!campaign.extract()) {
-    expeditionFinishPending = false;
-    window.alert('O servidor registrou a extração, mas o estado local não conseguiu concluir o retorno. Recarregue a página para sincronizar seus dados.');
-    return;
-  }
-
   activeExpeditionId = null;
   expeditionFinishPending = false;
-  showPreparation(true);
+  // A recarga recupera os IDs definitivos dos itens recém-inseridos e os equipamentos do banco.
+  window.location.reload();
 }
 
 async function finishExpeditionAndReturn(): Promise<void> {
