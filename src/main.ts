@@ -32,8 +32,13 @@ let expeditionFinishPending = false;
 let lastExpeditionActivitySyncAt = 0;
 let snapshotSaveTimer: number | null = null;
 let snapshotSaveChain: Promise<void> = Promise.resolve();
+let unsubscribeSnapshot: (() => void) | null = null;
 
 function destroyGame(): void {
+  unsubscribeSnapshot?.();
+  unsubscribeSnapshot = null;
+  if (snapshotSaveTimer !== null) window.clearTimeout(snapshotSaveTimer);
+  snapshotSaveTimer = null;
   sidePanel?.destroy();
   sidePanel = null;
   game?.destroy(true);
@@ -43,6 +48,7 @@ function destroyGame(): void {
 
 function showAuth(): void {
   destroyGame();
+  activeExpeditionId = null;
   activeUserId = null;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
@@ -105,6 +111,10 @@ function showPreparation(resetCampaign = false): void {
   game?.destroy(true);
   game = null;
   if (resetCampaign) campaign.restart(false);
+  unsubscribeSnapshot?.();
+  unsubscribeSnapshot = null;
+  if (snapshotSaveTimer !== null) window.clearTimeout(snapshotSaveTimer);
+  snapshotSaveTimer = null;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
   new PreparationScreen(panel, campaign, startExpedition, playerNickname, persistEquipmentChange, persistInventorySale, async () => {
@@ -397,7 +407,8 @@ function launchExpeditionBattle(restored = false): void {
   gameRoot.hidden = false;
   gameRoot.style.display = '';
   sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn);
-  campaign.battle.subscribe(() => persistCampaignSnapshot());
+  unsubscribeSnapshot?.();
+  unsubscribeSnapshot = campaign.battle.subscribe(() => persistCampaignSnapshot());
   game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameRoot,
@@ -468,6 +479,7 @@ function showPlayerDataError(userId: string, message: string): void {
 
 async function enterGame(userId: string): Promise<void> {
   if ((activeUserId === userId && campaign) || loadingUserId === userId) return;
+  activeExpeditionId = null;
   loadingUserId = userId;
   activeUserId = userId;
   destroyGame();
