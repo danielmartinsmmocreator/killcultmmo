@@ -188,9 +188,7 @@ async function extractExpeditionAndReturn(): Promise<void> {
 
 async function finishExpeditionAndReturn(): Promise<void> {
   if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
-  const result = campaign.lastExpeditionResult
-    ?? (campaign.status === 'completed' ? 'completed' : campaign.status === 'defeated' ? 'combat_defeat' : null);
-  if (!result) {
+  if (campaign.status !== 'defeated' || campaign.lastExpeditionResult !== 'combat_defeat') {
     window.alert('Não foi possível identificar o resultado da expedição. Seus dados não foram encerrados.');
     return;
   }
@@ -199,7 +197,7 @@ async function finishExpeditionAndReturn(): Promise<void> {
   while (activeExpeditionId) {
     const { error } = await supabase.rpc('finish_player_expedition', {
       p_expedition_id: activeExpeditionId,
-      p_result: result,
+      p_result: 'combat_defeat',
     });
     if (!error) break;
     console.error('Falha ao encerrar expedição:', error);
