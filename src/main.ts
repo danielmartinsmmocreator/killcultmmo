@@ -138,6 +138,18 @@ async function persistAttributeAllocation(classId: string, attribute: 'strength'
   return true;
 }
 
+async function persistExpeditionFloor(floor: number): Promise<void> {
+  if (!supabase || !activeExpeditionId) return;
+  const { error } = await supabase.rpc('update_player_expedition_progress', {
+    p_expedition_id: activeExpeditionId,
+    p_current_floor: floor,
+  });
+  if (error) {
+    console.error('Falha ao atualizar o andar da expedição:', error);
+    window.alert('Não foi possível sincronizar o andamento da expedição. Verifique sua conexão.');
+  }
+}
+
 async function finishExpeditionAndReturn(): Promise<void> {
   if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
   const result = campaign.lastExpeditionResult
@@ -191,7 +203,7 @@ async function startExpedition(): Promise<void> {
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation);
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); });
   game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameRoot,
