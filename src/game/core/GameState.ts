@@ -732,25 +732,32 @@ export class GameState {
     if (!snapshot || typeof snapshot !== 'object') return false;
     const saved = snapshot as Record<string, unknown>;
     if (saved.version !== 1 || !Array.isArray(saved.units)) return false;
+    if (!Number.isInteger(saved.turn) || Number(saved.turn) < 1) return false;
+    if (!['player', 'heroes', 'telegraphs', 'monsters', 'over'].includes(String(saved.phase))) return false;
+    if (!['ongoing', 'victory', 'defeat'].includes(String(saved.outcome))) return false;
     const definitions = new Map(this.allUnits.map((unit) => [unit.uid, unit.definition]));
     if (saved.units.length !== this.allUnits.length) return false;
-    const restored: Unit[] = [];
+    const pending: { unit: Unit; mutable: Record<string, unknown> }[] = [];
+    const seen = new Set<string>();
     for (const entry of saved.units) {
       if (!entry || typeof entry !== 'object') return false;
       const state = entry as Record<string, unknown>;
       const uid = state.uid;
       const definition = typeof uid === 'string' ? definitions.get(uid) : undefined;
-      if (!definition || state.definitionId !== definition.id) return false;
-      const current = this.allUnits.find((unit) => unit.uid === uid);
-      if (!current) return false;
-      const { uid: _uid, definitionId: _definitionId, ...mutable } = state;
-      Object.assign(current, mutable);
-      restored.push(current);
+      if (!definition || definition.id !== state.definitionId || seen.has(uid as string)) return false;
+      const unit = this.allUnits.find((candidate) => candidate.uid === uid);
+      if (!unit || !Number.isFinite(state.hp) || !Number.isFinite(state.maxHp) || !Number.isFinite(state.damage)) return false;
+      if (!state.position || typeof state.position !== 'object' || !state.facing || typeof state.facing !== 'object') return false;
+      const mutable = { ...state };
+      delete mutable.uid;
+      delete mutable.definitionId;
+      pending.push({ unit, mutable });
+      seen.add(uid as string);
     }
-    if (!Number.isInteger(saved.turn) || Number(saved.turn) < 1) return false;
-    if (!['player', 'heroes', 'telegraphs', 'monsters', 'over'].includes(String(saved.phase))) return false;
-    if (!['ongoing', 'victory', 'defeat'].includes(String(saved.outcome))) return false;
-    this.allUnits = restored;
+    if (seen.size !== definitions.size) return false;
+
+    for (const item of pending) Object.assign(item.unit, item.mutable);
+    this.allUnits = pending.map((item) => item.unit);
     this.obstacleList = Array.isArray(saved.obstacles) ? saved.obstacles as Position[] : [];
     this.currentTurn = Number(saved.turn);
     this.currentFloor = Number(saved.floor) || 0;
