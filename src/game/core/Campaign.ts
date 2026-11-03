@@ -45,6 +45,7 @@ export class Campaign {
   private retainedItemIds = new Set<string>();
   /** Ouro consolidado em extrações anteriores; o ganho durante a incursão é temporário. */
   private retainedGold = 0;
+  lastExpeditionResult: 'extraction' | 'combat_defeat' | 'completed' | null = null;
 
   /** Recompensas obtidas no andar atual, exibidas ao vencer. */
   get victoryRewards(): readonly string[] { return this.rewardMessages; }
@@ -112,6 +113,13 @@ export class Campaign {
   /** ID do registro do personagem no Supabase, associado à classe fixa do herói. */
   getPersistedCharacterId(classId: string): string | null {
     return this.persistedCharacterIds.get(classId) ?? null;
+  }
+
+  /** IDs persistidos dos heróis selecionados para a expedição atual. */
+  getActivePersistedCharacterIds(): string[] {
+    return this.activeParty
+      .map((hero) => this.getPersistedCharacterId(hero.definition.id))
+      .filter((id): id is string => Boolean(id));
   }
 
   // ---------- Consultas ----------
@@ -279,6 +287,7 @@ export class Campaign {
   /** Consolida os itens obtidos e retorna à base ao extrair em um marco válido. */
   extract(): boolean {
     if (!this.canExtract) return false;
+    this.lastExpeditionResult = 'extraction';
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.retainedGold = this.gold;
     this.restart(false);
@@ -287,6 +296,7 @@ export class Campaign {
 
   /** Descarta os itens e o ouro obtidos desde a última extração. */
   loseExpeditionItems(): void {
+    if (this.battle.outcome === 'defeat' && this.lastExpeditionResult === null) this.lastExpeditionResult = 'combat_defeat';
     this.inventory.removeItemsExcept(this.retainedItemIds, this.partyUnits);
     this.gold = this.retainedGold;
   }
@@ -354,6 +364,7 @@ export class Campaign {
     // Reiniciar sem extrair equivale a abandonar a incursão: drops recentes são perdidos.
     this.loseExpeditionItems();
     this.floorIndex = 0;
+    this.lastExpeditionResult = null;
     this.rewardedMonsterUids.clear();
     this.rewardMessages.length = 0;
     this.rewardGold = 0;
