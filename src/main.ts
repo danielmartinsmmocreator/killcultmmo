@@ -30,6 +30,8 @@ let progressionSaveWarningShown = false;
 let activeExpeditionId: string | null = null;
 let expeditionFinishPending = false;
 let lastExpeditionActivitySyncAt = 0;
+let snapshotSaveTimer: number | null = null;
+let snapshotSaveChain: Promise<void> = Promise.resolve();
 
 function destroyGame(): void {
   sidePanel?.destroy();
@@ -364,6 +366,54 @@ async function finishExpeditionAndReturn(): Promise<void> {
   showPreparation(true);
 }
 
+function persistCampaignSnapshot(): void {
+  if (!supabase || !campaign || !activeExpeditionId) return;
+  if (snapshotSaveTimer !== null) window.clearTimeout(snapshotSaveTimer);
+  snapshotSaveTimer = window.setTimeout(() => {
+    snapshotSaveTimer = null;
+    const expeditionId = activeExpeditionId;
+    const currentCampaign = campaign;
+    if (!expeditionId || !currentCampaign) return;
+    snapshotSaveChain = snapshotSaveChain.then(async () => {
+      if (!supabase || activeExpeditionId !== expeditionId || campaign !== currentCampaign) return;
+      const snapshot = currentCampaign.exportSnapshot();
+      const { error } = await supabase.rpc('save_player_expedition_snapshot', {
+        p_expedition_id: expeditionId,
+        p_current_floor: currentCampaign.floorNumber,
+        p_state_snapshot: snapshot,
+      });
+      if (error) {
+        console.error('Falha ao salvar o estado da expedição:', error);
+      }
+    }).catch((error) => console.error('Falha na fila de snapshots:', error));
+  }, 250);
+}
+
+function launchExpeditionBattle(restored = false): void {
+  if (!campaign || !activeExpeditionId) return;
+  expeditionFinishPending = false;
+  lastExpeditionActivitySyncAt = 0;
+  panel.replaceChildren();
+  gameRoot.hidden = false;
+  gameRoot.style.display = '';
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn);
+  campaign.battle.subscribe(() => persistCampaignSnapshot());
+  game = new Phaser.Game({
+    type: Phaser.AUTO,
+    parent: gameRoot,
+    width: GAME_WIDTH,
+    height: GAME_HEIGHT,
+    backgroundColor: 'rgba(0,0,0,0)',
+    transparent: true,
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
+    scene: [new BattleScene(campaign, !restored)],
+  });
+  persistCampaignSnapshot();
+}
+
 async function startExpedition(): Promise<void> {
   if (!campaign || !supabase || activeExpeditionId) return;
   const characterIds = campaign.getActivePersistedCharacterIds();
@@ -391,25 +441,7 @@ async function startExpedition(): Promise<void> {
   }
 
   activeExpeditionId = expeditionId as string;
-  expeditionFinishPending = false;
-  lastExpeditionActivitySyncAt = 0;
-  panel.replaceChildren();
-  gameRoot.hidden = false;
-  gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn);
-  game = new Phaser.Game({
-    type: Phaser.AUTO,
-    parent: gameRoot,
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
-    backgroundColor: 'rgba(0,0,0,0)',
-    transparent: true,
-    scale: {
-      mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH,
-    },
-    scene: [new BattleScene(campaign)],
-  });
+  launchExpeditionBattle(false);
 }
 
 function showPlayerDataError(userId: string, message: string): void {
@@ -454,7 +486,31 @@ async function enterGame(userId: string): Promise<void> {
     campaign.loadPersistedCharacters(playerData.characters);
     campaign.loadPersistedInventory(playerData.inventory, playerData.gold, playerData.equipped);
     void flushPendingProgressionEvents();
+
+    const { data: activeData, error: activeError } = await supabase!.rpc('get_active_player_expedition');
+    if (activeError) throw new Error('Não foi possível verificar sua expedição ativa: ' + activeError.message);
+    const active = activeData as {
+      active?: boolean;
+      expired?: boolean;
+      expedition_id?: string;
+      state_snapshot?: unknown;
+      snapshot_version?: number;
+    } | null;
+
+    if (active?.active && active.expedition_id) {
+      if (active.snapshot_version !== 1 || !active.state_snapshot || !campaign.restoreSnapshot(active.state_snapshot)) {
+        throw new Error('Existe uma expedição ativa, mas seu estado salvo está ausente ou incompatível. Nenhuma nova campanha foi iniciada para evitar apagar seu progresso.');
+      }
+      activeExpeditionId = active.expedition_id;
+      launchExpeditionBattle(true);
+      return;
+    }
+
+    activeExpeditionId = null;
     showPreparation();
+    if (active?.expired) {
+      window.alert('Sua expedição anterior foi encerrada como derrota por inatividade (mais de 10 minutos sem atividade). Agora você pode iniciar uma nova campanha.');
+    }
   } catch (error) {
     if (activeUserId !== userId) return;
     const message = error instanceof Error ? error.message : 'Erro desconhecido ao consultar o banco de dados.';
