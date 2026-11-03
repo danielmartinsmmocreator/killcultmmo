@@ -270,7 +270,8 @@ export class PreparationScreen {
     rosterHint.textContent = '';
     rosterHint.style.cssText = 'color:#94a3b8;font-size:.85rem;line-height:1.4;margin:0 0 12px;';
     const roster = document.createElement('div');
-    roster.style.cssText='display:grid;gap:10px;';
+    roster.className = 'prep-menu-grid';
+    roster.style.cssText='';
     for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
     const skipRange = document.createElement('section');
     skipRange.className = 'prep-skip-range';
