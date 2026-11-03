@@ -40,6 +40,7 @@ export class PreparationScreen {
   private readonly campaign: Campaign;
   private readonly onStart: () => void;
   private readonly playerNickname: string;
+  private readonly onEquipmentChange?: () => Promise<boolean>;
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: number | null | 'unknown' = null;
@@ -50,11 +51,12 @@ export class PreparationScreen {
   private devUnlocked = false;
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR') {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
     this.playerNickname = playerNickname;
+    this.onEquipmentChange = onEquipmentChange;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
@@ -62,6 +64,15 @@ export class PreparationScreen {
     this.selectedHero = available.find((hero) => this.selectedUids.has(hero.uid)) ?? available[0] ?? campaign.party[0];
     available.forEach((hero, index) => this.positions.set(hero.uid, { col: index % 6, row: 5 }));
     this.render();
+  }
+
+  private async persistEquipmentChange(): Promise<void> {
+    if (!this.onEquipmentChange) return;
+    const saved = await this.onEquipmentChange();
+    if (!saved) {
+      window.alert('Não foi possível salvar os equipamentos. A página será recarregada para recuperar o estado confirmado pelo servidor.');
+      window.location.reload();
+    }
   }
 
   private render(): void {
@@ -325,7 +336,7 @@ export class PreparationScreen {
       if (equippedId) {
         const remove = document.createElement('button');
         remove.type = 'button'; remove.textContent = 'Remover'; remove.style.cssText = STYLE.button + 'display:block;margin-top:6px;padding:5px 8px;font-size:.75rem;';
-        remove.addEventListener('click', () => { this.campaign.inventory.unequip(this.selectedHero, slot.id); this.render(); });
+        remove.addEventListener('click', () => { if (this.campaign.inventory.unequip(this.selectedHero, slot.id)) { this.render(); void this.persistEquipmentChange(); } });
         card.append(remove);
       }
       slots.append(card);
@@ -451,7 +462,7 @@ export class PreparationScreen {
       button.style.cssText = STYLE.button + `text-align:left;font-size:.8rem;flex:1;${rarityStyles[rarity] ?? ''}`;
       button.disabled = this.selectedHero.hp <= 0 || (this.selectedHero.progression?.level ?? 1) < (def.minLevel ?? 1) || (!!def.allowedClasses && !def.allowedClasses.includes(this.selectedHero.definition.id as 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer'));
       button.addEventListener('click', () => {
-        if (this.campaign.inventory.equip(this.selectedHero, item.instanceId, ITEM_DEFINITIONS)) this.render();
+        if (this.campaign.inventory.equip(this.selectedHero, item.instanceId, ITEM_DEFINITIONS)) { this.render(); void this.persistEquipmentChange(); }
         else { this.message = 'Não foi possível equipar esse item.'; this.render(); }
       });
       const sell = document.createElement('button');
