@@ -82,12 +82,37 @@ function showPreparation(resetCampaign = false): void {
   sessionControls.hidden = false;
 }
 
+async function persistAttributeAllocation(classId: string, attribute: 'strength' | 'vitality' | 'defense', points: number): Promise<boolean> {
+  if (!supabase || !campaign) return false;
+  const characterId = campaign.getPersistedCharacterId(classId);
+  if (!characterId) {
+    window.alert('Não foi possível identificar o personagem no banco de dados.');
+    return false;
+  }
+
+  const { error } = await supabase.rpc('allocate_character_attribute', {
+    p_character_id: characterId,
+    p_attribute: attribute,
+    p_points: points,
+  });
+
+  if (error) {
+    console.error('Falha ao persistir atributos:', error.message);
+    window.alert(error.message.includes('pontos insuficientes')
+      ? 'Esse personagem não possui pontos suficientes para essa distribuição.'
+      : 'O Supabase recusou a distribuição de atributos. Tente novamente.');
+    return false;
+  }
+
+  return true;
+}
+
 function startExpedition(): void {
   if (!campaign) return;
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => showPreparation(true));
+  sidePanel = new SidePanel(panel, campaign, () => showPreparation(true), persistAttributeAllocation);
   game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameRoot,
