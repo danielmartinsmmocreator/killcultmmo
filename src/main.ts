@@ -29,6 +29,7 @@ let playerNickname = 'JOGADOR';
 let progressionSaveWarningShown = false;
 let activeExpeditionId: string | null = null;
 let expeditionFinishPending = false;
+let lastExpeditionActivitySyncAt = 0;
 
 const sessionControls = document.createElement('div');
 sessionControls.style.cssText = 'position:fixed;top:10px;right:12px;z-index:3000;';
@@ -150,6 +151,13 @@ async function persistExpeditionFloor(floor: number): Promise<void> {
   }
 }
 
+function syncExpeditionActivity(floor: number): void {
+  const now = Date.now();
+  if (now - lastExpeditionActivitySyncAt < 60_000) return;
+  lastExpeditionActivitySyncAt = now;
+  void persistExpeditionFloor(floor);
+}
+
 async function finishExpeditionAndReturn(): Promise<void> {
   if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
   const result = campaign.lastExpeditionResult
@@ -200,10 +208,11 @@ async function startExpedition(): Promise<void> {
 
   activeExpeditionId = expeditionId as string;
   expeditionFinishPending = false;
+  lastExpeditionActivitySyncAt = 0;
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); });
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity);
   game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameRoot,
