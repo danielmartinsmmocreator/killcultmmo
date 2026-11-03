@@ -37,6 +37,15 @@ begin
   where id = v_user_id
   for update;
 
+  -- Uma sessão abandonada há 10 minutos é encerrada como derrota por inatividade.
+  update public.expeditions
+  set status = 'defeated',
+      result = 'inactive_defeat',
+      ended_at = now()
+  where user_id = v_user_id
+    and status = 'active'
+    and last_activity_at <= now() - interval '10 minutes';
+
   if exists (
     select 1 from public.expeditions
     where user_id = v_user_id and status = 'active'
