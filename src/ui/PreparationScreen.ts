@@ -1,6 +1,7 @@
 import type { Campaign } from '../game/core/Campaign';
 import type { EquipmentSlot, Position, Unit } from '../game/types';
 import { ITEM_DEFINITIONS } from '../game/data/items';
+import { CAMPAIGN_FLOORS } from '../game/data/encounters';
 import { MONSTER_DEFINITIONS, HARPY, SATYR, CYCLOPS, GORGON, MINOTAUR, UNDERWORLD_HOUND, UNDERWORLD_WRAITH, CARD_SOLDIER, WHITE_RABBIT, GIANT_CATERPILLAR, MAD_MUSHROOM, THORN_PLANT } from '../game/data/monsters';
 import { GOBLIN_CHIEF, ABYSS_IDOL, CRIMSON_COUNTESS, DRACULA, MEDUSA, HADES, CHESHIRE_CAT, QUEEN_OF_HEARTS } from '../game/data/bosses';
 import warriorSprite from '../assets/sprites/warrior.png';
@@ -43,6 +44,8 @@ export class PreparationScreen {
   private readonly onEquipmentChange?: () => Promise<boolean>;
   private readonly onSellItem?: (instanceId: string) => Promise<number>;
   private readonly onSignOut?: () => Promise<void>;
+  private readonly maxUnlockedSkipRange: number;
+  private readonly onSkipRange?: (range: number, cost: number) => Promise<boolean>;
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: number | null | 'unknown' = null;
@@ -53,7 +56,7 @@ export class PreparationScreen {
   private devUnlocked = false;
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
@@ -61,6 +64,8 @@ export class PreparationScreen {
     this.onEquipmentChange = onEquipmentChange;
     this.onSellItem = onSellItem;
     this.onSignOut = onSignOut;
+    this.maxUnlockedSkipRange = Math.max(0, Math.min(10, Math.floor(maxUnlockedSkipRange)));
+    this.onSkipRange = onSkipRange;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
@@ -267,7 +272,55 @@ export class PreparationScreen {
     const roster = document.createElement('div');
     roster.style.cssText='display:grid;gap:10px;';
     for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
-    left.append(gameTitle, rosterTitle, roster, devButton); devButton.className='prep-dev-button';
+    const skipRange = document.createElement('section');
+    skipRange.className = 'prep-skip-range';
+    let selectedSkipRange = Math.max(1, this.maxUnlockedSkipRange);
+    const skipTitle = document.createElement('strong');
+    skipTitle.textContent = 'PULAR ANDAR';
+    const skipControls = document.createElement('div');
+    skipControls.className = 'prep-skip-controls';
+    const previousRange = document.createElement('button');
+    previousRange.type = 'button'; previousRange.textContent = '▲';
+    const rangeLabel = document.createElement('strong');
+    const nextRange = document.createElement('button');
+    nextRange.type = 'button'; nextRange.textContent = '▼';
+    const skipCost = document.createElement('span');
+    const skipConfirm = document.createElement('button');
+    skipConfirm.type = 'button'; skipConfirm.className = 'prep-skip-confirm'; skipConfirm.textContent = 'PULAR PARA A FAIXA';
+    const calculateSkipCost = (range: number): number => {
+      const lastFloor = Math.min(CAMPAIGN_FLOORS.length, (range - 1) * 10);
+      const expectedGold = CAMPAIGN_FLOORS.filter((config) => config.floor <= lastFloor)
+        .reduce((sum, config) => sum + config.monsters.reduce((floorGold, monster) => {
+          const rank = monster.rank ?? 'normal';
+          return floorGold + (rank === 'boss' ? 100 : rank === 'mini-boss' ? 35 : 5);
+        }, 0), 0);
+      return expectedGold * 3;
+    };
+    const updateSkipControls = (): void => {
+      const unlocked = this.maxUnlockedSkipRange > 0;
+      rangeLabel.textContent = 'FAIXA ' + selectedSkipRange;
+      skipCost.textContent = calculateSkipCost(selectedSkipRange).toLocaleString('pt-BR') + ' ouro';
+      previousRange.disabled = !unlocked || selectedSkipRange <= 1;
+      nextRange.disabled = !unlocked || selectedSkipRange >= this.maxUnlockedSkipRange;
+      skipConfirm.disabled = !unlocked || !this.onSkipRange;
+      skipConfirm.title = unlocked ? 'Pular para a faixa selecionada' : 'Derrote chefes e extraia para desbloquear saltos';
+    };
+    previousRange.addEventListener('click', () => { selectedSkipRange = Math.max(1, selectedSkipRange - 1); updateSkipControls(); });
+    nextRange.addEventListener('click', () => { selectedSkipRange = Math.min(this.maxUnlockedSkipRange, selectedSkipRange + 1); updateSkipControls(); });
+    skipConfirm.addEventListener('click', async () => {
+      if (!this.onSkipRange || selectedSkipRange < 1 || selectedSkipRange > this.maxUnlockedSkipRange) return;
+      const cost = calculateSkipCost(selectedSkipRange);
+      if (this.campaign.gold < cost) { window.alert('Ouro insuficiente para pular para essa faixa.'); return; }
+      if (!window.confirm('Pular para a faixa ' + selectedSkipRange + ' por ' + cost.toLocaleString('pt-BR') + ' ouro?')) return;
+      skipConfirm.disabled = true;
+      const succeeded = await this.onSkipRange(selectedSkipRange, cost);
+      if (succeeded) window.location.reload();
+      else updateSkipControls();
+    });
+    skipControls.append(previousRange, rangeLabel, nextRange, skipCost);
+    skipRange.append(skipTitle, skipControls, skipConfirm);
+    updateSkipControls();
+    left.append(gameTitle, rosterTitle, roster, skipRange, devButton); devButton.className='prep-dev-button';
 
     const right = document.createElement('div');
     right.className='prep-right'; right.style.cssText='';
