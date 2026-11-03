@@ -114,7 +114,7 @@ export class PreparationScreen {
     const selectedIcon = iconFiles.find(([path]) => path.split('/').pop() === selectedIconKey) ?? iconFiles[Math.max(0, Math.min(iconFiles.length - 1, legacyIconIndex))];
     const avatar=document.createElement('img'); avatar.className='prep-avatar'; avatar.alt='Cosmético de perfil equipado'; avatar.src=selectedIcon?.[1]||'';
     const profileInfo=document.createElement('div'); const playerName=document.createElement('strong'); playerName.textContent=this.playerNickname; playerName.style.cssText='display:block;color:#ffe16b;font-size:clamp(1.1rem,2vw,1.8rem);letter-spacing:.08em;';
-    const worldLevel=this.campaign.party.reduce((sum,hero)=>sum+(hero.progression?.level??1),0); const levelLine=document.createElement('div'); levelLine.textContent=`ANDAR ${this.campaign.floorNumber} · NÍVEL MUNDIAL ${worldLevel}`; levelLine.style.cssText='color:#ffe16b;font-size:.75rem;margin-top:5px;';
+    const worldLevel=this.campaign.party.reduce((sum,hero)=>sum+(hero.progression?.level??1),0); const levelLine=document.createElement('div'); levelLine.textContent=`ANDAR ${this.campaign.floorNumber} · NÍVEL MUNDIAL ${worldLevel} · OURO ${this.campaign.gold.toLocaleString('pt-BR')}`; levelLine.style.cssText='color:#ffe16b;font-size:.75rem;margin-top:5px;';
     const settings=document.createElement('button'); settings.type='button'; settings.textContent='⚙ Configurações'; settings.style.cssText=STYLE.button+'margin-top:6px;padding:5px 10px;';
     const settingsModal=document.createElement('div'); settingsModal.className='prep-modal'; settingsModal.hidden=true;
     const settingsCard=document.createElement('div'); settingsCard.className='prep-modal-card';
