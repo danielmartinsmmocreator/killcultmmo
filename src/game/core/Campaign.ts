@@ -46,6 +46,7 @@ export class Campaign {
   /** Ouro consolidado em extrações anteriores; o ganho durante a incursão é temporário. */
   private retainedGold = 0;
   lastExpeditionResult: 'extraction' | 'combat_defeat' | 'completed' | null = null;
+  lastExtractionRewards: { gold: number; items: { definition_id: string; obtained_at_floor: number }[] } | null = null;
 
   /** Recompensas obtidas no andar atual, exibidas ao vencer. */
   get victoryRewards(): readonly string[] { return this.rewardMessages; }
@@ -287,6 +288,12 @@ export class Campaign {
   /** Consolida os itens obtidos e retorna à base ao extrair em um marco válido. */
   extract(): boolean {
     if (!this.canExtract) return false;
+    this.lastExtractionRewards = {
+      gold: Math.max(0, this.gold - this.retainedGold),
+      items: this.inventory.allItems
+        .filter((item) => !this.retainedItemIds.has(item.instanceId))
+        .map((item) => ({ definition_id: item.definitionId, obtained_at_floor: item.obtainedAtFloor ?? this.floorNumber })),
+    };
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.retainedGold = this.gold;
     this.restart(false);
@@ -365,6 +372,7 @@ export class Campaign {
     this.loseExpeditionItems();
     this.floorIndex = 0;
     this.lastExpeditionResult = null;
+    this.lastExtractionRewards = null;
     this.rewardedMonsterUids.clear();
     this.rewardMessages.length = 0;
     this.rewardGold = 0;
