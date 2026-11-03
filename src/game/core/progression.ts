@@ -61,6 +61,8 @@ export class PlayerInventory {
   private readonly available = new Set<string>();
   private nextId = 1;
   get items(): readonly InventoryItem[] { return [...this.available].map((id) => this.itemsByInstance.get(id)!).filter(Boolean); }
+  /** Todos os itens da conta, inclusive os atualmente equipados. */
+  get allItems(): readonly InventoryItem[] { return [...this.itemsByInstance.values()]; }
   /** Filtra itens disponíveis pela faixa de andares em que foram obtidos (1–10, 11–20, 21–30). */
   filterByRange(range: 1 | 2 | 3 | null): readonly InventoryItem[] {
     if (range === null) return this.items;
