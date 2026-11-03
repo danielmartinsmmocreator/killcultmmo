@@ -111,6 +111,51 @@ export class Campaign {
     }
   }
 
+  /** Snapshot JSON da campanha e do encontro em andamento. */
+  exportSnapshot(): Record<string, unknown> {
+    return {
+      version: 1,
+      floorIndex: this.floorIndex,
+      activePartyUids: [...this.activePartyUids],
+      gold: this.gold,
+      retainedGold: this.retainedGold,
+      retainedItemIds: [...this.retainedItemIds],
+      rewardedMonsterUids: [...this.rewardedMonsterUids],
+      rewardMessages: [...this.rewardMessages],
+      rewardGold: this.rewardGold,
+      rewardDrops: [...this.rewardDrops],
+      inventory: this.inventory.exportSnapshot(),
+      battle: this.battle.exportSnapshot(),
+    };
+  }
+
+  /** Restaura a campanha antes de abrir a cena Phaser. */
+  restoreSnapshot(snapshot: unknown): boolean {
+    if (!snapshot || typeof snapshot !== 'object') return false;
+    const saved = snapshot as Record<string, unknown>;
+    if (saved.version !== 1 || !Number.isInteger(saved.floorIndex)) return false;
+    const floorIndex = Number(saved.floorIndex);
+    if (floorIndex < 0 || floorIndex >= this.floors.length) return false;
+    if (!Array.isArray(saved.activePartyUids) || saved.activePartyUids.length < 1 || saved.activePartyUids.length > 3) return false;
+    const validHeroUids = new Set(this.partyUnits.map((hero) => hero.uid));
+    if (saved.activePartyUids.some((uid) => typeof uid !== 'string' || !validHeroUids.has(uid))) return false;
+    if (!this.inventory.restoreSnapshot(saved.inventory)) return false;
+
+    this.floorIndex = floorIndex;
+    this.activePartyUids = [...saved.activePartyUids] as string[];
+    this.gold = Number.isFinite(saved.gold) ? Math.max(0, Number(saved.gold)) : 0;
+    this.retainedGold = Number.isFinite(saved.retainedGold) ? Math.max(0, Number(saved.retainedGold)) : 0;
+    this.retainedItemIds = new Set(Array.isArray(saved.retainedItemIds) ? saved.retainedItemIds.filter((id): id is string => typeof id === 'string') : []);
+    this.rewardedMonsterUids.clear();
+    if (Array.isArray(saved.rewardedMonsterUids)) saved.rewardedMonsterUids.forEach((uid) => { if (typeof uid === 'string') this.rewardedMonsterUids.add(uid); });
+    this.rewardMessages.splice(0, this.rewardMessages.length, ...(Array.isArray(saved.rewardMessages) ? saved.rewardMessages.filter((message): message is string => typeof message === 'string') : []));
+    this.rewardGold = Number.isFinite(saved.rewardGold) ? Math.max(0, Number(saved.rewardGold)) : 0;
+    this.rewardDrops.splice(0, this.rewardDrops.length, ...(Array.isArray(saved.rewardDrops) ? saved.rewardDrops.filter((item): item is string => typeof item === 'string') : []));
+
+    this.battle.loadEncounter(this.createEncounter(), false);
+    return this.battle.restoreSnapshot(saved.battle);
+  }
+
   /** Recompensas temporárias que serão consolidadas se a extração for aceita pelo servidor. */
   getPendingExtractionRewards(): { gold: number; items: { definition_id: string; obtained_at_floor: number }[] } {
     return {
