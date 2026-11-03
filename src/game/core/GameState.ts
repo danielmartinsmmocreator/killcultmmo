@@ -58,6 +58,10 @@ import { chooseTelegraphTarget, createTelegraphIntent, selectTelegraphedAttack }
 
 type Listener = (event: GameEvent) => void;
 
+export type ProgressionPersistenceEvent =
+  | { eventId: string; kind: 'kill'; classId: string; monsterMaxHp: number; monsterDamage: number; monsterRank: 'normal' | 'mini-boss' | 'boss' }
+  | { eventId: string; kind: 'death'; classId: string };
+
 const MAX_LOG_ENTRIES = 200;
 
 /**
@@ -116,13 +120,16 @@ export class GameState {
   private healEvents: HealEvent[] = [];
   private effect: AbilityEffect | null = null;
   private readonly listeners = new Set<Listener>();
+  private readonly onProgressionEvent?: (event: ProgressionPersistenceEvent) => void;
 
   constructor(
     createBattle: BattleFactory = createInitialBattle,
     specialBonusesFor: (hero: Unit) => { defensePercent: number; lifestealPercent: number; ignoreFirstHitPerEncounter?: boolean } = () => ({ defensePercent: 0, lifestealPercent: 0 }),
+    onProgressionEvent?: (event: ProgressionPersistenceEvent) => void,
   ) {
     this.createBattle = createBattle;
     this.specialBonusesFor = specialBonusesFor;
+    this.onProgressionEvent = onProgressionEvent;
     this.setup();
   }
 
@@ -1050,11 +1057,18 @@ export class GameState {
       this.addLog(`${target.definition.name} foi derrotado!`, 'death');
       if (target.definition.team === 'hero') {
         const lost = applyDeathXpPenalty(target);
-        if (lost > 0) this.addLog(`${target.definition.name} perdeu ${lost} XP pela morte (penalidade de 10% da barra do nível).`, 'death');
+        if (lost > 0) {
+          this.addLog(`${target.definition.name} perdeu ${lost} XP pela morte (penalidade de 10% da barra do nível).`, 'death');
+          this.onProgressionEvent?.({ eventId: crypto.randomUUID(), kind: 'death', classId: target.definition.id });
+        }
       }
       if (attacker && attacker.definition.team === 'hero' && target.definition.team === 'monster') {
         const gained = awardKillXp(attacker, target);
-        if (gained > 0) this.addLog(`${attacker.definition.name} recebeu ${gained} XP pelo golpe final.`, 'hero');
+        if (gained > 0) {
+          this.addLog(`${attacker.definition.name} recebeu ${gained} XP pelo golpe final.`, 'hero');
+          const rank = target.definition.rank ?? 'normal';
+          this.onProgressionEvent?.({ eventId: crypto.randomUUID(), kind: 'kill', classId: attacker.definition.id, monsterMaxHp: target.definition.maxHp, monsterDamage: target.definition.damage, monsterRank: rank });
+        }
       }
       // Chefe morto não executa o golpe que tinha anunciado.
       this.cancelTelegraphsOf(target, `foi derrotado antes de concluir o golpe`);
