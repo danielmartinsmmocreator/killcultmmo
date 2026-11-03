@@ -95,12 +95,15 @@ export class SidePanel {
   private devUnlocked = false;
   private transitionScheduled = false;
   private readonly onRestart?: () => void;
+  private readonly onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>;
+  private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.onRestart = onRestart;
+    this.onAllocateAttribute = onAllocateAttribute;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -497,7 +500,7 @@ export class SidePanel {
     for (const amount of [10, 50, 100]) {
       const quickButton = el('button', 'btn-attribute-batch', `+ ${amount}`);
       quickButton.type = 'button';
-      quickButton.disabled = p.unspentAttributePoints < 1 || this.state.phase !== 'player' || selected.hp <= 0;
+      quickButton.disabled = this.attributeSavePending || p.unspentAttributePoints < 1 || this.state.phase !== 'player' || selected.hp <= 0;
       quickButton.title = `Selecionar ${amount} ponto(s) para o próximo atributo escolhido`;
       quickButton.style.cssText = 'min-width:54px;padding:5px 9px;border:1px solid #8b7be8;border-radius:4px;background:#342c57;color:#fff;font-weight:700;cursor:pointer;';
       quickButton.addEventListener('click', (event) => {
@@ -528,15 +531,37 @@ export class SidePanel {
       add.type = 'button';
       add.title = `Adicionar 1 ponto em ${attribute.label}`;
       add.setAttribute('aria-label', add.title);
-      add.disabled = p.unspentAttributePoints < 1 || this.state.phase !== 'player' || selected.hp <= 0;
+      add.disabled = this.attributeSavePending || p.unspentAttributePoints < 1 || this.state.phase !== 'player' || selected.hp <= 0;
       add.style.cssText = 'min-width:34px;height:32px;border:1px solid #8b7be8;border-radius:4px;background:#342c57;color:#fff;font-weight:700;cursor:pointer;';
       add.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
-        this.state.allocateSelectedAttributePoints(attribute.key, this.pendingAttributeBatch ?? 1);
+        const requestedPoints = Math.min(this.pendingAttributeBatch ?? 1, selected.progression?.unspentAttributePoints ?? 0);
         this.pendingAttributeBatch = null;
-        // Re-render explicitly so the point count and derived stats update immediately.
+        if (requestedPoints < 1 || this.attributeSavePending) return;
+        this.attributeSavePending = true;
         this.render();
+        void (async () => {
+          try {
+            const saved = this.onAllocateAttribute
+              ? await this.onAllocateAttribute(selected.definition.id, attribute.key, requestedPoints)
+              : true;
+            if (!saved) {
+              window.alert('Não foi possível salvar os atributos. Nenhum ponto foi consumido.');
+              return;
+            }
+            if (this.state.selectedUnit?.uid !== selected.uid ||
+                !this.state.allocateSelectedAttributePoints(attribute.key, requestedPoints)) {
+              window.alert('Os atributos foram salvos, mas a interface mudou durante a operação. Recarregue a tela para sincronizar.');
+            }
+          } catch (error) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido.';
+            window.alert('Falha ao salvar atributos: ' + message);
+          } finally {
+            this.attributeSavePending = false;
+            this.render();
+          }
+        })();
       });
       row.append(add);
       attributes.append(row);
