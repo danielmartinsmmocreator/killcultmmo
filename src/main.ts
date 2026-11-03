@@ -86,6 +86,36 @@ async function persistEquipmentChange(): Promise<boolean> {
   return true;
 }
 
+async function persistInventorySale(instanceId: string): Promise<number> {
+  if (!supabase || !campaign) return 0;
+  const inventoryItemId = campaign.inventory.persistentIdOf(instanceId);
+  if (!inventoryItemId) {
+    window.alert('Este item ainda não está registrado no inventário permanente e não pode ser vendido.');
+    return 0;
+  }
+
+  const { data, error } = await supabase.rpc('sell_player_inventory_item', {
+    p_inventory_item_id: inventoryItemId,
+  });
+  if (error) {
+    console.error('Falha ao vender item:', error);
+    window.alert(error.message.includes('Remova o equipamento')
+      ? 'Remova o item do personagem antes de vendê-lo.'
+      : 'O servidor não conseguiu concluir a venda. O item foi mantido no inventário.');
+    return 0;
+  }
+
+  const serverGold = Number((data as { gold_credited?: number } | null)?.gold_credited ?? 0);
+  const localGold = campaign.sellInventoryItem(instanceId);
+  if (localGold !== serverGold) {
+    console.error('Divergência entre preço local e preço confirmado pelo servidor.', { localGold, serverGold });
+    window.alert('A venda foi registrada, mas o catálogo local está desatualizado. A página será recarregada para sincronizar o inventário.');
+    window.location.reload();
+    return 0;
+  }
+  return serverGold;
+}
+
 function showPreparation(resetCampaign = false): void {
   if (!campaign) return;
   sidePanel?.destroy();
@@ -95,7 +125,7 @@ function showPreparation(resetCampaign = false): void {
   if (resetCampaign) campaign.restart(false);
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
-  new PreparationScreen(panel, campaign, startExpedition, playerNickname, persistEquipmentChange);
+  new PreparationScreen(panel, campaign, startExpedition, playerNickname, persistEquipmentChange, persistInventorySale);
   sessionControls.hidden = false;
 }
 
