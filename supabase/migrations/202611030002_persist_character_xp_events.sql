@@ -61,7 +61,7 @@ begin
     raise exception 'Identificação do evento inválida.';
   end if;
 
-  if p_event_kind not in ('kill', 'death') then
+  if p_event_kind is null or p_event_kind not in ('kill', 'death') then
     raise exception 'Tipo de evento inválido.';
   end if;
 
@@ -97,7 +97,7 @@ begin
   else
     v_xp_delta := -least(
       v_character.xp,
-      ceil(100 * power(1.02::numeric, v_character.level - 1) * 0.1)::integer
+      ceil(round(100 * power(1.02::numeric, v_character.level - 1)) * 0.1)::integer
     );
     if v_xp_delta = 0 then
       return query select v_character.id, v_character.class_id, v_character.level,
