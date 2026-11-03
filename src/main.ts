@@ -27,6 +27,8 @@ let activeUserId: string | null = null;
 let loadingUserId: string | null = null;
 let playerNickname = 'JOGADOR';
 let progressionSaveWarningShown = false;
+let activeExpeditionId: string | null = null;
+let expeditionFinishPending = false;
 
 const sessionControls = document.createElement('div');
 sessionControls.style.cssText = 'position:fixed;top:10px;right:12px;z-index:3000;';
@@ -136,12 +138,60 @@ async function persistAttributeAllocation(classId: string, attribute: 'strength'
   return true;
 }
 
-function startExpedition(): void {
-  if (!campaign) return;
+async function finishExpeditionAndReturn(): Promise<void> {
+  if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
+  const result = campaign.lastExpeditionResult
+    ?? (campaign.status === 'completed' ? 'completed' : campaign.status === 'defeated' ? 'combat_defeat' : null);
+  if (!result) {
+    window.alert('Não foi possível identificar o resultado da expedição. Seus dados não foram encerrados.');
+    return;
+  }
+
+  expeditionFinishPending = true;
+  while (activeExpeditionId) {
+    const { error } = await supabase.rpc('finish_player_expedition', {
+      p_expedition_id: activeExpeditionId,
+      p_result: result,
+    });
+    if (!error) break;
+    console.error('Falha ao encerrar expedição:', error);
+    const retry = window.confirm('Não foi possível registrar o encerramento da expedição. Verifique sua conexão e tente novamente. Deseja tentar de novo?');
+    if (!retry) {
+      expeditionFinishPending = false;
+      return;
+    }
+  }
+
+  activeExpeditionId = null;
+  expeditionFinishPending = false;
+  showPreparation(true);
+}
+
+async function startExpedition(): Promise<void> {
+  if (!campaign || !supabase || activeExpeditionId) return;
+  const characterIds = campaign.getActivePersistedCharacterIds();
+  if (characterIds.length !== campaign.activeParty.length) {
+    window.alert('Não foi possível identificar todos os personagens selecionados no banco de dados.');
+    return;
+  }
+
+  const { data: expeditionId, error } = await supabase.rpc('start_player_expedition', {
+    p_character_ids: characterIds,
+  });
+  if (error || !expeditionId) {
+    console.error('Falha ao iniciar expedição:', error);
+    window.alert(error?.message.includes('expedição ativa')
+      ? 'Sua conta já possui uma expedição ativa. Atualize a página ou entre em contato com o suporte.'
+      : 'Não foi possível registrar sua expedição no servidor. Tente novamente.');
+    return;
+  }
+
+  activeExpeditionId = expeditionId as string;
+  expeditionFinishPending = false;
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => showPreparation(true), persistAttributeAllocation);
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation);
   game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameRoot,
