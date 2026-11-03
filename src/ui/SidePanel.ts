@@ -97,15 +97,17 @@ export class SidePanel {
   private readonly onRestart?: () => void;
   private readonly onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>;
   private readonly onFloorChange?: (floor: number) => void;
+  private readonly onActivity?: (floor: number) => void;
   private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.onRestart = onRestart;
     this.onAllocateAttribute = onAllocateAttribute;
     this.onFloorChange = onFloorChange;
+    this.onActivity = onActivity;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -325,6 +327,7 @@ export class SidePanel {
     this.specialConfirmModal.append(dialog);
   }
   private render(): void {
+    this.onActivity?.(this.campaign.floorNumber);
     const phase = this.state.phase;
     const status = this.campaign.status;
     if (status === 'defeated') this.campaign.loseExpeditionItems();
