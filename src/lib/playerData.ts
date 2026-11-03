@@ -12,8 +12,15 @@ export type PlayerCharacterRecord = {
 };
 
 export type PlayerInventoryRecord = {
+  id: string;
   item_definition_id: string;
   obtained_at_floor: number | null;
+};
+
+export type PlayerEquippedRecord = {
+  character_id: string;
+  inventory_item_id: string;
+  slot: import('../game/types').EquipmentSlot;
 };
 
 export type PlayerData = {
@@ -21,6 +28,7 @@ export type PlayerData = {
   characters: PlayerCharacterRecord[];
   gold: number;
   inventory: PlayerInventoryRecord[];
+  equipped: PlayerEquippedRecord[];
 };
 
 const EXPECTED_CLASSES = ['warrior', 'mage', 'cleric', 'assassin', 'archer'] as const;
@@ -29,20 +37,22 @@ const EXPECTED_CLASSES = ['warrior', 'mage', 'cleric', 'assassin', 'archer'] as 
 export async function loadPlayerData(userId: string): Promise<PlayerData> {
   if (!supabase) throw new Error('Supabase não está configurado.');
 
-  const [profileResult, charactersResult, walletResult, inventoryResult] = await Promise.all([
+  const [profileResult, charactersResult, walletResult, inventoryResult, equippedResult] = await Promise.all([
     supabase.from('profiles').select('nickname').eq('id', userId).single(),
     supabase
       .from('characters')
       .select('id, class_id, level, xp, unspent_attribute_points, strength, vitality, defense')
       .eq('user_id', userId),
     supabase.from('player_wallet').select('gold').eq('user_id', userId).single(),
-    supabase.from('inventory').select('item_definition_id, obtained_at_floor').eq('user_id', userId),
+    supabase.from('inventory').select('id, item_definition_id, obtained_at_floor').eq('user_id', userId),
+    supabase.from('equipped_items').select('character_id, inventory_item_id, slot').eq('user_id', userId),
   ]);
 
   if (profileResult.error) throw new Error('Não foi possível carregar o perfil: ' + profileResult.error.message);
   if (charactersResult.error) throw new Error('Não foi possível carregar os personagens: ' + charactersResult.error.message);
   if (walletResult.error) throw new Error('Não foi possível carregar a carteira: ' + walletResult.error.message);
   if (inventoryResult.error) throw new Error('Não foi possível carregar o inventário: ' + inventoryResult.error.message);
+  if (equippedResult.error) throw new Error('Não foi possível carregar os equipamentos: ' + equippedResult.error.message);
 
   const characters = (charactersResult.data ?? []) as PlayerCharacterRecord[];
   const classes = new Set(characters.map((character) => character.class_id));
@@ -55,5 +65,6 @@ export async function loadPlayerData(userId: string): Promise<PlayerData> {
     characters,
     gold: Number(walletResult.data.gold ?? 0),
     inventory: (inventoryResult.data ?? []) as PlayerInventoryRecord[],
+    equipped: (equippedResult.data ?? []) as PlayerEquippedRecord[],
   };
 }
