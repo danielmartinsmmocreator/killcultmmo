@@ -119,6 +119,7 @@ interface UnitView {
 export class BattleScene extends Phaser.Scene {
   private readonly campaign: Campaign;
   private readonly gameState: GameState;
+  private readonly syncEncounterOnCreate: boolean;
   private readonly unitViews = new Map<string, UnitView>();
   private obstacleObjects: Phaser.GameObjects.Rectangle[] = [];
   private boardTiles: { tile: Phaser.GameObjects.Rectangle; col: number; row: number }[] = [];
@@ -138,10 +139,11 @@ export class BattleScene extends Phaser.Scene {
   private stepTimer: Phaser.Time.TimerEvent | null = null;
   private disposed = false;
 
-  constructor(campaign: Campaign) {
+  constructor(campaign: Campaign, syncEncounterOnCreate = true) {
     super({ key: 'BattleScene' });
     this.campaign = campaign;
     this.gameState = campaign.battle;
+    this.syncEncounterOnCreate = syncEncounterOnCreate;
   }
 
   preload(): void {
@@ -182,7 +184,7 @@ export class BattleScene extends Phaser.Scene {
   create(): void {
     // Sincroniza a equipe selecionada antes de criar as peças e antes de assinar eventos.
     // Assim, a cena nova já nasce com o encontro correto e a cena anterior não recebe eventos.
-    this.campaign.syncActiveEncounter();
+    if (this.syncEncounterOnCreate) this.campaign.syncActiveEncounter();
     this.drawBoard();
     this.drawObstacles();
 
