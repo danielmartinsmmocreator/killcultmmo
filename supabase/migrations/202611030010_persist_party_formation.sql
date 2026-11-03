@@ -20,7 +20,7 @@ begin
 
   if p_formation is null
     or jsonb_typeof(p_formation) <> 'object'
-    or p_formation ->> 'version' <> '1'
+    or p_formation ->> 'version' is distinct from '1'
     or jsonb_typeof(p_formation -> 'heroes') <> 'array' then
     raise exception 'Formação inválida.';
   end if;
@@ -34,10 +34,11 @@ begin
     select 1
     from jsonb_array_elements(p_formation -> 'heroes') as entry(value)
     where jsonb_typeof(entry.value) <> 'object'
+      or entry.value ->> 'classId' is null
       or entry.value ->> 'classId' not in ('warrior', 'mage', 'cleric', 'assassin', 'archer')
       or jsonb_typeof(entry.value -> 'position') <> 'object'
-      or jsonb_typeof(entry.value #> '{position,col}') <> 'number'
-      or jsonb_typeof(entry.value #> '{position,row}') <> 'number'
+      or jsonb_typeof(entry.value #> '{position,col}') is distinct from 'number'
+      or jsonb_typeof(entry.value #> '{position,row}') is distinct from 'number'
       or (entry.value #>> '{position,col}') !~ '^[0-5]$'
       or (entry.value #>> '{position,row}') !~ '^[3-5]$'
   ) then
