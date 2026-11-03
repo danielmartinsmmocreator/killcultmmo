@@ -121,20 +121,24 @@ button {
   display: none;
 }
 
-.prep-menu > div {
-  display: grid !important;
-  grid-template-columns: 1fr;
-  gap: 2px !important;
+.prep-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 10px;
   width: 100%;
 }
 
-.prep-menu > div button {
+.prep-menu-grid button {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32%;
+  width: 100%;
+  min-width: 0;
   min-height: 0;
   aspect-ratio: 2.22 / 1;
+  margin: 0;
   padding: 8px 12px;
   border: 0;
   border-radius: 0;
@@ -150,23 +154,15 @@ button {
   text-align: center;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background-color .15s ease, transform .15s ease;
+  transition: filter .15s ease, transform .15s ease;
 }
 
-.prep-menu > div button:nth-child(odd) {
-  margin-left: 7%;
-}
-
-.prep-menu > div button:nth-child(even) {
-  margin-left: 38%;
-}
-
-.prep-menu > div button:hover {
+.prep-menu-grid button:hover {
   filter: brightness(1.12);
   transform: translateY(-2px);
 }
 
-.prep-menu > div button:active {
+.prep-menu-grid button:active {
   transform: translateY(1px);
 }
 
@@ -390,19 +386,16 @@ button {
     padding-top: 160px;
   }
 
-  .prep-menu > div {
-    gap: 2px !important;
+  .prep-menu-grid {
+    column-gap: 8px;
+    row-gap: 6px;
   }
 
-  .prep-menu > div button {
+  .prep-menu-grid button {
     min-height: 58px;
-    width: 38%;
+    width: 100%;
     padding: 6px;
     font-size: clamp(9px, 1.5vw, 14px);
-  }
-
-  .prep-menu > div button:nth-child(even) {
-    margin-left: 34%;
   }
 
   .prep-right {
@@ -449,14 +442,12 @@ button {
     padding: 12px 8px 20px;
   }
 
-  .prep-menu > div {
+  .prep-menu-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px !important;
+    gap: 8px;
   }
 
-  .prep-menu > div button,
-  .prep-menu > div button:nth-child(odd),
-  .prep-menu > div button:nth-child(even) {
+  .prep-menu-grid button {
     width: 100%;
     min-height: 0;
     aspect-ratio: 2.22 / 1;
