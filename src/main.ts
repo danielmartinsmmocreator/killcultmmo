@@ -26,6 +26,7 @@ let sidePanel: SidePanel | null = null;
 let activeUserId: string | null = null;
 let loadingUserId: string | null = null;
 let playerNickname = 'JOGADOR';
+let progressionSaveWarningShown = false;
 
 const sessionControls = document.createElement('div');
 sessionControls.style.cssText = 'position:fixed;top:10px;right:12px;z-index:3000;';
@@ -90,15 +91,24 @@ async function persistProgressionEvent(event: ProgressionPersistenceEvent): Prom
     console.error('Personagem sem ID persistido; evento de XP não foi salvo.');
     return;
   }
-  const { error } = await supabase.rpc('apply_character_xp_event', {
-    p_character_id: characterId,
-    p_event_id: event.eventId,
-    p_event_kind: event.kind,
-    p_monster_max_hp: event.kind === 'kill' ? event.monsterMaxHp : null,
-    p_monster_damage: event.kind === 'kill' ? event.monsterDamage : null,
-    p_monster_rank: event.kind === 'kill' ? event.monsterRank : null,
-  });
-  if (error) console.error('Falha ao salvar evento de progressão. Recarregue o jogo antes de continuar para sincronizar:', error.message);
+
+  try {
+    const { error } = await supabase.rpc('apply_character_xp_event', {
+      p_character_id: characterId,
+      p_event_id: event.eventId,
+      p_event_kind: event.kind,
+      p_monster_max_hp: event.kind === 'kill' ? event.monsterMaxHp : null,
+      p_monster_damage: event.kind === 'kill' ? event.monsterDamage : null,
+      p_monster_rank: event.kind === 'kill' ? event.monsterRank : null,
+    });
+    if (error) throw error;
+  } catch (error) {
+    console.error('Falha ao salvar evento de progressão:', error);
+    if (!progressionSaveWarningShown) {
+      progressionSaveWarningShown = true;
+      window.alert('Não foi possível salvar uma alteração de XP no servidor. Evite atualizar ou fechar o jogo até verificar sua conexão; o progresso desta sessão pode não ter sido sincronizado.');
+    }
+  }
 }
 
 async function persistAttributeAllocation(classId: string, attribute: 'strength' | 'vitality' | 'defense', points: number): Promise<boolean> {
