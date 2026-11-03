@@ -1109,3 +1109,60 @@ button {
 }
 .prep-icons[hidden],
 .prep-cosmetic-title[hidden] { display: none !important; }
+
+
+/* Controle de salto de faixa na coluna esquerda, abaixo do menu principal. */
+.prep-skip-range {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  width: min(72%, 490px);
+  margin: 28px 0 0 7%;
+  padding: 12px;
+  border: 1px solid #80664e;
+  background: rgba(25, 13, 25, .88);
+  color: #ffe16b;
+  text-align: center;
+}
+.prep-skip-range > strong {
+  font-size: clamp(10px, 1.2vw, 16px);
+}
+.prep-skip-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  width: 100%;
+}
+.prep-skip-controls button {
+  border: 0;
+  background: transparent;
+  color: #ffe16b;
+  font: 700 18px Arial, sans-serif;
+  cursor: pointer;
+}
+.prep-skip-controls button:disabled,
+.prep-skip-confirm:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+.prep-skip-controls span {
+  flex-basis: 100%;
+  font-size: 11px;
+}
+.prep-skip-confirm {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #80664e;
+  background: #30202a;
+  color: #ffe16b;
+  font: 700 11px Arial, sans-serif;
+  cursor: pointer;
+}
+@media (max-width: 620px) {
+  .prep-skip-range {
+    width: 100%;
+    margin: 18px 0 0;
+  }
+}
