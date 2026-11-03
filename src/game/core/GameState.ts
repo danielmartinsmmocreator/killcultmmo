@@ -733,6 +733,7 @@ export class GameState {
     const saved = snapshot as Record<string, unknown>;
     if (saved.version !== 1 || !Array.isArray(saved.units)) return false;
     if (!Number.isInteger(saved.turn) || Number(saved.turn) < 1) return false;
+    if (!Number.isInteger(saved.floor) || Number(saved.floor) !== this.currentFloor) return false;
     if (!['player', 'heroes', 'telegraphs', 'monsters', 'over'].includes(String(saved.phase))) return false;
     if (!['ongoing', 'victory', 'defeat'].includes(String(saved.outcome))) return false;
     const definitions = new Map(this.allUnits.map((unit) => [unit.uid, unit.definition]));
