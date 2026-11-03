@@ -74,6 +74,18 @@ function showAuth(): void {
   new AuthScreen(panel);
 }
 
+async function persistEquipmentChange(): Promise<boolean> {
+  if (!supabase || !campaign) return false;
+  const { error } = await supabase.rpc('save_player_equipment', {
+    p_equipment: campaign.getPersistedEquipment(),
+  });
+  if (error) {
+    console.error('Falha ao salvar equipamentos:', error);
+    return false;
+  }
+  return true;
+}
+
 function showPreparation(resetCampaign = false): void {
   if (!campaign) return;
   sidePanel?.destroy();
@@ -83,7 +95,7 @@ function showPreparation(resetCampaign = false): void {
   if (resetCampaign) campaign.restart(false);
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
-  new PreparationScreen(panel, campaign, startExpedition, playerNickname);
+  new PreparationScreen(panel, campaign, startExpedition, playerNickname, persistEquipmentChange);
   sessionControls.hidden = false;
 }
 
