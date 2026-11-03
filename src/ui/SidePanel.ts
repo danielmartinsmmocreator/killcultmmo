@@ -98,16 +98,18 @@ export class SidePanel {
   private readonly onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>;
   private readonly onFloorChange?: (floor: number) => void;
   private readonly onActivity?: (floor: number) => void;
+  private readonly onExtract?: () => Promise<void>;
   private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.onRestart = onRestart;
     this.onAllocateAttribute = onAllocateAttribute;
     this.onFloorChange = onFloorChange;
     this.onActivity = onActivity;
+    this.onExtract = onExtract;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -125,7 +127,7 @@ export class SidePanel {
     this.extractButton.type = 'button';
     this.extractButton.hidden = true;
     this.extractButton.addEventListener('click', () => {
-      if (this.campaign.extract()) this.onRestart?.();
+      if (this.campaign.canExtract) void this.onExtract?.();
     });
 
     const turnBox = el('div', 'turn-box');
