@@ -126,8 +126,9 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   column-gap: 12px;
-  row-gap: 10px;
-  width: 100%;
+  row-gap: 8px;
+  width: min(74%, 520px);
+  margin-left: 7%;
 }
 
 .prep-menu-grid button {
@@ -137,7 +138,7 @@ button {
   width: 100%;
   min-width: 0;
   min-height: 0;
-  aspect-ratio: 2.22 / 1;
+  aspect-ratio: 4.1 / 1;
   margin: 0;
   padding: 8px 12px;
   border: 0;
@@ -296,15 +297,14 @@ button {
 }
 
 /* Botão de expedição em formato de seta, no canto inferior direito. */
-.prep-expedition {
-  position: absolute;
-  right: 3%;
-  bottom: 8%;
+ .prep-expedition {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: min(82%, 490px);
-  min-height: 100px;
+  width: min(74%, 520px);
+  min-height: 82px;
+  margin: 24px 0 0 7%;
   padding: 0 58px 0 12px;
   border: 0;
   background: #190d19;
@@ -387,15 +387,16 @@ button {
   }
 
   .prep-menu-grid {
+    width: min(74%, 520px);
     column-gap: 8px;
     row-gap: 6px;
   }
 
   .prep-menu-grid button {
-    min-height: 58px;
+    min-height: 0;
     width: 100%;
-    padding: 6px;
-    font-size: clamp(9px, 1.5vw, 14px);
+    padding: 5px;
+    font-size: clamp(9px, 1.2vw, 14px);
   }
 
   .prep-right {
@@ -403,8 +404,8 @@ button {
   }
 
   .prep-expedition {
-    min-height: 84px;
-    font-size: clamp(13px, 1.8vw, 18px);
+    min-height: 72px;
+    font-size: clamp(12px, 1.5vw, 18px);
   }
 }
 
@@ -444,13 +445,15 @@ button {
 
   .prep-menu-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    margin-left: 0;
     gap: 8px;
   }
 
   .prep-menu-grid button {
     width: 100%;
     min-height: 0;
-    aspect-ratio: 2.22 / 1;
+    aspect-ratio: 3.8 / 1;
     margin: 0;
     font-size: 10px;
   }
@@ -484,8 +487,8 @@ button {
     right: auto;
     bottom: auto;
     width: min(100%, 430px);
-    min-height: 82px;
-    margin: 22px auto 0;
+    min-height: 72px;
+    margin: 18px 0 0;
     padding: 0 48px 0 8px;
     font-size: 16px;
   }
