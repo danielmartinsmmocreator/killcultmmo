@@ -25,7 +25,7 @@ begin
     raise exception 'Autenticação necessária.';
   end if;
 
-  if p_attribute not in ('strength', 'vitality', 'defense') then
+  if p_attribute is null or p_attribute not in ('strength', 'vitality', 'defense') then
     raise exception 'Atributo inválido.';
   end if;
 
