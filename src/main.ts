@@ -31,25 +31,6 @@ let activeExpeditionId: string | null = null;
 let expeditionFinishPending = false;
 let lastExpeditionActivitySyncAt = 0;
 
-const sessionControls = document.createElement('div');
-sessionControls.style.cssText = 'position:fixed;top:10px;right:12px;z-index:3000;';
-const signOutButton = document.createElement('button');
-signOutButton.type = 'button';
-signOutButton.textContent = 'Sair da conta';
-signOutButton.style.cssText = 'padding:8px 12px;border:1px solid #8b7be8;border-radius:8px;background:#201a32;color:#fff;font-weight:700;cursor:pointer;';
-signOutButton.addEventListener('click', async () => {
-  if (!supabase) return;
-  signOutButton.disabled = true;
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    signOutButton.disabled = false;
-    window.alert('Não foi possível sair: ' + error.message);
-  }
-});
-sessionControls.append(signOutButton);
-document.body.append(sessionControls);
-sessionControls.hidden = true;
-
 function destroyGame(): void {
   sidePanel?.destroy();
   sidePanel = null;
@@ -61,7 +42,6 @@ function destroyGame(): void {
 function showAuth(): void {
   destroyGame();
   activeUserId = null;
-  sessionControls.hidden = true;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
   if (!isSupabaseConfigured) {
@@ -125,8 +105,11 @@ function showPreparation(resetCampaign = false): void {
   if (resetCampaign) campaign.restart(false);
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
-  new PreparationScreen(panel, campaign, startExpedition, playerNickname, persistEquipmentChange, persistInventorySale);
-  sessionControls.hidden = false;
+  new PreparationScreen(panel, campaign, startExpedition, playerNickname, persistEquipmentChange, persistInventorySale, async () => {
+    if (!supabase) return;
+    const { error } = await supabase.auth.signOut();
+    if (error) window.alert('Não foi possível sair: ' + error.message);
+  });
 }
 
 async function persistProgressionEvent(event: ProgressionPersistenceEvent): Promise<void> {
@@ -365,7 +348,6 @@ if (!supabase || !isSupabaseConfigured) {
     import.meta.hot.dispose(() => {
       authListener.subscription.unsubscribe();
       destroyGame();
-      sessionControls.remove();
     });
   }
 }
@@ -374,6 +356,5 @@ if (!supabase || !isSupabaseConfigured) {
 if (import.meta.hot && !supabase) {
   import.meta.hot.dispose(() => {
     destroyGame();
-    sessionControls.remove();
   });
 }
