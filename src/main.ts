@@ -158,6 +158,34 @@ function syncExpeditionActivity(floor: number): void {
   void persistExpeditionFloor(floor);
 }
 
+async function extractExpeditionAndReturn(): Promise<void> {
+  if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending || !campaign.canExtract) return;
+  const rewards = campaign.getPendingExtractionRewards();
+  expeditionFinishPending = true;
+  const { error } = await supabase.rpc('extract_player_expedition', {
+    p_expedition_id: activeExpeditionId,
+    p_gold: rewards.gold,
+    p_items: rewards.items,
+  });
+
+  if (error) {
+    console.error('Falha ao consolidar recompensas:', error);
+    expeditionFinishPending = false;
+    window.alert('A extração não foi salva no servidor. Seus itens e ouro continuam temporários. Não atualize a página; tente extrair novamente após verificar a conexão.');
+    return;
+  }
+
+  if (!campaign.extract()) {
+    expeditionFinishPending = false;
+    window.alert('O servidor registrou a extração, mas o estado local não conseguiu concluir o retorno. Recarregue a página para sincronizar seus dados.');
+    return;
+  }
+
+  activeExpeditionId = null;
+  expeditionFinishPending = false;
+  showPreparation(true);
+}
+
 async function finishExpeditionAndReturn(): Promise<void> {
   if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
   const result = campaign.lastExpeditionResult
@@ -212,7 +240,7 @@ async function startExpedition(): Promise<void> {
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity);
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn);
   game = new Phaser.Game({
     type: Phaser.AUTO,
     parent: gameRoot,
