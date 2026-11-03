@@ -149,6 +149,28 @@ export class PlayerInventory {
     }
     return { defensePercent: Math.min(100, defensePercent), lifestealPercent: Math.min(100, lifestealPercent), ignoreFirstHitPerEncounter };
   }
+  exportSnapshot(): Record<string, unknown> {
+    return {
+      items: this.allItems.map((item) => ({ ...item })),
+      available: [...this.available],
+      nextId: this.nextId,
+    };
+  }
+  restoreSnapshot(snapshot: unknown): boolean {
+    if (!snapshot || typeof snapshot !== 'object') return false;
+    const saved = snapshot as Record<string, unknown>;
+    if (!Array.isArray(saved.items) || !Array.isArray(saved.available)) return false;
+    this.clear();
+    for (const raw of saved.items) {
+      if (!raw || typeof raw !== 'object') return false;
+      const item = raw as InventoryItem;
+      if (typeof item.instanceId !== 'string' || !ITEM_DEFINITIONS[item.definitionId]) return false;
+      this.itemsByInstance.set(item.instanceId, { ...item });
+    }
+    for (const id of saved.available) if (typeof id === 'string' && this.itemsByInstance.has(id)) this.available.add(id);
+    this.nextId = Number.isInteger(saved.nextId) && Number(saved.nextId) > 0 ? Number(saved.nextId) : this.itemsByInstance.size + 1;
+    return true;
+  }
   sell(instanceId: string, definitions: Readonly<Record<string, ItemDefinition>> = ITEM_DEFINITIONS): number {
     if (!this.available.has(instanceId)) return 0;
     const item = this.itemsByInstance.get(instanceId);
