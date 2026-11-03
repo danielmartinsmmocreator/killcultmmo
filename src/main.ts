@@ -112,31 +112,95 @@ function showPreparation(resetCampaign = false): void {
   });
 }
 
-async function persistProgressionEvent(event: ProgressionPersistenceEvent): Promise<void> {
-  if (!supabase || !campaign) return;
-  const characterId = campaign.getPersistedCharacterId(event.classId);
-  if (!characterId) {
-    console.error('Personagem sem ID persistido; evento de XP não foi salvo.');
-    return;
-  }
+const PROGRESSION_QUEUE_PREFIX = 'killcult:pending-progression:';
+let progressionSyncPromise: Promise<void> | null = null;
 
+function readPendingProgressionEvents(userId: string): ProgressionPersistenceEvent[] {
   try {
-    const { error } = await supabase.rpc('apply_character_xp_event', {
-      p_character_id: characterId,
-      p_event_id: event.eventId,
-      p_event_kind: event.kind,
-      p_monster_max_hp: event.kind === 'kill' ? event.monsterMaxHp : null,
-      p_monster_damage: event.kind === 'kill' ? event.monsterDamage : null,
-      p_monster_rank: event.kind === 'kill' ? event.monsterRank : null,
-    });
-    if (error) throw error;
+    const raw = window.localStorage.getItem(PROGRESSION_QUEUE_PREFIX + userId);
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((event): event is ProgressionPersistenceEvent =>
+      event !== null &&
+      typeof event === 'object' &&
+      typeof event.eventId === 'string' &&
+      typeof event.classId === 'string' &&
+      (event.kind === 'death' || (
+        event.kind === 'kill' &&
+        typeof event.monsterMaxHp === 'number' &&
+        typeof event.monsterDamage === 'number' &&
+        (event.monsterRank === 'normal' || event.monsterRank === 'mini-boss' || event.monsterRank === 'boss')
+      ))
+    );
   } catch (error) {
-    console.error('Falha ao salvar evento de progressão:', error);
+    console.error('Não foi possível ler a fila local de progressão:', error);
+    return [];
+  }
+}
+
+function writePendingProgressionEvents(userId: string, events: ProgressionPersistenceEvent[]): boolean {
+  try {
+    const key = PROGRESSION_QUEUE_PREFIX + userId;
+    if (events.length === 0) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, JSON.stringify(events));
+    return true;
+  } catch (error) {
+    console.error('Não foi possível guardar a fila local de progressão:', error);
+    return false;
+  }
+}
+
+async function flushPendingProgressionEvents(): Promise<void> {
+  if (!supabase || !campaign || !activeUserId || progressionSyncPromise) return progressionSyncPromise ?? Promise.resolve();
+  const userId = activeUserId;
+  progressionSyncPromise = (async () => {
+    const pending = readPendingProgressionEvents(userId);
+    while (pending.length > 0 && activeUserId === userId && campaign) {
+      const event = pending[0];
+      const characterId = campaign.getPersistedCharacterId(event.classId);
+      if (!characterId) {
+        console.error('Personagem sem ID persistido; evento de XP permanece na fila.');
+        break;
+      }
+      const { error } = await supabase!.rpc('apply_character_xp_event', {
+        p_character_id: characterId,
+        p_event_id: event.eventId,
+        p_event_kind: event.kind,
+        p_monster_max_hp: event.kind === 'kill' ? event.monsterMaxHp : null,
+        p_monster_damage: event.kind === 'kill' ? event.monsterDamage : null,
+        p_monster_rank: event.kind === 'kill' ? event.monsterRank : null,
+      });
+      if (error) {
+        console.error('Falha ao sincronizar evento de progressão; ele foi mantido na fila:', error);
+        if (!progressionSaveWarningShown) {
+          progressionSaveWarningShown = true;
+          window.alert('Uma alteração de XP ainda não foi sincronizada. Ela ficou guardada neste navegador e será reenviada quando a conexão voltar. Evite limpar os dados do navegador.');
+        }
+        break;
+      }
+      pending.shift();
+      if (!writePendingProgressionEvents(userId, pending)) break;
+    }
+  })().finally(() => {
+    progressionSyncPromise = null;
+  });
+  return progressionSyncPromise;
+}
+
+async function persistProgressionEvent(event: ProgressionPersistenceEvent): Promise<void> {
+  if (!activeUserId || !campaign) return;
+  const pending = readPendingProgressionEvents(activeUserId);
+  if (!pending.some((queued) => queued.eventId === event.eventId)) pending.push(event);
+  if (!writePendingProgressionEvents(activeUserId, pending)) {
+    console.error('O evento de progressão não pôde ser armazenado localmente.');
     if (!progressionSaveWarningShown) {
       progressionSaveWarningShown = true;
-      window.alert('Não foi possível salvar uma alteração de XP no servidor. Evite atualizar ou fechar o jogo até verificar sua conexão; o progresso desta sessão pode não ter sido sincronizado.');
+      window.alert('Não foi possível guardar uma alteração de XP neste navegador. Verifique o armazenamento e a conexão antes de continuar.');
     }
+    return;
   }
+  await flushPendingProgressionEvents();
 }
 
 async function persistAttributeAllocation(classId: string, attribute: 'strength' | 'vitality' | 'defense', points: number): Promise<boolean> {
@@ -338,6 +402,7 @@ async function enterGame(userId: string): Promise<void> {
     campaign = new Campaign(undefined, (event) => { void persistProgressionEvent(event); });
     campaign.loadPersistedCharacters(playerData.characters);
     campaign.loadPersistedInventory(playerData.inventory, playerData.gold, playerData.equipped);
+    void flushPendingProgressionEvents();
     showPreparation();
   } catch (error) {
     if (activeUserId !== userId) return;
@@ -372,6 +437,8 @@ if (!supabase || !isSupabaseConfigured) {
     });
   }
 }
+
+window.addEventListener('online', () => { void flushPendingProgressionEvents(); });
 
 // Evita jogos duplicados quando o Vite recarrega o módulo (HMR).
 if (import.meta.hot && !supabase) {
