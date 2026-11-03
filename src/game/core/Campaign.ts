@@ -311,11 +311,11 @@ export class Campaign {
   /** Consolida os itens obtidos e retorna à base ao extrair em um marco válido. */
   extract(): boolean {
     if (!this.canExtract) return false;
-    this.lastExtractionRewards = this.getPendingExtractionRewards();
+    const extractionRewards = this.getPendingExtractionRewards();
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.retainedGold = this.gold;
     this.restart(false);
-    this.lastExtractionRewards = this.lastExtractionRewards;
+    this.lastExtractionRewards = extractionRewards;
     this.lastExpeditionResult = 'extraction';
     return true;
   }
