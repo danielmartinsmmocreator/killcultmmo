@@ -277,7 +277,6 @@ async function startExpedition(): Promise<void> {
 function showPlayerDataError(userId: string, message: string): void {
   destroyGame();
   activeUserId = null;
-  sessionControls.hidden = true;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
   const screen = document.createElement('main');
@@ -302,7 +301,6 @@ async function enterGame(userId: string): Promise<void> {
   loadingUserId = userId;
   activeUserId = userId;
   destroyGame();
-  sessionControls.hidden = true;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
   const loading = document.createElement('main');
