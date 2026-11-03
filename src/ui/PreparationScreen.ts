@@ -42,6 +42,7 @@ export class PreparationScreen {
   private readonly playerNickname: string;
   private readonly onEquipmentChange?: () => Promise<boolean>;
   private readonly onSellItem?: (instanceId: string) => Promise<number>;
+  private readonly onSignOut?: () => Promise<void>;
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: number | null | 'unknown' = null;
@@ -52,13 +53,14 @@ export class PreparationScreen {
   private devUnlocked = false;
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
     this.playerNickname = playerNickname;
     this.onEquipmentChange = onEquipmentChange;
     this.onSellItem = onSellItem;
+    this.onSignOut = onSignOut;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
@@ -102,15 +104,30 @@ export class PreparationScreen {
     goldBalance.style.cssText = 'display:inline-flex;align-items:center;padding:8px 12px;margin:0 0 12px;border:1px solid #a16207;border-radius:9px;background:#422006;color:#fde68a;font-weight:800;';
     const profile=document.createElement('section'); profile.className='prep-profile';
     const iconFiles=Object.entries(PLAYER_ICONS).sort(([a],[b])=>a.localeCompare(b, undefined, { numeric: true }));
-    const chosenIcon=Number(localStorage.getItem('killcult-player-icon')||'1');
-    const avatar=document.createElement('img'); avatar.className='prep-avatar'; avatar.alt='Ícone do jogador'; avatar.src=iconFiles[Math.max(0,Math.min(iconFiles.length-1,chosenIcon-1))]?.[1]||'';
+    const selectedIconKey = localStorage.getItem('killcult-player-cosmetic');
+    const legacyIconIndex = Number(localStorage.getItem('killcult-player-icon') || '1') - 1;
+    const selectedIcon = iconFiles.find(([path]) => path.split('/').pop() === selectedIconKey) ?? iconFiles[Math.max(0, Math.min(iconFiles.length - 1, legacyIconIndex))];
+    const avatar=document.createElement('img'); avatar.className='prep-avatar'; avatar.alt='Cosmético de perfil equipado'; avatar.src=selectedIcon?.[1]||'';
     const profileInfo=document.createElement('div'); const playerName=document.createElement('strong'); playerName.textContent=this.playerNickname; playerName.style.cssText='display:block;color:#ffe16b;font-size:clamp(1.1rem,2vw,1.8rem);letter-spacing:.08em;';
     const worldLevel=this.campaign.party.reduce((sum,hero)=>sum+(hero.progression?.level??1),0); const levelLine=document.createElement('div'); levelLine.textContent=`ANDAR ${this.campaign.floorNumber} · NÍVEL MUNDIAL ${worldLevel}`; levelLine.style.cssText='color:#ffe16b;font-size:.75rem;margin-top:5px;';
     const settings=document.createElement('button'); settings.type='button'; settings.textContent='⚙ Configurações'; settings.style.cssText=STYLE.button+'margin-top:6px;padding:5px 10px;';
-    const settingsModal=document.createElement('div'); settingsModal.className='prep-modal'; settingsModal.hidden=true; const settingsCard=document.createElement('div'); settingsCard.className='prep-modal-card'; const settingsTitle=document.createElement('h2'); settingsTitle.textContent='Escolha seu ícone'; const iconGrid=document.createElement('div'); iconGrid.className='prep-icons';
-    iconFiles.forEach(([,url],index)=>{const img=document.createElement('img');img.src=url;img.alt='Ícone '+(index+1);img.title='Selecionar ícone '+(index+1);img.addEventListener('click',()=>{localStorage.setItem('killcult-player-icon',String(index+1));avatar.src=url;settingsModal.hidden=true;});iconGrid.append(img);});
-    const closeSettings=document.createElement('button');closeSettings.type='button';closeSettings.textContent='Fechar';closeSettings.style.cssText=STYLE.button+'margin-top:12px;';closeSettings.addEventListener('click',()=>settingsModal.hidden=true);settingsModal.addEventListener('click',e=>{if(e.target===settingsModal)settingsModal.hidden=true;});settings.addEventListener('click',()=>settingsModal.hidden=false);
-    settingsCard.append(settingsTitle,iconGrid,closeSettings);settingsModal.append(settingsCard);profileInfo.append(playerName,levelLine,settings);profile.append(avatar,profileInfo);
+    const settingsModal=document.createElement('div'); settingsModal.className='prep-modal'; settingsModal.hidden=true;
+    const settingsCard=document.createElement('div'); settingsCard.className='prep-modal-card';
+    const settingsTitle=document.createElement('h2'); settingsTitle.textContent='Configurações';
+    const settingsHint=document.createElement('p'); settingsHint.className='prep-settings-hint'; settingsHint.textContent='Gerencie seu perfil e sua sessão.';
+    const customizeProfile=document.createElement('button'); customizeProfile.type='button'; customizeProfile.className='prep-settings-action'; customizeProfile.textContent='Personalizar perfil';
+    const cosmeticTitle=document.createElement('h3'); cosmeticTitle.className='prep-cosmetic-title'; cosmeticTitle.textContent='Cosméticos disponíveis';
+    const cosmeticHint=document.createElement('p'); cosmeticHint.className='prep-settings-hint'; cosmeticHint.textContent='Somente cosméticos adicionados oficialmente ao jogo aparecem aqui.';
+    const iconGrid=document.createElement('div'); iconGrid.className='prep-icons'; iconGrid.hidden=true;
+    iconFiles.forEach(([path,url],index)=>{const cosmetic=document.createElement('button');cosmetic.type='button';cosmetic.className='prep-cosmetic-option';cosmetic.title='Equipar cosmético '+(index+1);const img=document.createElement('img');img.src=url;img.alt='Cosmético '+(index+1);const name=document.createElement('span');name.textContent=path.split('/').pop()?.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ')||'Cosmético';cosmetic.append(img,name);cosmetic.addEventListener('click',()=>{localStorage.setItem('killcult-player-cosmetic',path.split('/').pop()||'');avatar.src=url;});iconGrid.append(cosmetic);});
+    const signOut=document.createElement('button');signOut.type='button';signOut.className='prep-signout-button';signOut.textContent='Sair da conta';signOut.addEventListener('click',()=>{void this.onSignOut?.();});
+    const closeSettings=document.createElement('button');closeSettings.type='button';closeSettings.textContent='Fechar';closeSettings.style.cssText=STYLE.button+'margin-top:12px;';
+    customizeProfile.addEventListener('click',()=>{iconGrid.hidden=!iconGrid.hidden;cosmeticTitle.hidden=!iconGrid.hidden;cosmeticHint.hidden=!iconGrid.hidden;});
+    closeSettings.addEventListener('click',()=>settingsModal.hidden=true);
+    settingsModal.addEventListener('click',e=>{if(e.target===settingsModal)settingsModal.hidden=true;});
+    settings.addEventListener('click',()=>settingsModal.hidden=false);
+    settingsCard.append(settingsTitle,settingsHint,customizeProfile,cosmeticTitle,cosmeticHint,iconGrid,signOut,closeSettings);
+    settingsModal.append(settingsCard);profileInfo.append(playerName,levelLine,settings);profile.append(avatar,profileInfo);
     page.append(profile,settingsModal);
 
     const devPanel = document.createElement('section');
