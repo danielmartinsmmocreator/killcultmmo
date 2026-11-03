@@ -550,8 +550,7 @@ export class SidePanel {
               window.alert('Não foi possível salvar os atributos. Nenhum ponto foi consumido.');
               return;
             }
-            if (this.state.selectedUnit?.uid !== selected.uid ||
-                !this.state.allocateSelectedAttributePoints(attribute.key, requestedPoints)) {
+            if (!this.state.applyPersistedAttributeAllocation(selected.uid, attribute.key, requestedPoints)) {
               window.alert('Os atributos foram salvos, mas a interface mudou durante a operação. Recarregue a tela para sincronizar.');
             }
           } catch (error) {
