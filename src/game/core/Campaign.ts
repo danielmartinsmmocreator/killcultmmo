@@ -4,6 +4,7 @@ import type { BattleSetup } from '../data/battleSetup';
 import type { EncounterType, Position, Unit, UnitDefinition } from '../types';
 import { buildEncounter, createParty, prepareParty, validateFloor } from './encounter';
 import { GameState } from './GameState';
+import type { ProgressionPersistenceEvent } from './GameState';
 import { PlayerInventory } from './progression';
 import { ITEM_DEFINITIONS } from '../data/items';
 
@@ -52,7 +53,10 @@ export class Campaign {
   /** Inventário compartilhado do jogador; os equipamentos são referências nos heróis. */
   readonly inventory = new PlayerInventory();
 
-  constructor(floors: readonly FloorConfig[] = CAMPAIGN_FLOORS) {
+  constructor(
+    floors: readonly FloorConfig[] = CAMPAIGN_FLOORS,
+    onProgressionEvent?: (event: ProgressionPersistenceEvent) => void,
+  ) {
     const problems = floors.flatMap((config) => validateFloor(config));
     if (floors.length === 0) problems.push('A campanha precisa de pelo menos um andar.');
     floors.forEach((config, index) => {
@@ -68,7 +72,11 @@ export class Campaign {
     this.partyUnits = createParty();
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.activePartyUids = this.partyUnits.map((hero) => hero.uid);
-    this.battle = new GameState(() => this.createEncounter(), (hero) => this.inventory.specialBonusesFor(hero));
+    this.battle = new GameState(
+      () => this.createEncounter(),
+      (hero) => this.inventory.specialBonusesFor(hero),
+      onProgressionEvent,
+    );
     this.battle.subscribe(() => {
       this.collectMonsterRewards();
       if (this.battle.outcome === 'defeat') this.loseExpeditionItems();
