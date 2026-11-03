@@ -329,7 +329,7 @@ async function extractExpeditionAndReturn(): Promise<void> {
     return;
   }
 
-  clearPendingExpeditionFloor(activeUserId, activeExpeditionId);
+  if (activeUserId) clearPendingExpeditionFloor(activeUserId, activeExpeditionId);
   activeExpeditionId = null;
   expeditionFinishPending = false;
   // A recarga recupera os IDs definitivos dos itens recém-inseridos e os equipamentos do banco.
