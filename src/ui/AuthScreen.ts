@@ -32,7 +32,7 @@ export class AuthScreen {
     subtitle.style.cssText = 'margin:0 0 22px;color:#aeb8c8;text-align:center;line-height:1.5;font-size:.9rem;';
     const form = document.createElement('form');
     form.style.cssText = 'display:grid;gap:12px;';
-    const makeField = (labelText: string, type: string, placeholder: string, autocomplete: string): HTMLInputElement => {
+    const makeField = (labelText: string, type: string, placeholder: string, autocomplete: HTMLInputElement['autocomplete']): HTMLInputElement => {
       const label = document.createElement('label');
       label.textContent = labelText;
       label.style.cssText = 'display:grid;gap:6px;color:#dbe2ef;font-size:.85rem;font-weight:700;';
