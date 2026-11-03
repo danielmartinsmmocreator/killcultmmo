@@ -29,6 +29,7 @@ export type PlayerData = {
   gold: number;
   inventory: PlayerInventoryRecord[];
   equipped: PlayerEquippedRecord[];
+  partyFormation: unknown | null;
 };
 
 const EXPECTED_CLASSES = ['warrior', 'mage', 'cleric', 'assassin', 'archer'] as const;
@@ -38,7 +39,7 @@ export async function loadPlayerData(userId: string): Promise<PlayerData> {
   if (!supabase) throw new Error('Supabase não está configurado.');
 
   const [profileResult, charactersResult, walletResult, inventoryResult, equippedResult] = await Promise.all([
-    supabase.from('profiles').select('nickname').eq('id', userId).single(),
+    supabase.from('profiles').select('nickname, party_formation').eq('id', userId).single(),
     supabase
       .from('characters')
       .select('id, class_id, level, xp, unspent_attribute_points, strength, vitality, defense')
@@ -66,5 +67,6 @@ export async function loadPlayerData(userId: string): Promise<PlayerData> {
     gold: Number(walletResult.data.gold ?? 0),
     inventory: (inventoryResult.data ?? []) as PlayerInventoryRecord[],
     equipped: (equippedResult.data ?? []) as PlayerEquippedRecord[],
+    partyFormation: (profileResult.data.party_formation as unknown | null) ?? null,
   };
 }
