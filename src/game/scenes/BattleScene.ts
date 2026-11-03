@@ -216,6 +216,8 @@ export class BattleScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.DESTROY, disposeScene);
 
     this.refresh(false);
+    // Uma restauração pode ocorrer no meio da resolução; retoma a fila de ações sem esperar novo clique.
+    if (this.gameState.isResolving) this.scheduleStep();
   }
 
   // ---------- Tabuleiro ----------
