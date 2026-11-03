@@ -607,7 +607,7 @@ export class PreparationScreen {
       this.onStart();
     });
     footer.append(summary, warning);
-    right.append(start);
+    left.insertBefore(start, skipRange);
     this.root.replaceChildren(page);
     // Recriar a tela após equipar/vender mantém o inventário aberto até o jogador fechá-lo.
     if (this.inventoryOpen) inventoryWindow.style.display = 'flex';
