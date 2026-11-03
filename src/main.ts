@@ -155,9 +155,10 @@ async function flushPendingProgressionEvents(): Promise<void> {
   if (!supabase || !campaign || !activeUserId || progressionSyncPromise) return progressionSyncPromise ?? Promise.resolve();
   const userId = activeUserId;
   progressionSyncPromise = (async () => {
-    const pending = readPendingProgressionEvents(userId);
-    while (pending.length > 0 && activeUserId === userId && campaign) {
+    while (activeUserId === userId && campaign) {
+      const pending = readPendingProgressionEvents(userId);
       const event = pending[0];
+      if (!event) break;
       const characterId = campaign.getPersistedCharacterId(event.classId);
       if (!characterId) {
         console.error('Personagem sem ID persistido; evento de XP permanece na fila.');
@@ -179,8 +180,9 @@ async function flushPendingProgressionEvents(): Promise<void> {
         }
         break;
       }
-      pending.shift();
-      if (!writePendingProgressionEvents(userId, pending)) break;
+      // Rele a fila após a resposta para não apagar eventos adicionados durante a requisição.
+      const latest = readPendingProgressionEvents(userId).filter((queued) => queued.eventId !== event.eventId);
+      if (!writePendingProgressionEvents(userId, latest)) break;
     }
   })().finally(() => {
     progressionSyncPromise = null;
