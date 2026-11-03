@@ -22,7 +22,6 @@ const panel: HTMLElement = panelRoot;
 let campaign: Campaign | null = null;
 let game: Phaser.Game | null = null;
 let sidePanel: SidePanel | null = null;
-let authScreen: AuthScreen | null = null;
 let activeUserId: string | null = null;
 let loadingUserId: string | null = null;
 let playerNickname = 'JOGADOR';
@@ -67,7 +66,7 @@ function showAuth(): void {
     panel.replaceChildren(notice);
     return;
   }
-  authScreen = new AuthScreen(panel);
+  new AuthScreen(panel);
 }
 
 function showPreparation(resetCampaign = false): void {
