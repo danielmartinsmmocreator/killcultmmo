@@ -241,14 +241,37 @@ async function startExpedition(): Promise<void> {
     return;
   }
 
-  const { data: expeditionId, error } = await supabase.rpc('start_player_expedition', {
+  let { data: expeditionId, error } = await supabase.rpc('start_player_expedition', {
     p_character_ids: characterIds,
   });
+
+  // O combate ainda não é serializado no banco. Se a sessão ficou presa após
+  // atualizar/fechar a página, só encerramos a expedição anterior com confirmação.
+  if (error?.message.toLowerCase().includes('expedição ativa')) {
+    const confirmed = window.confirm(
+      'Sua conta já possui uma expedição ativa. O estado da batalha anterior não pode ser restaurado. ' +
+      'Se ela foi interrompida, você pode encerrá-la como derrota por inatividade e iniciar outra. ' +
+      'O ouro e os itens temporários dessa expedição serão perdidos. Deseja continuar?'
+    );
+    if (!confirmed) return;
+
+    const { error: abandonError } = await supabase.rpc('abandon_player_expedition');
+    if (abandonError) {
+      console.error('Falha ao encerrar expedição interrompida:', abandonError);
+      window.alert('Não foi possível encerrar a expedição anterior. Nenhum dado foi alterado; tente novamente.');
+      return;
+    }
+
+    const retry = await supabase.rpc('start_player_expedition', {
+      p_character_ids: characterIds,
+    });
+    expeditionId = retry.data;
+    error = retry.error;
+  }
+
   if (error || !expeditionId) {
     console.error('Falha ao iniciar expedição:', error);
-    window.alert(error?.message.includes('expedição ativa')
-      ? 'Sua conta já possui uma expedição ativa. Atualize a página ou entre em contato com o suporte.'
-      : 'Não foi possível registrar sua expedição no servidor. Tente novamente.');
+    window.alert('Não foi possível registrar sua expedição no servidor. Tente novamente.');
     return;
   }
 
