@@ -355,10 +355,14 @@ async function finishExpeditionAndReturn(): Promise<void> {
     return;
   }
 
+  const userId = activeUserId;
+  const expeditionId = activeExpeditionId;
+  if (!userId || !expeditionId) return;
+
   expeditionFinishPending = true;
-  while (activeExpeditionId) {
+  while (true) {
     const { error } = await supabase.rpc('finish_player_expedition', {
-      p_expedition_id: activeExpeditionId,
+      p_expedition_id: expeditionId,
       p_result: 'combat_defeat',
     });
     if (!error) break;
@@ -370,7 +374,7 @@ async function finishExpeditionAndReturn(): Promise<void> {
     }
   }
 
-  clearPendingExpeditionFloor(activeUserId, activeExpeditionId);
+  clearPendingExpeditionFloor(userId, expeditionId);
   activeExpeditionId = null;
   expeditionFinishPending = false;
   showPreparation(true);
