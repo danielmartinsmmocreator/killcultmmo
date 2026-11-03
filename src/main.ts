@@ -296,7 +296,7 @@ async function enterGame(userId: string): Promise<void> {
     playerNickname = playerData.nickname;
     campaign = new Campaign(undefined, (event) => { void persistProgressionEvent(event); });
     campaign.loadPersistedCharacters(playerData.characters);
-    campaign.loadPersistedInventory(playerData.inventory, playerData.gold);
+    campaign.loadPersistedInventory(playerData.inventory, playerData.gold, playerData.equipped);
     showPreparation();
   } catch (error) {
     if (activeUserId !== userId) return;
