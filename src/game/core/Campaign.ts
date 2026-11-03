@@ -122,16 +122,26 @@ export class Campaign {
   }
 
   /** Carrega a carteira e os itens permanentes recebidos do Supabase. */
-  loadPersistedInventory(records: readonly { item_definition_id: string; obtained_at_floor: number | null }[], gold: number): void {
+  loadPersistedInventory(
+    records: readonly { id: string; item_definition_id: string; obtained_at_floor: number | null }[],
+    gold: number,
+    equipped: readonly { character_id: string; inventory_item_id: string; slot: import('../types').EquipmentSlot }[] = [],
+  ): void {
     this.inventory.clear();
     for (const record of records) {
       if (ITEM_DEFINITIONS[record.item_definition_id]) {
-        this.inventory.add(record.item_definition_id, record.obtained_at_floor ?? undefined);
+        this.inventory.add(record.item_definition_id, record.obtained_at_floor ?? undefined, record.id);
       }
     }
     this.gold = Math.max(0, Number.isFinite(gold) ? Math.trunc(gold) : 0);
     this.retainedGold = this.gold;
     this.retainedItemIds = new Set(this.inventory.instanceIds);
+    for (const record of equipped) {
+      const classId = [...this.persistedCharacterIds.entries()].find(([, id]) => id === record.character_id)?.[0];
+      const hero = classId ? this.partyUnits.find((unit) => unit.definition.id === classId) : undefined;
+      const instanceId = this.inventory.instanceIds.find((id) => this.inventory.persistentIdOf(id) === record.inventory_item_id);
+      if (hero && instanceId) this.inventory.restoreEquipment(hero, instanceId, record.slot);
+    }
   }
 
   /** ID do registro do personagem no Supabase, associado à classe fixa do herói. */
