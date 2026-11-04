@@ -74,19 +74,26 @@ alter table public.guild_invites enable row level security;
 alter table public.guild_bank_items enable row level security;
 alter table public.guild_bank_logs enable row level security;
 
+create or replace function public.current_guild_role(p_guild_id uuid)
+returns text
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select gm.role
+  from public.guild_members gm
+  where gm.guild_id = p_guild_id and gm.user_id = auth.uid()
+  limit 1;
+$;
+
 create policy "Guild members can read their guild"
   on public.guilds for select to authenticated
-  using (exists (
-    select 1 from public.guild_members gm
-    where gm.guild_id = id and gm.user_id = (select auth.uid())
-  ));
+  using (public.current_guild_role(id) is not null);
 
 create policy "Guild members can read roster"
-  on public.guild_members for select to authenticated
-  using (exists (
-    select 1 from public.guild_members own
-    where own.guild_id = guild_id and own.user_id = (select auth.uid())
-  ));
+  on public.guild_members as target for select to authenticated
+  using (public.current_guild_role(target.guild_id) is not null);
 
 create policy "Players can read received guild invites"
   on public.guild_invites for select to authenticated
@@ -99,7 +106,7 @@ create policy "Members with bank access can view guild items"
       select 1
       from public.guild_members gm
       join public.guilds g on g.id = gm.guild_id
-      where gm.guild_id = guild_id
+      where gm.guild_id = guild_bank_items.guild_id
         and gm.user_id = (select auth.uid())
         and (
           g.bank_view_access = 'all_members'
@@ -112,7 +119,7 @@ create policy "Guild leaders and admins can read bank logs"
   on public.guild_bank_logs for select to authenticated
   using (exists (
     select 1 from public.guild_members gm
-    where gm.guild_id = guild_id
+    where gm.guild_id = guild_bank_logs.guild_id
       and gm.user_id = (select auth.uid())
       and gm.role in ('leader', 'admin')
   ));
@@ -499,6 +506,9 @@ begin
   return v_inventory_item_id;
 end;
 $$;
+
+revoke all on function public.current_guild_role(uuid) from public, anon;
+grant execute on function public.current_guild_role(uuid) to authenticated;
 
 revoke all on function public.get_my_guild_data() from public, anon;
 revoke all on function public.create_guild(text, text, text) from public, anon;
