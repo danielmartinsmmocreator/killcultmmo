@@ -1,0 +1,287 @@
+import Phaser from 'phaser';
+import { GAME_HEIGHT, GAME_WIDTH } from '../config';
+import { Campaign } from './Campaign';
+import { CooperativeSessionClient } from './CooperativeSession';
+import type { CooperativeAction, CooperativeSessionState } from './CooperativeSession';
+import type { CooperativeBattleAction } from './GameState';
+import { BattleScene } from '../scenes/BattleScene';
+import { SidePanel } from '../../ui/SidePanel';
+
+type RuntimeMember = CooperativeSessionState['members'][number];
+
+export class CooperativeBattleRuntime {
+  private campaign: Campaign | null = null;
+  private client: CooperativeSessionClient | null = null;
+  private game: Phaser.Game | null = null;
+  private sidePanel: SidePanel | null = null;
+  private scene: BattleScene | null = null;
+  private mounted = false;
+  private disposed = false;
+  private processingRound = false;
+  private snapshotSignature = '';
+  private readonly gameRoot: HTMLElement;
+  private readonly panelRoot: HTMLElement;
+  private readonly userId: string;
+  private readonly sessionId: string;
+  private readonly characterId: string;
+  private readonly onBack: () => void;
+
+  constructor(
+    gameRoot: HTMLElement,
+    panelRoot: HTMLElement,
+    userId: string,
+    sessionId: string,
+    characterId: string,
+    onBack: () => void,
+  ) {
+    this.gameRoot = gameRoot;
+    this.panelRoot = panelRoot;
+    this.userId = userId;
+    this.sessionId = sessionId;
+    this.characterId = characterId;
+    this.onBack = onBack;
+  }
+
+  async start(): Promise<void> {
+    this.panelRoot.replaceChildren(this.message('Conectando à expedição cooperativa...'));
+    this.campaign = new Campaign(undefined, undefined, true);
+    this.client = new CooperativeSessionClient(
+      this.sessionId,
+      this.userId,
+      this.characterId,
+      (session) => { void this.handleSessionUpdate(session); },
+      (message) => console.error('Sessão cooperativa:', message),
+    );
+
+    const session = await this.client.connect();
+    this.configureRoster(session.members);
+    if (session.state_snapshot) {
+      if (!this.campaign.restoreSnapshot(session.state_snapshot)) {
+        throw new Error('O estado compartilhado não corresponde aos personagens desta sala. A sessão foi mantida intacta.');
+      }
+      this.snapshotSignature = JSON.stringify(session.state_snapshot);
+    } else if (this.client.isLeader) {
+      await this.client.initializeSnapshot(this.campaign.exportSnapshot());
+      const initialized = this.client.session;
+      if (!initialized?.state_snapshot || !this.campaign.restoreSnapshot(initialized.state_snapshot)) {
+        throw new Error('O líder não conseguiu publicar ou restaurar o tabuleiro inicial.');
+      }
+      this.snapshotSignature = JSON.stringify(initialized.state_snapshot);
+    } else {
+      throw new Error('O líder ainda está inicializando o tabuleiro. Volte à sala e tente entrar novamente em alguns segundos.');
+    }
+
+    this.mount();
+    this.mounted = true;
+    const latest = await this.client.refresh();
+    if (latest) await this.handleSessionUpdate(latest);
+  }
+
+  private configureRoster(members: readonly RuntimeMember[]): void {
+    if (!this.campaign) throw new Error('Campanha cooperativa indisponível.');
+    const roster = members.map((member) => {
+      if (!member.character_id || !member.class_id) throw new Error('Todos os participantes precisam ter um personagem selecionado.');
+      return {
+        user_id: member.user_id,
+        character_id: member.character_id,
+        class_id: member.class_id,
+        character_level: member.character_level ?? 1,
+        character_xp: member.character_xp ?? 0,
+        unspent_attribute_points: member.unspent_attribute_points ?? 0,
+        strength: member.strength ?? 0,
+        vitality: member.vitality ?? 0,
+        defense: member.defense ?? 0,
+        equipment: member.equipment ?? [],
+      };
+    });
+    if (!this.campaign.configureCooperativeParty(roster, this.characterId)) {
+      throw new Error('Não foi possível montar os heróis da equipe. Confira os personagens selecionados.');
+    }
+  }
+
+  private mount(): void {
+    if (!this.campaign || !this.client) return;
+    this.panelRoot.replaceChildren();
+    this.gameRoot.hidden = false;
+    this.gameRoot.style.display = '';
+    this.sidePanel = new SidePanel(
+      this.panelRoot,
+      this.campaign,
+      () => this.leaveToLobby(),
+      undefined,
+      (floor) => { void this.publishFloorTransition(floor); },
+      undefined,
+      undefined,
+      undefined,
+      false,
+      (action) => { void this.submitAction(action); },
+      true,
+    );
+    this.scene = new BattleScene(
+      this.campaign,
+      false,
+      (action) => { void this.submitAction(action); },
+      () => Boolean(this.client?.canAct),
+      () => { void this.finishResolvedRound(); },
+    );
+    this.game = new Phaser.Game({
+      type: Phaser.AUTO,
+      parent: this.gameRoot,
+      width: GAME_WIDTH,
+      height: GAME_HEIGHT,
+      backgroundColor: 'rgba(0,0,0,0)',
+      transparent: true,
+      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+      scene: [this.scene],
+    });
+    this.updateStatus(this.client.session);
+  }
+
+  private async handleSessionUpdate(session: CooperativeSessionState): Promise<void> {
+    if (!this.mounted || this.disposed || !this.campaign || !this.client) return;
+    if (session.status !== 'active') {
+      this.updateStatus(session);
+      return;
+    }
+
+    const signature = session.state_snapshot ? JSON.stringify(session.state_snapshot) : '';
+    if (signature && signature !== this.snapshotSignature && !this.processingRound) {
+      if (!this.campaign.restoreSnapshot(session.state_snapshot)) {
+        this.showError('O servidor publicou um estado incompatível. A batalha foi pausada para proteger o progresso.');
+        return;
+      }
+      this.snapshotSignature = signature;
+    }
+
+    this.updateStatus(session);
+    if (this.client.isLeader && session.resolution_pending && !this.processingRound) {
+      await this.resolveSubmittedActions(session);
+    }
+  }
+
+  private async resolveSubmittedActions(session: CooperativeSessionState): Promise<void> {
+    if (!this.campaign || !this.client || !session.state_snapshot || this.processingRound) return;
+    this.processingRound = true;
+    try {
+      if (!this.campaign.restoreSnapshot(session.state_snapshot)) {
+        throw new Error('Não foi possível restaurar o estado anterior à rodada.');
+      }
+      this.snapshotSignature = JSON.stringify(session.state_snapshot);
+
+      const actions = [...session.submitted_actions];
+      if (actions.length !== session.members.length) {
+        throw new Error('A rodada foi marcada como completa, mas a lista de ações está incompleta.');
+      }
+      for (const submitted of actions) {
+        const heroUid = Campaign.cooperativeHeroUid(submitted.character_id);
+        const accepted = this.campaign.battle.applyCooperativeAction(
+          heroUid,
+          submitted.action_payload as CooperativeAction,
+        );
+        if (!accepted) console.warn('Ação cooperativa não aplicada (herói indisponível ou ação inválida):', submitted);
+      }
+
+      this.scene?.markCooperativeResolutionStarted();
+      if (!this.campaign.battle.resolveCooperativeRound()) {
+        throw new Error('O motor de batalha não conseguiu iniciar a fase dos monstros.');
+      }
+    } catch (error) {
+      this.processingRound = false;
+      this.showError(error instanceof Error ? error.message : 'Falha ao resolver a rodada cooperativa.');
+    }
+  }
+
+  private async finishResolvedRound(): Promise<void> {
+    if (!this.processingRound || !this.campaign || !this.client) return;
+    try {
+      const result = this.campaign.status;
+      const sessionStatus = result === 'defeated' ? 'defeated' : result === 'completed' ? 'completed' : 'active';
+      const snapshot = this.campaign.exportSnapshot();
+      await this.client.resolveRound(this.campaign.floorNumber, snapshot, sessionStatus);
+      this.snapshotSignature = JSON.stringify(snapshot);
+      this.processingRound = false;
+
+      // Andares comuns avançam automaticamente; nos marcos de extração, o grupo decide continuar.
+      if (this.campaign.status === 'floor-cleared' && !this.campaign.canExtract) {
+        if (this.campaign.advance()) await this.publishFloorTransition(this.campaign.floorNumber);
+      }
+      const latest = this.client.session;
+      this.updateStatus(latest);
+    } catch (error) {
+      this.processingRound = false;
+      this.showError(error instanceof Error ? error.message : 'Não foi possível salvar o resultado da rodada.');
+    }
+  }
+
+  private async publishFloorTransition(floor: number): Promise<void> {
+    if (!this.campaign || !this.client || !this.client.isLeader) return;
+    try {
+      await this.client.advanceFloor(floor, this.campaign.exportSnapshot());
+      this.snapshotSignature = JSON.stringify(this.campaign.exportSnapshot());
+      this.updateStatus(this.client.session);
+    } catch (error) {
+      this.showError(error instanceof Error ? error.message : 'Não foi possível avançar o grupo.');
+    }
+  }
+
+  private async submitAction(action: CooperativeBattleAction): Promise<void> {
+    if (!this.client || !this.client.canAct || this.disposed) return;
+    try {
+      await this.client.submitAction(action as CooperativeAction);
+      this.updateStatus(this.client.session);
+    } catch (error) {
+      this.showError(error instanceof Error ? error.message : 'Não foi possível enviar sua ação.');
+    }
+  }
+
+  private updateStatus(session: CooperativeSessionState | null | undefined): void {
+    if (!this.sidePanel || !session || !this.client) return;
+    const actor = session.members.find((member) => member.user_id === session.current_turn_user_id);
+    const acted = session.submitted_actions.some((action) => action.actor_user_id === this.userId);
+    const status = session.resolution_pending
+      ? 'Todos enviaram suas ações. O líder está resolvendo os monstros.'
+      : this.client.canAct
+        ? 'Sua vez: escolha mover, atacar, usar a habilidade ou passar.'
+        : acted
+          ? 'Ação recebida. Aguarde os demais jogadores.'
+          : 'Vez de ' + (actor?.nickname ?? 'outro participante') + '.';
+    this.sidePanel.updateCooperativeStatus(
+      this.client.canAct,
+      status,
+      this.client.isLeader && this.campaign?.status === 'floor-cleared',
+    );
+  }
+
+  private message(text: string): HTMLElement {
+    const node = document.createElement('main');
+    node.style.cssText = 'min-height:100dvh;display:grid;place-items:center;padding:24px;background:#10131d;color:#fff;font-family:Arial,sans-serif;text-align:center;';
+    node.textContent = text;
+    return node;
+  }
+
+  private showError(message: string): void {
+    console.error(message);
+    const notice = document.createElement('p');
+    notice.textContent = message;
+    notice.style.cssText = 'position:fixed;z-index:3000;left:12px;right:12px;bottom:12px;padding:12px;background:#7f1d1d;color:#fff;border:1px solid #fca5a5;border-radius:8px;';
+    this.panelRoot.append(notice);
+  }
+
+  private leaveToLobby(): void {
+    this.dispose();
+    this.onBack();
+  }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    this.client?.dispose();
+    this.sidePanel?.destroy();
+    this.sidePanel = null;
+    this.game?.destroy(true);
+    this.game = null;
+    this.scene = null;
+    this.gameRoot.hidden = true;
+    this.gameRoot.style.display = 'none';
+  }
+}
