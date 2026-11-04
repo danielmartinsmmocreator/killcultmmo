@@ -30,7 +30,7 @@ type CoopRoom = {
   created_at: string;
   members: CoopMember[];
 };
-type CoopSession = { id: string; room_id: string; leader_user_id: string; status: 'active' | 'completed' | 'defeated' | 'abandoned'; current_floor: number; turn_number: number; current_turn_user_id: string | null; state_snapshot: Record<string, unknown> | null; state_version: number; members: CoopMember[] };
+type CoopSession = { id: string; room_id: string; leader_user_id: string; status: 'active' | 'completed' | 'defeated' | 'abandoned'; current_floor: number; turn_number: number; current_turn_user_id: string | null; resolution_pending: boolean; state_snapshot: Record<string, unknown> | null; state_version: number; submitted_actions: { actor_user_id: string; character_id: string; action_payload: { type: string }; created_at: string }[]; members: CoopMember[] };
 type CoopPayload = { room: CoopRoom | null; invites: CoopInvite[]; characters: CoopCharacter[] };
 
 const CLASS_NAMES: Record<string, string> = {
@@ -109,6 +109,9 @@ export class ExpeditionLobbyScreen {
     if (roomId) {
       channel = channel.on('postgres_changes', {
         event: '*', schema: 'public', table: 'coop_expedition_sessions',
+      }, () => { void this.refresh(); });
+      channel = channel.on('postgres_changes', {
+        event: '*', schema: 'public', table: 'coop_expedition_actions',
       }, () => { void this.refresh(); });
       channel = channel
         .on('postgres_changes', {
@@ -225,7 +228,7 @@ export class ExpeditionLobbyScreen {
       const lobby = this.section('[' + room.guild_tag + '] ' + room.guild_name);
       const status = document.createElement('p');
       status.textContent = this.session
-        ? 'SESSÃO COOPERATIVA ATIVA · Andar ' + this.session.current_floor + ' · Turno ' + this.session.turn_number + ' · revisão ' + this.session.state_version
+        ? 'SESSÃO COOPERATIVA ATIVA · Andar ' + this.session.current_floor + ' · Rodada ' + this.session.turn_number + ' · revisão ' + this.session.state_version
         : room.status === 'prepared'
           ? 'GRUPO PREPARADO · pronto para iniciar a sessão compartilhada.'
           : 'SALA EM PREPARAÇÃO · ' + room.members.length + ' de 3 jogadores';
@@ -253,6 +256,29 @@ export class ExpeditionLobbyScreen {
         roster.append(row);
       }
       lobby.append(roster);
+
+      if (this.session) {
+        const turnInfo = document.createElement('div');
+        turnInfo.style.cssText = 'display:grid;gap:8px;padding:12px;border:1px solid #475569;border-radius:8px;background:#0b1220;';
+        const currentActor = this.session.members.find((member) => member.user_id === this.session?.current_turn_user_id);
+        const heading = document.createElement('strong');
+        heading.textContent = this.session.resolution_pending
+          ? 'TODOS AGIRAM · RODADA PRONTA PARA RESOLUÇÃO'
+          : 'VEZ DE: ' + (currentActor?.nickname ?? 'aguardando sincronização');
+        heading.style.color = this.session.resolution_pending ? '#86efac' : '#fbbf24';
+        const progress = document.createElement('span');
+        progress.textContent = this.session.submitted_actions.length + ' de ' + this.session.members.length + ' jogadores já enviaram sua ação nesta rodada.';
+        progress.style.cssText = 'color:#cbd5e1;font-size:.88rem;';
+        turnInfo.append(heading, progress);
+        for (const member of this.session.members) {
+          const acted = this.session.submitted_actions.some((action) => action.actor_user_id === member.user_id);
+          const line = document.createElement('span');
+          line.textContent = (acted ? '✓ ' : '○ ') + member.nickname + (acted ? ' · ação recebida' : ' · aguardando ação');
+          line.style.cssText = 'font-size:.82rem;color:' + (acted ? '#86efac' : '#94a3b8') + ';';
+          turnInfo.append(line);
+        }
+        lobby.append(turnInfo);
+      }
 
       if (room.status === 'lobby' && ownMember) {
         const heroLabel = document.createElement('label');
