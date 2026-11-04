@@ -61,6 +61,7 @@ export class SidePanel {
   private readonly modeEl = el('div', 'mode');
   private readonly advanceButton = el('button', 'btn-advance');
   private readonly extractButton = el('button', 'btn-extract', 'Extrair e voltar à base');
+  private readonly retreatButton = el('button', 'btn-retreat', 'Bater em retirada');
 
   private readonly turnEl = el('span', 'turn-value');
   private readonly phaseEl = el('div', 'phase');
@@ -99,10 +100,11 @@ export class SidePanel {
   private readonly onFloorChange?: (floor: number) => void;
   private readonly onActivity?: (floor: number) => void;
   private readonly onExtract?: () => Promise<void>;
+  private readonly onRetreat?: () => Promise<void>;
   private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.onRestart = onRestart;
@@ -110,6 +112,7 @@ export class SidePanel {
     this.onFloorChange = onFloorChange;
     this.onActivity = onActivity;
     this.onExtract = onExtract;
+    this.onRetreat = onRetreat;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -128,6 +131,11 @@ export class SidePanel {
     this.extractButton.hidden = true;
     this.extractButton.addEventListener('click', () => {
       if (this.campaign.canExtract) void this.onExtract?.();
+    });
+    this.retreatButton.type = 'button';
+    this.retreatButton.addEventListener('click', () => {
+      const confirmed = window.confirm('Bater em retirada e encerrar esta incursão? Todo ouro e equipamento temporário desta expedição será perdido. O progresso permanente já salvo será mantido.');
+      if (confirmed) void this.onRetreat?.();
     });
 
     const turnBox = el('div', 'turn-box');
@@ -169,8 +177,7 @@ export class SidePanel {
       campaignBox,
       turnBox,
       section('Heróis', this.heroesEl),
-      this.advanceButton,
-      this.extractButton,
+      this.retreatButton,
     );
 
     const rightRail = el('div', 'battle-rail battle-rail--right');
@@ -179,6 +186,8 @@ export class SidePanel {
       this.telegraphBox,
       this.bannerEl,
       this.statusEl,
+      this.advanceButton,
+      this.extractButton,
       this.attributesButton,
       this.abilityBox,
       (() => { const monstersSection = section('Monstros', this.monstersEl, 'monsters-section'); monstersSection.append(actions); return monstersSection; })(),
@@ -369,6 +378,7 @@ export class SidePanel {
     this.renderCampaignEnd(status, floor);
     this.extractButton.hidden = !this.campaign.canExtract;
     this.advanceButton.hidden = status !== 'floor-cleared';
+    this.retreatButton.hidden = status === 'defeated' || status === 'completed';
     this.renderTelegraphs();
 
     const selected = this.state.selectedUnit;
