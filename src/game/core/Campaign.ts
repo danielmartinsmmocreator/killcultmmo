@@ -3,6 +3,8 @@ import type { FloorConfig } from '../data/encounters';
 import type { BattleSetup } from '../data/battleSetup';
 import type { EncounterType, Position, Unit, UnitDefinition } from '../types';
 import { buildEncounter, createParty, prepareParty, validateFloor } from './encounter';
+import { createUnit } from '../data/battleSetup';
+import { HERO_DEFINITIONS } from '../data/heroes';
 import { GameState } from './GameState';
 import type { ProgressionPersistenceEvent } from './GameState';
 import { PlayerInventory } from './progression';
@@ -119,6 +121,85 @@ export class Campaign {
       hero.maxHp += hero.progression.attributes.vitality * 5;
       hero.hp = hero.maxHp;
     }
+  }
+
+  /** UID determinístico para representar no tabuleiro o personagem escolhido por cada membro. */
+  static cooperativeHeroUid(characterId: string): string {
+    return 'coop-' + characterId;
+  }
+
+  /**
+   * Substitui o grupo local pelo roster real da sala. Cada membro ocupa uma unidade própria,
+   * inclusive quando dois jogadores escolheram a mesma classe.
+   */
+  configureCooperativeParty(
+    members: readonly {
+      user_id: string;
+      character_id: string;
+      class_id: string;
+      character_level: number;
+      character_xp: number;
+      unspent_attribute_points: number;
+      strength: number;
+      vitality: number;
+      defense: number;
+      equipment: readonly { slot: string; item_definition_id: string }[];
+    }[],
+    controlledCharacterId: string,
+  ): boolean {
+    if (members.length < 2 || members.length > 3) return false;
+    if (!members.some((member) => member.character_id === controlledCharacterId)) return false;
+    if (new Set(members.map((member) => member.character_id)).size !== members.length) return false;
+
+    const positions: Position[] = [
+      { col: 1, row: 5 },
+      { col: 2, row: 5 },
+      { col: 3, row: 5 },
+    ];
+    const nextParty: Unit[] = [];
+
+    for (const [index, member] of members.entries()) {
+      const definition = HERO_DEFINITIONS.find((hero) => hero.id === member.class_id);
+      if (!definition || !member.character_id) return false;
+      const hero = createUnit(definition, positions[index], Campaign.cooperativeHeroUid(member.character_id));
+      if (!hero.progression) return false;
+
+      const strength = Math.max(0, Math.trunc(member.strength || 0));
+      const vitality = Math.max(0, Math.trunc(member.vitality || 0));
+      const defense = Math.max(0, Math.trunc(member.defense || 0));
+      hero.progression.level = Math.max(1, Math.trunc(member.character_level || 1));
+      hero.progression.xp = Math.max(0, Math.trunc(member.character_xp || 0));
+      hero.progression.unspentAttributePoints = Math.max(0, Math.trunc(member.unspent_attribute_points || 0));
+      hero.progression.attributes = { strength, vitality, defense };
+      hero.damage += strength;
+      hero.maxHp += vitality * 5;
+      hero.hp = hero.maxHp;
+
+      for (const equipped of member.equipment ?? []) {
+        const itemDefinition = ITEM_DEFINITIONS[equipped.item_definition_id];
+        if (!itemDefinition || itemDefinition.slot !== equipped.slot) continue;
+        const item = this.inventory.add(itemDefinition.id);
+        this.inventory.equip(hero, item.instanceId, ITEM_DEFINITIONS);
+      }
+      nextParty.push(hero);
+    }
+
+    this.cooperativeMode = true;
+    this.partyUnits = nextParty;
+    this.activePartyUids = nextParty.map((hero) => hero.uid);
+    this.floorIndex = 0;
+    this.gold = 0;
+    this.retainedGold = 0;
+    this.retainedItemIds = new Set(this.inventory.instanceIds);
+    this.rewardedMonsterUids.clear();
+    this.rewardMessages.length = 0;
+    this.rewardGold = 0;
+    this.rewardDrops.length = 0;
+    this.lastExpeditionResult = null;
+    this.lastExtractionRewards = null;
+
+    this.battle.loadEncounter(this.createEncounter(), false);
+    return this.battle.configureCooperativeMode(Campaign.cooperativeHeroUid(controlledCharacterId));
   }
 
   /** Snapshot JSON da campanha e do encontro em andamento. */
