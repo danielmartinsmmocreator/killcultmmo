@@ -120,6 +120,10 @@ export class BattleScene extends Phaser.Scene {
   private readonly campaign: Campaign;
   private readonly gameState: GameState;
   private readonly syncEncounterOnCreate: boolean;
+  private readonly onCooperativeAction?: (action: import('../core/GameState').CooperativeBattleAction) => void;
+  private readonly canCooperativeAct?: () => boolean;
+  private readonly onCooperativeRoundComplete?: () => void;
+  private cooperativeResolutionStarted = false;
   private readonly unitViews = new Map<string, UnitView>();
   private obstacleObjects: Phaser.GameObjects.Rectangle[] = [];
   private boardTiles: { tile: Phaser.GameObjects.Rectangle; col: number; row: number }[] = [];
@@ -139,11 +143,25 @@ export class BattleScene extends Phaser.Scene {
   private stepTimer: Phaser.Time.TimerEvent | null = null;
   private disposed = false;
 
-  constructor(campaign: Campaign, syncEncounterOnCreate = true) {
+  constructor(
+    campaign: Campaign,
+    syncEncounterOnCreate = true,
+    onCooperativeAction?: (action: import('../core/GameState').CooperativeBattleAction) => void,
+    canCooperativeAct?: () => boolean,
+    onCooperativeRoundComplete?: () => void,
+  ) {
     super({ key: 'BattleScene' });
     this.campaign = campaign;
     this.gameState = campaign.battle;
     this.syncEncounterOnCreate = syncEncounterOnCreate;
+    this.onCooperativeAction = onCooperativeAction;
+    this.canCooperativeAct = canCooperativeAct;
+    this.onCooperativeRoundComplete = onCooperativeRoundComplete;
+  }
+
+  /** O líder chama antes de iniciar a fase dos monstros; o callback dispara ao terminar a animação. */
+  markCooperativeResolutionStarted(): void {
+    this.cooperativeResolutionStarted = true;
   }
 
   preload(): void {
@@ -410,6 +428,7 @@ export class BattleScene extends Phaser.Scene {
     // Só a vez do jogador aceita cliques: durante a resolução do turno e depois da
     // vitória ou derrota o tabuleiro fica travado.
     if (this.gameState.phase !== 'player') return;
+    if (this.onCooperativeAction && this.canCooperativeAct && !this.canCooperativeAct()) return;
 
     // Escolhendo alvo de uma habilidade: o clique escolhe (a prévia aparece; confirmar é no painel).
     if (this.gameState.targeting) {
@@ -432,8 +451,14 @@ export class BattleScene extends Phaser.Scene {
     }
 
     this.threatPreviewUid = null;
-    if (this.gameState.selectedUnit && this.gameState.moveSelectedUnit(cell)) {
-      return;
+    if (this.gameState.selectedUnit) {
+      if (this.onCooperativeAction) {
+        if (this.gameState.getValidMoves(this.gameState.selectedUnit).some((move) => move.col === cell.col && move.row === cell.row)) {
+          this.onCooperativeAction({ type: 'move', destination: { ...cell } });
+        }
+        return;
+      }
+      if (this.gameState.moveSelectedUnit(cell)) return;
     }
 
     this.gameState.clearSelection();
@@ -465,6 +490,10 @@ export class BattleScene extends Phaser.Scene {
       case 'turn':
       case 'over':
         this.refresh(true);
+        if (this.cooperativeResolutionStarted && !this.gameState.isResolving) {
+          this.cooperativeResolutionStarted = false;
+          this.onCooperativeRoundComplete?.();
+        }
         break;
     }
   }
