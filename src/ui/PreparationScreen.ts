@@ -46,6 +46,7 @@ export class PreparationScreen {
   private readonly onSignOut?: () => Promise<void>;
   private readonly maxUnlockedSkipRange: number;
   private readonly onSkipRange?: (range: number, cost: number) => Promise<boolean>;
+  private readonly isGameMaster: boolean;
   private message = '';
   private inventoryOpen = false;
   private inventoryRangeFilter: number | null | 'unknown' = null;
@@ -56,7 +57,7 @@ export class PreparationScreen {
   private devUnlocked = false;
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>, isGameMaster = false) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
@@ -66,6 +67,7 @@ export class PreparationScreen {
     this.onSignOut = onSignOut;
     this.maxUnlockedSkipRange = Math.max(0, Math.min(10, Math.floor(maxUnlockedSkipRange)));
     this.onSkipRange = onSkipRange;
+    this.isGameMaster = isGameMaster;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
@@ -108,7 +110,8 @@ export class PreparationScreen {
     devButton.type = 'button';
     devButton.textContent = '⚙ Dev Mode';
     devButton.style.cssText = 'padding:9px 13px;border:1px solid #8b7be8;border-radius:8px;background:#25233d;color:#fff;font-weight:800;cursor:pointer;';
-    headingRow.append(heading, devButton);
+    headingRow.append(heading);
+    if (this.isGameMaster) headingRow.append(devButton);
     const subtitle = document.createElement('p');
     subtitle.textContent = 'Monte sua equipe, prepare os equipamentos e escolha sua formação.';
     subtitle.style.cssText = 'color:#aeb8c8;line-height:1.4;margin:6px 0 12px;max-width:760px;';
@@ -190,25 +193,15 @@ export class PreparationScreen {
       closeDevDialog();
       callback?.(value);
     });
-    devButton.addEventListener('click', () => {
-      if (!this.devUnlocked) {
-        askDev('Acesso ao Dev Mode', '', (password) => {
-          if (password !== 'BeatrizL@nd1s!') {
-            devFeedback.textContent = 'Senha incorreta.';
-            return;
-          }
-          this.devUnlocked = true;
-          this.devPanelOpen = true;
-          devPanel.hidden = false;
-          devPanel.style.display = 'grid';
-          devFeedback.textContent = 'Dev Mode desbloqueado.';
-        }, 'Digite a senha de desenvolvedor.', 'password');
-        return;
-      }
-      this.devPanelOpen = !this.devPanelOpen;
-      devPanel.hidden = !this.devPanelOpen;
-      devPanel.style.display = this.devPanelOpen ? 'grid' : 'none';
-    });
+    if (this.isGameMaster) {
+      devButton.addEventListener('click', () => {
+        this.devUnlocked = true;
+        this.devPanelOpen = !this.devPanelOpen;
+        devPanel.hidden = !this.devPanelOpen;
+        devPanel.style.display = this.devPanelOpen ? 'grid' : 'none';
+        devFeedback.textContent = 'Acesso autorizado · Game Master.';
+      });
+    }
     const devAction = (label: string, action: () => void): void => {
       const button = document.createElement('button');
       button.type = 'button';
