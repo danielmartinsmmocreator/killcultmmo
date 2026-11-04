@@ -37,7 +37,9 @@ type GuildData = {
   invites: GuildInvite[];
 };
 
-type GuildPayload = { guild: GuildData | null; invites: GuildInvite[] };
+type GuildJoinRequest = { id: string; user_id: string; nickname: string; global_level: number; created_at: string };
+type PublicGuild = { id: string; name: string; tag: string; description: string; member_count: number; global_level: number; leader_nickname: string; has_requested: boolean };
+type GuildPayload = { guild: GuildData | null; invites: GuildInvite[]; join_requests?: GuildJoinRequest[] };
 type BankItem = { id: string; item_definition_id: string; obtained_at_floor: number | null; deposited_at: string };
 type GuildChatMessage = { id: string; guild_id: string; sender_user_id: string | null; sender_nickname: string; sender_role: 'leader' | 'admin' | 'member'; content: string; created_at: string };
 
@@ -52,6 +54,8 @@ export class GuildScreen {
   private readonly onBack: () => void;
   private payload: GuildPayload = { guild: null, invites: [] };
   private bankItems: BankItem[] = [];
+  private publicGuilds: PublicGuild[] = [];
+  private joinRequests: GuildJoinRequest[] = [];
   private busy = false;
   private message = '';
   private chatChannel: RealtimeChannel | null = null;
@@ -132,6 +136,8 @@ export class GuildScreen {
       const data = await this.rpc<GuildPayload>('get_my_guild_data');
       this.payload = data ?? { guild: null, invites: [] };
       this.bankItems = [];
+      this.publicGuilds = [];
+      this.joinRequests = this.payload.join_requests ?? [];
       if (this.payload.guild) {
         const { data: items, error } = await supabase
           .from('guild_bank_items')
@@ -143,6 +149,7 @@ export class GuildScreen {
         await this.loadChatMessages();
         this.ensureChatSubscription(this.payload.guild.id);
       } else {
+        this.publicGuilds = await this.rpc<PublicGuild[]>('get_public_guilds', { p_search: '', p_limit: 30 });
         this.chatMessages = [];
         this.chatMessagesRoot = null;
         this.disposeChatSubscription();
@@ -287,6 +294,53 @@ export class GuildScreen {
       }, 'Guilda criada!')));
       page.append(create);
 
+      const discovery = this.section('Encontrar uma guilda');
+      const search = this.input('Buscar por nome ou tag', 'Digite o nome ou a tag');
+      const results = document.createElement('div');
+      results.style.cssText = 'display:grid;gap:8px;';
+      const renderResults = (guilds: PublicGuild[]): void => {
+        results.replaceChildren();
+        if (!guilds.length) {
+          const empty = document.createElement('p');
+          empty.textContent = 'Nenhuma guilda encontrada.';
+          empty.style.cssText = 'margin:0;color:#94a3b8;';
+          results.append(empty);
+        }
+        for (const item of guilds) {
+          const row = document.createElement('article');
+          row.style.cssText = 'display:grid;gap:7px;padding:11px;border-radius:8px;background:#0f172a;border:1px solid #334155;';
+          const heading = document.createElement('strong');
+          heading.textContent = '[' + item.tag + '] ' + item.name;
+          const details = document.createElement('small');
+          details.textContent = item.member_count + ' membros · nível ' + item.global_level + ' · líder: ' + item.leader_nickname;
+          details.style.cssText = 'color:#94a3b8;';
+          const about = document.createElement('p');
+          about.textContent = item.description || 'Sem descrição.';
+          about.style.cssText = 'margin:0;color:#cbd5e1;font-size:.88rem;';
+          const action = this.button(item.has_requested ? 'Solicitação enviada' : 'Solicitar entrada', () => this.perform(async () => {
+            await this.rpc('request_guild_join', { p_guild_id: item.id });
+          }, 'Solicitação enviada à liderança.'), item.has_requested);
+          row.append(heading, details, about, action);
+          results.append(row);
+        }
+      };
+      renderResults(this.publicGuilds);
+      const searchButton = this.button('Buscar', async () => {
+        try {
+          const found = await this.rpc<PublicGuild[]>('get_public_guilds', { p_search: search.field.value, p_limit: 30 });
+          this.publicGuilds = found ?? [];
+          renderResults(this.publicGuilds);
+        } catch (error) {
+          this.message = error instanceof Error ? error.message : 'Falha ao buscar guildas.';
+          this.render();
+        }
+      });
+      search.field.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') { event.preventDefault(); searchButton.click(); }
+      });
+      discovery.append(search.wrapper, searchButton, results);
+      page.append(discovery);
+
       if (this.payload.invites.length) {
         const invites = this.section('Convites recebidos');
         for (const invite of this.payload.invites) {
@@ -404,6 +458,26 @@ export class GuildScreen {
         roster.append(row);
       }
       page.append(roster);
+
+      if (guild.my_role !== 'member' && this.joinRequests.length) {
+        const requests = this.section('Solicitações para entrar');
+        for (const request of this.joinRequests) {
+          const row = document.createElement('div');
+          row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px;border-radius:8px;background:#0f172a;';
+          const info = document.createElement('span');
+          info.textContent = request.nickname + ' · nível global ' + request.global_level;
+          row.append(info,
+            this.button('Aceitar', () => this.perform(async () => {
+              await this.rpc('respond_guild_join_request', { p_request_id: request.id, p_approve: true });
+            }, 'Jogador aceito na guilda!')),
+            this.button('Recusar', () => this.perform(async () => {
+              await this.rpc('respond_guild_join_request', { p_request_id: request.id, p_approve: false });
+            }, 'Solicitação recusada.'))
+          );
+          requests.append(row);
+        }
+        page.append(requests);
+      }
 
       if (guild.my_role !== 'member') {
         const invite = this.section('Convidar jogador');
