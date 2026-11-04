@@ -123,7 +123,7 @@ function showPreparation(resetCampaign = false): void {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) window.alert('Não foi possível sair: ' + error.message);
-  }, 0, undefined, isGameMaster);
+  }, 0, undefined, isGameMaster, async (classId, attribute) => { const saved = await persistAttributeAllocation(classId, attribute, 1); return saved; }, resetBaseAttributes, buyBaseAttributePoint);
 }
 
 const PROGRESSION_QUEUE_PREFIX = 'killcult:pending-progression:';
@@ -241,6 +241,36 @@ async function persistAttributeAllocation(classId: string, attribute: 'strength'
     return false;
   }
 
+  return true;
+}
+
+async function buyBaseAttributePoint(classId: string): Promise<boolean> {
+  if (!supabase || !campaign || activeExpeditionId) return false;
+  const characterId = campaign.getPersistedCharacterId(classId);
+  if (!characterId) { window.alert('Não foi possível identificar o personagem no banco de dados.'); return false; }
+  const { error } = await supabase.rpc('buy_character_attribute_point', { p_character_id: characterId });
+  if (error) {
+    console.error('Falha ao comprar ponto de atributo:', error);
+    window.alert(error.message.includes('Ouro insuficiente')
+      ? 'Você precisa de 10.000 de ouro permanente para comprar esse ponto.'
+      : 'Não foi possível comprar o ponto de atributo. Tente novamente.');
+    return false;
+  }
+  return true;
+}
+
+async function resetBaseAttributes(classId: string): Promise<boolean> {
+  if (!supabase || !campaign || activeExpeditionId) return false;
+  const characterId = campaign.getPersistedCharacterId(classId);
+  if (!characterId) { window.alert('Não foi possível identificar o personagem no banco de dados.'); return false; }
+  const { error } = await supabase.rpc('reset_character_attributes', { p_character_id: characterId });
+  if (error) {
+    console.error('Falha ao redefinir atributos:', error);
+    window.alert(error.message.includes('Ouro insuficiente')
+      ? 'Ouro permanente insuficiente para redefinir os atributos desse personagem.'
+      : 'Não foi possível redefinir os atributos. Tente novamente.');
+    return false;
+  }
   return true;
 }
 
