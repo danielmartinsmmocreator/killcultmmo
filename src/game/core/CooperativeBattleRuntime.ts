@@ -44,26 +44,28 @@ export class CooperativeBattleRuntime {
 
   async start(): Promise<void> {
     this.panelRoot.replaceChildren(this.message('Conectando à expedição cooperativa...'));
-    this.campaign = new Campaign(undefined, undefined, true);
-    this.client = new CooperativeSessionClient(
+    const campaign = new Campaign(undefined, undefined, true);
+    this.campaign = campaign;
+    const client = new CooperativeSessionClient(
       this.sessionId,
       this.userId,
       this.characterId,
       (session) => { void this.handleSessionUpdate(session); },
       (message) => console.error('Sessão cooperativa:', message),
     );
+    this.client = client;
 
-    const session = await this.client.connect();
+    const session = await client.connect();
     this.configureRoster(session.members);
     if (session.state_snapshot) {
-      if (!this.campaign.restoreSnapshot(session.state_snapshot)) {
+      if (!campaign.restoreSnapshot(session.state_snapshot)) {
         throw new Error('O estado compartilhado não corresponde aos personagens desta sala. A sessão foi mantida intacta.');
       }
       this.snapshotSignature = JSON.stringify(session.state_snapshot);
-    } else if (this.client.isLeader) {
-      await this.client.initializeSnapshot(this.campaign.exportSnapshot());
-      const initialized = this.client.session;
-      if (!initialized?.state_snapshot || !this.campaign.restoreSnapshot(initialized.state_snapshot)) {
+    } else if (client.isLeader) {
+      await client.initializeSnapshot(campaign.exportSnapshot());
+      const initialized = client.session;
+      if (!initialized?.state_snapshot || !campaign.restoreSnapshot(initialized.state_snapshot)) {
         throw new Error('O líder não conseguiu publicar ou restaurar o tabuleiro inicial.');
       }
       this.snapshotSignature = JSON.stringify(initialized.state_snapshot);
@@ -73,7 +75,7 @@ export class CooperativeBattleRuntime {
 
     this.mount();
     this.mounted = true;
-    const latest = await this.client.refresh();
+    const latest = await client.refresh();
     if (latest) await this.handleSessionUpdate(latest);
   }
 
