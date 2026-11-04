@@ -15,6 +15,7 @@ type CoopMember = {
   defense?: number | null;
   equipment?: { slot: string; item_definition_id: string }[];
   is_ready: boolean;
+  is_eliminated?: boolean;
   joined_at: string;
 };
 type CoopInvite = {
@@ -328,7 +329,15 @@ export class ExpeditionLobbyScreen {
         lobby.append(start);
       }
 
-      if (this.session?.status === 'active' && ownMember?.character_id) {
+      const ownEliminated = Boolean(ownMember?.is_eliminated);
+      if (this.session?.status === 'active' && ownEliminated) {
+        const eliminated = document.createElement('p');
+        eliminated.textContent = 'SEU HERÓI FOI DERROTADO. Você está em espera no menu enquanto os sobreviventes continuam a expedição. Não é possível retornar a este combate com o mesmo personagem.';
+        eliminated.style.cssText = 'margin:0;padding:12px;border:1px solid #b45309;border-radius:8px;background:#451a03;color:#fde68a;line-height:1.5;font-weight:700;';
+        lobby.append(eliminated);
+      }
+
+      if (this.session?.status === 'active' && ownMember?.character_id && !ownEliminated) {
         const enter = this.button('Entrar no combate compartilhado', () => {
           this.dispose();
           this.onEnterSession?.(this.session!.id, ownMember.character_id!);
@@ -376,7 +385,7 @@ export class ExpeditionLobbyScreen {
 
     const note = document.createElement('p');
     note.textContent = this.session
-      ? 'Entre no combate compartilhado para controlar apenas o herói escolhido. As ações são validadas pelo servidor e os monstros agem depois de todos os jogadores.'
+      ? 'Cada participante controla seu herói. Se um personagem for derrotado, seu jogador aguarda nesta sala enquanto os sobreviventes continuam.'
       : 'As salas, convites, seleção de heróis, prontidão e criação da sessão são persistidos no servidor. O combate será conectado à sessão na próxima etapa.';
     note.style.cssText = 'margin:0;color:#64748b;font-size:.82rem;line-height:1.5;';
     page.append(note);
