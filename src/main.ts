@@ -7,6 +7,7 @@ import { BattleScene } from './game/scenes/BattleScene';
 import { SidePanel } from './ui/SidePanel';
 import { PreparationScreen } from './ui/PreparationScreen';
 import { AuthScreen } from './ui/AuthScreen';
+import { GuildScreen } from './ui/GuildScreen';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { loadPlayerData } from './lib/playerData';
 
@@ -108,6 +109,11 @@ async function persistInventorySale(instanceId: string): Promise<number> {
   return serverGold;
 }
 
+function showGuilds(): void {
+  if (!campaign || !activeUserId) return;
+  new GuildScreen(panel, campaign, () => showPreparation());
+}
+
 function showPreparation(resetCampaign = false): void {
   if (!campaign) return;
   sidePanel?.destroy();
@@ -125,7 +131,7 @@ function showPreparation(resetCampaign = false): void {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) window.alert('Não foi possível sair: ' + error.message);
-  }, 0, undefined, isGameMaster, async (classId, attribute) => { const saved = await persistAttributeAllocation(classId, attribute, 1); return saved; }, resetBaseAttributes, buyBaseAttributePoint, playerHighestFloor);
+  }, 0, undefined, isGameMaster, async (classId, attribute) => { const saved = await persistAttributeAllocation(classId, attribute, 1); return saved; }, resetBaseAttributes, buyBaseAttributePoint, playerHighestFloor, showGuilds);
 }
 
 const PROGRESSION_QUEUE_PREFIX = 'killcult:pending-progression:';
