@@ -543,7 +543,7 @@ export class Campaign {
   /** Encontro do andar atual, com o grupo atual. Usado pelo GameState ao iniciar e reiniciar. */
   private createEncounter(): BattleSetup {
     const config = this.floor;
-    const setup = buildEncounter(config, this.activeParty);
+    const setup = buildEncounter(config, this.activeParty, this.cooperativeMode ? COOPERATIVE_MONSTER_SCALING : { hp: 1, damage: 1 });
     return {
       ...setup,
       title: `Andar ${config.floor}/${this.floors.length} — ${ENCOUNTER_LABELS[config.type]}: ${config.name}`,
