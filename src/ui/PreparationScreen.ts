@@ -54,7 +54,6 @@ export class PreparationScreen {
   private inventoryClassFilter: 'all' | 'warrior' | 'assassin' | 'mage' | 'cleric' | 'archer' = 'all';
   private inventoryRarityFilter: 'all' | 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' = 'all';
   private inventorySort: 'floor-asc' | 'floor-desc' | 'rarity-desc' | 'rarity-asc' = 'floor-desc';
-  private devUnlocked = false;
   private devPanelOpen = false;
 
   constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>, isGameMaster = false) {
@@ -195,7 +194,6 @@ export class PreparationScreen {
     });
     if (this.isGameMaster) {
       devButton.addEventListener('click', () => {
-        this.devUnlocked = true;
         this.devPanelOpen = !this.devPanelOpen;
         devPanel.hidden = !this.devPanelOpen;
         devPanel.style.display = this.devPanelOpen ? 'grid' : 'none';
