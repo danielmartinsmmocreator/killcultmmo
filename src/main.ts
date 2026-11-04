@@ -26,6 +26,7 @@ let sidePanel: SidePanel | null = null;
 let activeUserId: string | null = null;
 let loadingUserId: string | null = null;
 let playerNickname = 'JOGADOR';
+let playerHighestFloor = 1;
 let isGameMaster = false;
 let progressionSaveWarningShown = false;
 let activeExpeditionId: string | null = null;
@@ -52,6 +53,7 @@ function showAuth(): void {
   activeExpeditionId = null;
   activeUserId = null;
   isGameMaster = false;
+  playerHighestFloor = 1;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
   if (!isSupabaseConfigured) {
@@ -123,7 +125,7 @@ function showPreparation(resetCampaign = false): void {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) window.alert('Não foi possível sair: ' + error.message);
-  }, 0, undefined, isGameMaster, async (classId, attribute) => { const saved = await persistAttributeAllocation(classId, attribute, 1); return saved; }, resetBaseAttributes, buyBaseAttributePoint);
+  }, 0, undefined, isGameMaster, async (classId, attribute) => { const saved = await persistAttributeAllocation(classId, attribute, 1); return saved; }, resetBaseAttributes, buyBaseAttributePoint, playerHighestFloor);
 }
 
 const PROGRESSION_QUEUE_PREFIX = 'killcult:pending-progression:';
@@ -569,6 +571,7 @@ async function enterGame(userId: string): Promise<void> {
     const playerData = await loadPlayerData(userId);
     if (activeUserId !== userId) return;
     playerNickname = playerData.nickname;
+    playerHighestFloor = Math.max(1, playerData.highestFloor);
     const { data: gameMasterData, error: gameMasterError } = await supabase!.rpc('is_current_user_game_master');
     if (gameMasterError) throw new Error('Não foi possível verificar as permissões de Game Master. Confira se a migration de permissões GM foi aplicada: ' + gameMasterError.message);
     isGameMaster = gameMasterData === true;
