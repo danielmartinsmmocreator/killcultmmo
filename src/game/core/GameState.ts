@@ -62,6 +62,12 @@ export type ProgressionPersistenceEvent =
   | { eventId: string; kind: 'kill'; classId: string; monsterMaxHp: number; monsterDamage: number; monsterRank: 'normal' | 'mini-boss' | 'boss' }
   | { eventId: string; kind: 'death'; classId: string };
 
+export type CooperativeBattleAction =
+  | { type: 'move'; destination: Position }
+  | { type: 'attack' }
+  | { type: 'pass' }
+  | { type: 'ability'; abilityId: string; target?: Position; destination?: Position; targetUid?: string };
+
 const MAX_LOG_ENTRIES = 200;
 
 /**
@@ -388,6 +394,28 @@ export class GameState {
   /** Seleção de alvo em andamento (entre "Usar habilidade" e "Confirmar"), se houver. */
   get targeting(): AbilityTargeting | null {
     return this.targetingState;
+  }
+
+  /** Converte a seleção local de alvo em uma ação serializável para a sessão cooperativa. */
+  getCooperativeAbilityAction(): CooperativeBattleAction | null {
+    const targeting = this.targetingState;
+    const hero = this.selectedUnit;
+    const abilityId = hero?.definition.ability?.id;
+    if (!targeting || !hero || !abilityId) return null;
+    switch (targeting.id) {
+      case 'ambush':
+        return targeting.targetUid && targeting.destination
+          ? { type: 'ability', abilityId, targetUid: targeting.targetUid, destination: { ...targeting.destination } }
+          : null;
+      case 'exura':
+        return targeting.targetUid ? { type: 'ability', abilityId, targetUid: targeting.targetUid } : null;
+      case 'fireball':
+        return targeting.center ? { type: 'ability', abilityId, target: { ...targeting.center } } : null;
+      case 'piercing-shot':
+        return targeting.direction
+          ? { type: 'ability', abilityId, target: { col: hero.position.col + targeting.direction.col, row: hero.position.row + targeting.direction.row } }
+          : null;
+    }
   }
 
   /** Último aviso para o jogador (ação inválida, motivo de recusa...). */
