@@ -438,9 +438,13 @@ export class SidePanel {
         ? (this.cooperativeLeader ? 'Andar concluído. Continue quando o grupo estiver pronto.' : 'Andar concluído. Aguardando o líder continuar.')
         : `Andar ${floor} concluído. Próximo andar em instantes…`;
     } else if (status === 'completed') {
-      this.statusEl.textContent = 'Campanha concluída! Retornando à base de operações…';
+      this.statusEl.textContent = this.cooperativeMode
+        ? 'Expedição cooperativa concluída! O grupo venceu o último andar.'
+        : 'Campanha concluída! Retornando à base de operações…';
     } else if (status === 'defeated') {
-      this.statusEl.textContent = 'Todos os heróis caíram. Retornando à base de operações…';
+      this.statusEl.textContent = this.cooperativeMode
+        ? 'Derrota cooperativa. Todos os heróis caíram.'
+        : 'Todos os heróis caíram. Retornando à base de operações…';
     } else if (!canAct) {
       this.statusEl.textContent = this.cooperativeStatusText || 'Aguarde: o turno está sendo resolvido.';
     } else if (targeting && selected) {
