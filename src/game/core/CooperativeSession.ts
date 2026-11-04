@@ -14,12 +14,23 @@ export type CooperativeSubmittedAction = {
   created_at: string;
 };
 
+export type CooperativeEquippedItem = {
+  slot: string;
+  item_definition_id: string;
+};
+
 export type CooperativeSessionMember = {
   user_id: string;
   nickname: string;
   character_id: string | null;
   class_id: string | null;
   character_level: number | null;
+  character_xp: number | null;
+  unspent_attribute_points: number | null;
+  strength: number | null;
+  vitality: number | null;
+  defense: number | null;
+  equipment: CooperativeEquippedItem[];
   is_ready: boolean;
 };
 
@@ -151,6 +162,23 @@ export class CooperativeSessionClient {
     const result = data as SubmitResult;
     await this.refresh();
     return result;
+  }
+
+  /** Publica o estado inicial uma única vez, antes de qualquer ação da primeira rodada. */
+  async initializeSnapshot(snapshot: Record<string, unknown>): Promise<number> {
+    if (!supabase) throw new Error('Supabase não está configurado.');
+    const session = this.current ?? await this.refresh();
+    if (!session) throw new Error('Sessão cooperativa indisponível.');
+    if (!this.isLeader) throw new Error('Somente o líder pode inicializar o tabuleiro compartilhado.');
+    if (session.state_snapshot) throw new Error('O tabuleiro compartilhado já foi inicializado.');
+    const { data, error } = await supabase.rpc('initialize_coop_expedition_snapshot', {
+      p_session_id: this.sessionId,
+      p_expected_version: session.state_version,
+      p_state_snapshot: snapshot,
+    });
+    if (error) throw new Error(error.message);
+    await this.refresh();
+    return Number(data);
   }
 
   async resolveRound(
