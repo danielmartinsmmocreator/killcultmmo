@@ -185,6 +185,12 @@ export class GameState {
     this.selectedUnitUid = heroUid;
     this.targetingState = null;
 
+    if (hero.petrified) {
+      hero.petrified = false;
+      this.addLog(`${hero.definition.name} se liberta da petrificação e perde sua ação neste turno.`, 'monster');
+      return this.passTurn();
+    }
+
     if (action.type === 'move') {
       if (action.destination && this.moveSelectedUnit(action.destination)) return true;
       this.addLog('Movimento inválido recebido; a ação foi convertida em passar a vez.', 'info');
