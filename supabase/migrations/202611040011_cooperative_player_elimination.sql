@@ -13,7 +13,11 @@ as $function$
   select exists (
     select 1
     from jsonb_array_elements(
-      coalesce(p_state_snapshot #> '{battle,units}', '[]'::jsonb)
+      case
+        when jsonb_typeof(p_state_snapshot #> '{battle,units}') = 'array'
+          then p_state_snapshot #> '{battle,units}'
+        else '[]'::jsonb
+      end
     ) as unit
     where unit->>'uid' = 'coop-' || p_character_id::text
       and case
@@ -258,6 +262,10 @@ begin
   if p_session_id is null or p_expected_version is null or p_expected_version < 0
     or p_current_floor is null or p_current_floor < 1 or p_current_floor > 100
     or p_state_snapshot is null or jsonb_typeof(p_state_snapshot) <> 'object'
+    or p_state_snapshot->>'version' is distinct from '1'
+    or p_state_snapshot->>'cooperativeMode' is distinct from 'true'
+    or jsonb_typeof(p_state_snapshot->'battle') is distinct from 'object'
+    or jsonb_typeof(p_state_snapshot->'battle'->'units') is distinct from 'array'
     or pg_column_size(p_state_snapshot) > 1048576
     or p_status not in ('active', 'completed', 'defeated') then
     raise exception 'Estado de resolução inválido ou maior que 1 MB.';
@@ -369,6 +377,8 @@ begin
     or jsonb_typeof(p_state_snapshot) <> 'object'
     or p_state_snapshot->>'version' is distinct from '1'
     or p_state_snapshot->>'cooperativeMode' is distinct from 'true'
+    or jsonb_typeof(p_state_snapshot->'battle') is distinct from 'object'
+    or jsonb_typeof(p_state_snapshot->'battle'->'units') is distinct from 'array'
     or p_state_snapshot->'battle'->>'outcome' is distinct from 'ongoing'
     or (p_state_snapshot->>'floorIndex')::integer is distinct from (p_current_floor - 1)
     or pg_column_size(p_state_snapshot) > 1048576 then
