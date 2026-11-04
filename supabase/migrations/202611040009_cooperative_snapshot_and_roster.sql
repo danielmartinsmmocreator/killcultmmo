@@ -107,9 +107,9 @@ begin
     or p_expected_version < 0
     or p_state_snapshot is null
     or jsonb_typeof(p_state_snapshot) <> 'object'
-    or p_state_snapshot->>'version' <> '1'
-    or p_state_snapshot->>'cooperativeMode' <> 'true'
-    or p_state_snapshot->'battle' is null
+    or p_state_snapshot->>'version' is distinct from '1'
+    or p_state_snapshot->>'cooperativeMode' is distinct from 'true'
+    or jsonb_typeof(p_state_snapshot->'battle') is distinct from 'object'
     or pg_column_size(p_state_snapshot) > 1048576 then
     raise exception 'Snapshot inicial inválido ou maior que 1 MB.';
   end if;
