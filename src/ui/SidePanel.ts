@@ -147,7 +147,7 @@ export class SidePanel {
     this.bannerEl.hidden = true;
     this.telegraphBox.hidden = true;
     this.devPanel.hidden = true;
-    this.devPanel.style.cssText = 'padding:12px;margin:8px 0;background:#111827;border:1px solid #a78bfa;border-radius:8px;color:#f8fafc;display:none;max-height:55vh;overflow:auto;';
+    this.devPanel.style.cssText = 'position:absolute;top:48px;right:8px;z-index:21;width:min(300px,calc(100% - 16px));box-sizing:border-box;padding:12px;margin:0;background:rgba(17,24,39,.97);border:1px solid #a78bfa;border-radius:8px;color:#f8fafc;display:none;max-height:70%;overflow:auto;box-shadow:0 8px 24px #000b;';
     this.devSettingsButton.type = 'button';
     this.devSettingsButton.title = 'Ferramentas de Game Master';
     this.devSettingsButton.setAttribute('aria-label', 'Abrir ferramentas de Game Master');
