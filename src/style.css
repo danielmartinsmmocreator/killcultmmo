@@ -269,15 +269,17 @@ button {
 
 .prep-hero-actions {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 2px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 3px;
   width: 100%;
 }
 
 .prep-hero-actions button {
   min-width: 0;
-  min-height: 25px;
-  padding: 5px 3px;
+  height: 34px;
+  min-height: 34px;
+  padding: 3px 2px;
   border: 1px solid #777;
   border-radius: 0;
   background: #e8e8e8;
@@ -1200,3 +1202,38 @@ button {
   text-align: center;
   line-height: 1.2;
 }
+
+
+/* Ações de andar ficam sobre a área inferior do tabuleiro, abaixo do aviso central. */
+#game-container { position: relative; }
+.board-floor-actions {
+  position: absolute;
+  left: 50%;
+  bottom: 5%;
+  z-index: 30;
+  display: flex;
+  gap: 8px;
+  width: min(76%, 520px);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.board-floor-actions[hidden] { display: none !important; }
+.board-floor-actions button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 12px 10px;
+  border: 1px solid #a98532;
+  border-radius: 2px;
+  background: rgba(17, 13, 20, .96);
+  color: #ffe16b;
+  font-family: var(--battle-font);
+  font-size: clamp(10px, .9vw, 14px);
+  font-weight: 800;
+  line-height: 1.35;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 3px 12px #000a;
+}
+.board-floor-actions .btn-advance { background: rgba(16, 54, 130, .97); border-color: #4d78cf; color: #fff; }
+.board-floor-actions .btn-extract { background: rgba(111, 28, 31, .97); border-color: #bd5555; color: #fff; }
+.board-floor-actions button[hidden] { display: none !important; }
