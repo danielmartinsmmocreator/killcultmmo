@@ -273,7 +273,8 @@ export type GameEvent =
   | 'turn'
   | 'over'
   | 'encounter'
-  | 'reset';
+  | 'reset'
+  | 'sync';
 
 /** Progressão permanente individual de um herói. XP só é concedido por golpe fatal. */
 export interface HeroProgression {
