@@ -9,6 +9,7 @@ import { PreparationScreen } from './ui/PreparationScreen';
 import { AuthScreen } from './ui/AuthScreen';
 import { GuildScreen } from './ui/GuildScreen';
 import { ExpeditionLobbyScreen } from './ui/ExpeditionLobbyScreen';
+import { CooperativeBattleRuntime } from './game/core/CooperativeBattleRuntime';
 import { isSupabaseConfigured, supabase } from './lib/supabase';
 import { loadPlayerData } from './lib/playerData';
 
@@ -25,6 +26,7 @@ const panel: HTMLElement = panelRoot;
 let campaign: Campaign | null = null;
 let game: Phaser.Game | null = null;
 let sidePanel: SidePanel | null = null;
+let cooperativeBattle: CooperativeBattleRuntime | null = null;
 let activeUserId: string | null = null;
 let loadingUserId: string | null = null;
 let playerNickname = 'JOGADOR';
@@ -39,6 +41,8 @@ let snapshotSaveChain: Promise<void> = Promise.resolve();
 let unsubscribeSnapshot: (() => void) | null = null;
 
 function destroyGame(): void {
+  cooperativeBattle?.dispose();
+  cooperativeBattle = null;
   unsubscribeSnapshot?.();
   unsubscribeSnapshot = null;
   if (snapshotSaveTimer !== null) window.clearTimeout(snapshotSaveTimer);
@@ -117,7 +121,34 @@ function showGuilds(): void {
 
 function showExpeditions(): void {
   if (!campaign || !activeUserId) return;
-  new ExpeditionLobbyScreen(panel, activeUserId, () => showPreparation());
+  new ExpeditionLobbyScreen(
+    panel,
+    activeUserId,
+    () => showPreparation(),
+    (sessionId, characterId) => {
+      if (!activeUserId) return;
+      cooperativeBattle?.dispose();
+      const userId = activeUserId;
+      cooperativeBattle = new CooperativeBattleRuntime(
+        gameRoot,
+        panel,
+        userId,
+        sessionId,
+        characterId,
+        () => {
+          cooperativeBattle = null;
+          showExpeditions();
+        },
+      );
+      void cooperativeBattle.start().catch((error) => {
+        console.error('Falha ao abrir batalha cooperativa:', error);
+        cooperativeBattle?.dispose();
+        cooperativeBattle = null;
+        window.alert(error instanceof Error ? error.message : 'Não foi possível entrar no combate cooperativo.');
+        showExpeditions();
+      });
+    },
+  );
 }
 
 function showPreparation(resetCampaign = false): void {
