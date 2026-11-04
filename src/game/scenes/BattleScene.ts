@@ -123,6 +123,7 @@ export class BattleScene extends Phaser.Scene {
   private readonly onCooperativeAction?: (action: import('../core/GameState').CooperativeBattleAction) => void;
   private readonly canCooperativeAct?: () => boolean;
   private readonly onCooperativeRoundComplete?: () => void;
+  private readonly onCooperativeReady?: () => void;
   private cooperativeResolutionStarted = false;
   private readonly unitViews = new Map<string, UnitView>();
   private obstacleObjects: Phaser.GameObjects.Rectangle[] = [];
@@ -149,6 +150,7 @@ export class BattleScene extends Phaser.Scene {
     onCooperativeAction?: (action: import('../core/GameState').CooperativeBattleAction) => void,
     canCooperativeAct?: () => boolean,
     onCooperativeRoundComplete?: () => void,
+    onCooperativeReady?: () => void,
   ) {
     super({ key: 'BattleScene' });
     this.campaign = campaign;
@@ -157,6 +159,7 @@ export class BattleScene extends Phaser.Scene {
     this.onCooperativeAction = onCooperativeAction;
     this.canCooperativeAct = canCooperativeAct;
     this.onCooperativeRoundComplete = onCooperativeRoundComplete;
+    this.onCooperativeReady = onCooperativeReady;
   }
 
   /** O líder chama antes de iniciar a fase dos monstros; o callback dispara ao terminar a animação. */
@@ -236,6 +239,7 @@ export class BattleScene extends Phaser.Scene {
     this.refresh(false);
     // Uma restauração pode ocorrer no meio da resolução; retoma a fila de ações sem esperar novo clique.
     if (this.gameState.isResolving) this.scheduleStep();
+    this.onCooperativeReady?.();
   }
 
   // ---------- Tabuleiro ----------
