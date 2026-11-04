@@ -673,7 +673,8 @@ button {
 .attributes-modal[hidden],
 .special-confirm-modal[hidden],
 .btn-advance[hidden],
-.btn-extract[hidden] {
+.btn-extract[hidden],
+.btn-retreat[hidden] {
   display: none !important;
 }
 
@@ -798,6 +799,7 @@ button {
 .btn-cancel,
 .btn-advance,
 .btn-extract,
+.btn-retreat,
 .btn-pass,
 .btn-close-attributes {
   border: 0;
@@ -822,6 +824,19 @@ button {
   background: var(--battle-attack);
 }
 
+.btn-retreat {
+  width: 100%;
+  margin-top: 6px;
+  background: #b91c1c;
+  color: #fff;
+}
+
+.btn-advance,
+.btn-extract {
+  width: 100%;
+  margin-top: 6px;
+}
+
 .btn-cancel,
 .btn-close-attributes {
   background: #666;
@@ -837,7 +852,8 @@ button {
 .btn-ability:disabled,
 .btn-confirm:disabled,
 .btn-advance:disabled,
-.btn-extract:disabled {
+.btn-extract:disabled,
+.btn-retreat:disabled {
   opacity: .4;
   cursor: not-allowed;
 }
@@ -1163,4 +1179,24 @@ button {
     width: 100%;
     margin: 18px 0 0;
   }
+}
+
+
+/* Mantém os controles de cada herói com dimensões e alinhamento idênticos. */
+.prep-hero-actions {
+  align-items: stretch;
+  justify-items: stretch;
+}
+
+.prep-hero-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  height: 30px;
+  min-height: 30px;
+  box-sizing: border-box;
+  text-align: center;
+  line-height: 1.2;
 }
