@@ -180,31 +180,44 @@ export class GameState {
     this.targetingState = null;
 
     if (action.type === 'move') {
-      return action.destination ? this.moveSelectedUnit(action.destination) : false;
+      if (action.destination && this.moveSelectedUnit(action.destination)) return true;
+      this.addLog('Movimento inválido recebido; a ação foi convertida em passar a vez.', 'info');
+      return this.passTurn();
     }
     if (action.type === 'attack') {
-      if (this.performAttack(hero) <= 0) return false;
+      this.performAttack(hero);
       this.beginResolution();
       return true;
     }
     if (action.type === 'pass') return this.passTurn();
-    if (action.type !== 'ability' || !action.abilityId || hero.definition.ability?.id !== action.abilityId) return false;
-    if (!this.beginAbility()) return false;
+    if (action.type !== 'ability' || !action.abilityId || hero.definition.ability?.id !== action.abilityId) {
+      this.addLog('Habilidade inválida recebida; a ação foi convertida em passar a vez.', 'info');
+      return this.passTurn();
+    }
+    if (!this.beginAbility()) return this.passTurn();
     if (!this.targetingState) return true;
 
     if (this.targetingState.id === 'ambush') {
       const target = action.targetUid ? this.findUnit(action.targetUid) : null;
-      if (!target || !isAlive(target) || !action.destination) return false;
-      if (!this.chooseAbilityCell(target.position)) return false;
-      if (!this.chooseAbilityCell(action.destination)) return false;
+      if (!target || !isAlive(target) || !action.destination || !this.chooseAbilityCell(target.position) || !this.chooseAbilityCell(action.destination)) {
+        this.cancelAbility();
+        return this.passTurn();
+      }
     } else if (this.targetingState.id === 'exura') {
       const target = action.targetUid ? this.findUnit(action.targetUid) : null;
-      if (!target || !isAlive(target)) return false;
-      if (!this.chooseAbilityCell(target.position)) return false;
+      if (!target || !isAlive(target) || !this.chooseAbilityCell(target.position)) {
+        this.cancelAbility();
+        return this.passTurn();
+      }
     } else {
-      if (!action.target || !this.chooseAbilityCell(action.target)) return false;
+      if (!action.target || !this.chooseAbilityCell(action.target)) {
+        this.cancelAbility();
+        return this.passTurn();
+      }
     }
-    return this.confirmAbility();
+    if (this.confirmAbility()) return true;
+    this.cancelAbility();
+    return this.passTurn();
   }
 
   /** Depois de todos os jogadores agirem, inicia uma única fase de chefes telegrafados e monstros. */
