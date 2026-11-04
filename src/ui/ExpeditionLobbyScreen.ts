@@ -259,8 +259,9 @@ export class ExpeditionLobbyScreen {
         hero.style.cssText = 'display:block;margin-top:4px;color:#94a3b8;';
         info.append(name, hero);
         const ready = document.createElement('strong');
-        ready.textContent = member.is_ready ? '✓ PRONTO' : 'AGUARDANDO';
-        ready.style.cssText = 'font-size:.75rem;color:' + (member.is_ready ? '#86efac' : '#fbbf24') + ';';
+        const eliminated = Boolean(this.session?.members.find((entry) => entry.user_id === member.user_id)?.is_eliminated);
+        ready.textContent = eliminated ? 'DERROTADO' : member.is_ready ? '✓ PRONTO' : 'AGUARDANDO';
+        ready.style.cssText = 'font-size:.75rem;color:' + (eliminated ? '#fca5a5' : member.is_ready ? '#86efac' : '#fbbf24') + ';';
         row.append(info, ready);
         roster.append(row);
       }
