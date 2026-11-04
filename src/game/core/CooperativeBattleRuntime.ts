@@ -184,11 +184,6 @@ export class CooperativeBattleRuntime {
     const campaign = this.campaign;
     const client = this.client;
     if (!this.mounted || this.disposed || !campaign || !client) return;
-    if (session.status !== 'active') {
-      this.updateStatus(session);
-      return;
-    }
-
     const signature = session.state_snapshot ? JSON.stringify(session.state_snapshot) : '';
     if (signature && signature !== this.snapshotSignature && !this.processingRound) {
       const sameFloor = campaign.floorNumber === session.current_floor;
@@ -205,6 +200,7 @@ export class CooperativeBattleRuntime {
     }
 
     this.updateStatus(session);
+    if (session.status !== 'active') return;
     if (client.isLeader && session.resolution_pending && !this.processingRound) {
       await this.resolveSubmittedActions(session);
     }
