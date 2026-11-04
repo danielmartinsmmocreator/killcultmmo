@@ -137,7 +137,7 @@ export class GuildScreen {
       this.payload = data ?? { guild: null, invites: [] };
       this.bankItems = [];
       this.publicGuilds = [];
-      this.joinRequests = this.payload.join_requests ?? [];
+      this.joinRequests = this.payload.guild ? await this.rpc<GuildJoinRequest[]>('get_guild_join_requests') : [];
       if (this.payload.guild) {
         const { data: items, error } = await supabase
           .from('guild_bank_items')
