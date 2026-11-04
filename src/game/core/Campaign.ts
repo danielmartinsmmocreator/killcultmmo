@@ -151,6 +151,7 @@ export class Campaign {
     if (!members.some((member) => member.character_id === controlledCharacterId)) return false;
     if (new Set(members.map((member) => member.character_id)).size !== members.length) return false;
 
+    this.inventory.clear();
     const positions: Position[] = [
       { col: 1, row: 5 },
       { col: 2, row: 5 },
