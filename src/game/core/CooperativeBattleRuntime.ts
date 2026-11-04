@@ -16,6 +16,7 @@ export class CooperativeBattleRuntime {
   private sidePanel: SidePanel | null = null;
   private scene: BattleScene | null = null;
   private mounted = false;
+  private sceneReady = false;
   private disposed = false;
   private processingRound = false;
   private snapshotSignature = '';
@@ -75,6 +76,12 @@ export class CooperativeBattleRuntime {
 
     this.mount();
     this.mounted = true;
+    if (this.sceneReady) void this.refreshSessionAfterSceneReady();
+  }
+
+  private async refreshSessionAfterSceneReady(): Promise<void> {
+    const client = this.client;
+    if (!client || this.disposed) return;
     const latest = await client.refresh();
     if (latest) await this.handleSessionUpdate(latest);
   }
@@ -125,6 +132,10 @@ export class CooperativeBattleRuntime {
       (action) => { void this.submitAction(action); },
       () => Boolean(this.client?.canAct && this.campaign?.status === 'fighting'),
       () => { void this.finishResolvedRound(); },
+      () => {
+        this.sceneReady = true;
+        if (this.mounted) void this.refreshSessionAfterSceneReady();
+      },
     );
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
