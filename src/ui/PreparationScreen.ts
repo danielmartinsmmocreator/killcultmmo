@@ -72,7 +72,7 @@ export class PreparationScreen {
     this.isGameMaster = isGameMaster;
     this.onAllocateBaseAttribute = onAllocateBaseAttribute;
     this.onResetBaseAttributes = onResetBaseAttributes;
-    this.onBuyBaseAttributePointPoint = onBuyBaseAttributePoint;
+    this.onBuyBaseAttributePoint = onBuyBaseAttributePoint;
     const available = campaign.party.filter((hero) => hero.hp > 0);
     const initialParty = campaign.activeParty.filter((hero) => hero.hp > 0).slice(0, 3);
     for (const hero of initialParty) this.selectedUids.add(hero.uid);
