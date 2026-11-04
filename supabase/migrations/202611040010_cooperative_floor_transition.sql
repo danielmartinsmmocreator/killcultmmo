@@ -56,7 +56,7 @@ begin
 
   update public.coop_expedition_sessions s
   set current_floor = p_current_floor,
-      turn_number = 1,
+      -- turn_number é global à sessão: não reiniciar para evitar colisão no índice das ações.
       current_turn_user_id = v_first_user_id,
       resolution_pending = false,
       state_snapshot = p_state_snapshot,
