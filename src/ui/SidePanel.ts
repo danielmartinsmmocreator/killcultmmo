@@ -299,7 +299,13 @@ export class SidePanel {
     for (const button of [this.useButton, this.confirmButton, this.cancelButton]) {
       button.type = 'button';
     }
-    this.useButton.addEventListener('click', () => this.state.beginAbility());
+    this.useButton.addEventListener('click', () => {
+      if (this.onCooperativeAction && this.state.selectedAbility?.id === 'stomp') {
+        this.onCooperativeAction({ type: 'ability', abilityId: 'stomp' });
+      } else {
+        this.state.beginAbility();
+      }
+    });
     // Evita que o clique nos controles DOM também seja interpretado como clique no tabuleiro Phaser.
     for (const button of [this.confirmButton, this.cancelButton]) {
       for (const eventName of ['pointerdown', 'mousedown', 'touchstart', 'click']) {
