@@ -34,6 +34,7 @@ export class Campaign {
   readonly battle: GameState;
   private readonly floors: readonly FloorConfig[];
   private floorIndex = 0;
+  private cooperativeMode: boolean;
   private partyUnits: Unit[];
   private readonly persistedCharacterIds = new Map<string, string>();
   private activePartyUids: string[] = [];
@@ -58,6 +59,7 @@ export class Campaign {
   constructor(
     floors: readonly FloorConfig[] = CAMPAIGN_FLOORS,
     onProgressionEvent?: (event: ProgressionPersistenceEvent) => void,
+    cooperativeMode = false,
   ) {
     const problems = floors.flatMap((config) => validateFloor(config));
     if (floors.length === 0) problems.push('A campanha precisa de pelo menos um andar.');
@@ -71,6 +73,7 @@ export class Campaign {
     }
 
     this.floors = floors;
+    this.cooperativeMode = cooperativeMode;
     this.partyUnits = createParty();
     this.retainedItemIds = new Set(this.inventory.instanceIds);
     this.activePartyUids = this.partyUnits.map((hero) => hero.uid);
@@ -119,6 +122,7 @@ export class Campaign {
   exportSnapshot(): Record<string, unknown> {
     return {
       version: 1,
+      cooperativeMode: this.cooperativeMode,
       floorIndex: this.floorIndex,
       activePartyUids: [...this.activePartyUids],
       gold: this.gold,
@@ -145,6 +149,7 @@ export class Campaign {
     if (saved.activePartyUids.some((uid) => typeof uid !== 'string' || !validHeroUids.has(uid))) return false;
     if (!this.inventory.restoreSnapshot(saved.inventory)) return false;
 
+    this.cooperativeMode = saved.cooperativeMode === true;
     this.floorIndex = floorIndex;
     this.activePartyUids = [...saved.activePartyUids] as string[];
     this.gold = Number.isFinite(saved.gold) ? Math.max(0, Number(saved.gold)) : 0;
@@ -379,7 +384,9 @@ export class Campaign {
     };
     // A configuração customizada é validada pelo construtor do encontro; o tipo acompanha o chefe escolhido.
     try {
-      const setup = buildEncounter(config, this.activeParty);
+      const setup = buildEncounter(config, this.activeParty, this.cooperativeMode
+      ? { hp: 10, damage: 3 }
+      : { hp: 1, damage: 1 });
       this.battle.loadEncounter({ ...setup, title: `DEV — Andar ${this.floorNumber}: encontro personalizado` });
       return true;
     } catch {
