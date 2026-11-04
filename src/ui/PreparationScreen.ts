@@ -90,6 +90,50 @@ export class PreparationScreen {
     this.render();
   }
 
+  private confirmInGame(titleText: string, messageText: string, confirmText = 'Confirmar'): Promise<boolean> {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'prep-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(3,7,18,.82);backdrop-filter:blur(4px);';
+      const card = document.createElement('div');
+      card.className = 'prep-modal-card';
+      card.style.cssText = 'width:min(440px,100%);padding:22px;border:1px solid #64748b;border-radius:12px;background:linear-gradient(145deg,#1b2638,#101723);color:#f3f4f6;box-shadow:0 24px 80px rgba(0,0,0,.65);';
+      const title = document.createElement('h2');
+      title.textContent = titleText;
+      title.style.cssText = 'margin:0 0 12px;font-size:1.25rem;color:#f8fafc;';
+      const message = document.createElement('p');
+      message.textContent = messageText;
+      message.style.cssText = 'margin:0 0 22px;color:#cbd5e1;line-height:1.5;';
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = 'Cancelar';
+      cancel.style.cssText = STYLE.button;
+      const confirm = document.createElement('button');
+      confirm.type = 'button';
+      confirm.textContent = confirmText;
+      confirm.style.cssText = STYLE.button + 'border-color:#8b5cf6;background:#6d28d9;font-weight:700;';
+      let finished = false;
+      const finish = (accepted: boolean) => {
+        if (finished) return;
+        finished = true;
+        overlay.remove();
+        resolve(accepted);
+      };
+      cancel.addEventListener('click', () => finish(false));
+      confirm.addEventListener('click', () => finish(true));
+      overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) finish(false);
+      });
+      actions.append(cancel, confirm);
+      card.append(title, message, actions);
+      overlay.append(card);
+      document.body.append(overlay);
+      confirm.focus();
+    });
+  }
+
   private async persistEquipmentChange(): Promise<void> {
     if (!this.onEquipmentChange) return;
     const saved = await this.onEquipmentChange();
@@ -388,7 +432,7 @@ export class PreparationScreen {
       const actions=document.createElement('div');actions.className='prep-hero-actions';
       const add=document.createElement('button');add.type='button';add.textContent=chosen?'Remover':'Adicionar';add.style.cssText=STYLE.button;add.disabled=hero.hp<=0||(!chosen&&this.selectedUids.size>=3);add.addEventListener('click',()=>{if(chosen){if(this.selectedUids.size>1)this.selectedUids.delete(hero.uid);else this.message='A equipe precisa ter pelo menos um herói.';}else{this.selectedUids.add(hero.uid);this.selectedHero=hero;const pos=this.findFreePosition();if(pos)this.positions.set(hero.uid,pos);}this.render();});
       const inv=document.createElement('button');inv.type='button';inv.textContent='Inventário';inv.style.cssText=STYLE.button;inv.addEventListener('click',()=>{this.selectedHero=hero;this.inventoryOpen=true;this.render();});
-      const attrs=document.createElement('button');attrs.type='button';attrs.textContent='Atributos';attrs.style.cssText=STYLE.button;attrs.addEventListener('click',()=>{this.selectedHero=hero;const p=hero.progression;if(!p)return;const modal=document.createElement('div');modal.className='prep-modal';const dialog=document.createElement('div');dialog.className='prep-modal-card';const title=document.createElement('h2');title.textContent='Atributos · '+hero.definition.name;const level=document.createElement('p');const stats=document.createElement('div');stats.style.cssText='display:grid;gap:8px;margin:14px 0;';const actionsPanel=document.createElement('div');actionsPanel.style.cssText='display:flex;flex-wrap:wrap;gap:7px;margin:10px 0;';const close=document.createElement('button');close.type='button';close.textContent='Fechar';close.style.cssText=STYLE.button;close.addEventListener('click',()=>modal.remove());const refresh=()=>{level.textContent='Nível '+p.level+' · '+p.unspentAttributePoints+' ponto(s) disponíveis';stats.replaceChildren();for(const [label,key] of [['Força','strength'],['Vitalidade','vitality'],['Defesa','defense']] as const){const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;background:#101723;border-radius:6px;';const name=document.createElement('span');name.textContent=label;const value=document.createElement('strong');value.textContent=String(p.attributes[key]);const addPoint=document.createElement('button');addPoint.type='button';addPoint.textContent='+1';addPoint.style.cssText=STYLE.button+'padding:5px 10px;';addPoint.disabled=p.unspentAttributePoints<1||!this.onAllocateBaseAttribute;addPoint.addEventListener('click',async()=>{addPoint.disabled=true;const saved=await this.onAllocateBaseAttribute?.(hero.definition.id,key);if(saved)window.location.reload();else addPoint.disabled=false;});row.append(name,value,addPoint);stats.append(row);}for(const [label,value] of [['Vida',hero.hp+'/'+hero.maxHp],['Dano',String(hero.damage)]]){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;padding:9px;background:#101723;border-radius:6px;';const a=document.createElement('span');a.textContent=label;const b=document.createElement('strong');b.textContent=value;row.append(a,b);stats.append(row);}};refresh();const buy=document.createElement('button');buy.type='button';buy.textContent='Comprar 1 ponto · 10.000 ouro';buy.style.cssText=STYLE.button;buy.disabled=this.campaign.gold<10000||!this.onBuyBaseAttributePoint;buy.addEventListener('click',async()=>{if(!window.confirm('Comprar 1 ponto de atributo para '+hero.definition.name+' por 10.000 ouro?'))return;buy.disabled=true;const saved=await this.onBuyBaseAttributePoint?.(hero.definition.id);if(saved)window.location.reload();else buy.disabled=false;});const reset=document.createElement('button');reset.type='button';const resetCost=p.level*200;reset.textContent='Redefinir atributos · '+resetCost.toLocaleString('pt-BR')+' ouro';reset.style.cssText=STYLE.button;reset.disabled=this.campaign.gold<resetCost||!this.onResetBaseAttributes;reset.addEventListener('click',async()=>{if(!window.confirm('Redefinir os atributos de '+hero.definition.name+' por '+resetCost.toLocaleString('pt-BR')+' ouro? Os pontos gastos voltarão para a reserva.'))return;reset.disabled=true;const saved=await this.onResetBaseAttributes?.(hero.definition.id);if(saved)window.location.reload();else reset.disabled=false;});const note=document.createElement('p');note.textContent='A distribuição, compra e redefinição só podem ser feitas na base. O ouro temporário da expedição não pode ser usado.';note.style.cssText='color:#cbd5e1;font-size:.85rem;';actionsPanel.append(buy,reset);dialog.append(title,level,stats,actionsPanel,note,close);modal.append(dialog);modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});document.body.append(modal);});
+      const attrs=document.createElement('button');attrs.type='button';attrs.textContent='Atributos';attrs.style.cssText=STYLE.button;attrs.addEventListener('click',()=>{this.selectedHero=hero;const p=hero.progression;if(!p)return;const modal=document.createElement('div');modal.className='prep-modal';const dialog=document.createElement('div');dialog.className='prep-modal-card';const title=document.createElement('h2');title.textContent='Atributos · '+hero.definition.name;const level=document.createElement('p');const stats=document.createElement('div');stats.style.cssText='display:grid;gap:8px;margin:14px 0;';const actionsPanel=document.createElement('div');actionsPanel.style.cssText='display:flex;flex-wrap:wrap;gap:7px;margin:10px 0;';const close=document.createElement('button');close.type='button';close.textContent='Fechar';close.style.cssText=STYLE.button;close.addEventListener('click',()=>modal.remove());const refresh=()=>{level.textContent='Nível '+p.level+' · '+p.unspentAttributePoints+' ponto(s) disponíveis';stats.replaceChildren();for(const [label,key] of [['Força','strength'],['Vitalidade','vitality'],['Defesa','defense']] as const){const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;background:#101723;border-radius:6px;';const name=document.createElement('span');name.textContent=label;const value=document.createElement('strong');value.textContent=String(p.attributes[key]);const addPoint=document.createElement('button');addPoint.type='button';addPoint.textContent='+1';addPoint.style.cssText=STYLE.button+'padding:5px 10px;';addPoint.disabled=p.unspentAttributePoints<1||!this.onAllocateBaseAttribute;addPoint.addEventListener('click',async()=>{addPoint.disabled=true;const saved=await this.onAllocateBaseAttribute?.(hero.definition.id,key);if(saved)window.location.reload();else addPoint.disabled=false;});row.append(name,value,addPoint);stats.append(row);}for(const [label,value] of [['Vida',hero.hp+'/'+hero.maxHp],['Dano',String(hero.damage)]]){const row=document.createElement('div');row.style.cssText='display:flex;justify-content:space-between;padding:9px;background:#101723;border-radius:6px;';const a=document.createElement('span');a.textContent=label;const b=document.createElement('strong');b.textContent=value;row.append(a,b);stats.append(row);}};refresh();const buy=document.createElement('button');buy.type='button';buy.textContent='Comprar 1 ponto · 10.000 ouro';buy.style.cssText=STYLE.button;buy.disabled=this.campaign.gold<10000||!this.onBuyBaseAttributePoint;buy.addEventListener('click',async()=>{if(!(await this.confirmInGame('Comprar ponto de atributo', 'Deseja comprar 1 ponto de atributo para '+hero.definition.name+' por 10.000 ouro?', 'Comprar por 10.000 ouro')))return;buy.disabled=true;const saved=await this.onBuyBaseAttributePoint?.(hero.definition.id);if(saved)window.location.reload();else buy.disabled=false;});const reset=document.createElement('button');reset.type='button';const resetCost=p.level*200;reset.textContent='Redefinir atributos · '+resetCost.toLocaleString('pt-BR')+' ouro';reset.style.cssText=STYLE.button;reset.disabled=this.campaign.gold<resetCost||!this.onResetBaseAttributes;reset.addEventListener('click',async()=>{if(!(await this.confirmInGame('Redefinir atributos', 'Deseja redefinir os atributos de '+hero.definition.name+' por '+resetCost.toLocaleString('pt-BR')+' ouro? Os pontos gastos voltarão para a reserva.', 'Redefinir')))return;reset.disabled=true;const saved=await this.onResetBaseAttributes?.(hero.definition.id);if(saved)window.location.reload();else reset.disabled=false;});const note=document.createElement('p');note.textContent='A distribuição, compra e redefinição só podem ser feitas na base. O ouro temporário da expedição não pode ser usado.';note.style.cssText='color:#cbd5e1;font-size:.85rem;';actionsPanel.append(buy,reset);dialog.append(title,level,stats,actionsPanel,note,close);modal.append(dialog);modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});document.body.append(modal);});
       actions.append(add,inv,attrs);card.append(actions);heroStrip.append(card);
     }
     right.append(heroStrip);
