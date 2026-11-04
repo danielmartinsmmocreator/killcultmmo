@@ -59,8 +59,8 @@ import { chooseTelegraphTarget, createTelegraphIntent, selectTelegraphedAttack }
 type Listener = (event: GameEvent) => void;
 
 export type ProgressionPersistenceEvent =
-  | { eventId: string; kind: 'kill'; classId: string; monsterMaxHp: number; monsterDamage: number; monsterRank: 'normal' | 'mini-boss' | 'boss' }
-  | { eventId: string; kind: 'death'; classId: string };
+  | { eventId: string; kind: 'kill'; classId: string; heroUid: string; monsterMaxHp: number; monsterDamage: number; monsterRank: 'normal' | 'mini-boss' | 'boss' }
+  | { eventId: string; kind: 'death'; classId: string; heroUid: string };
 
 export type CooperativeBattleAction =
   | { type: 'move'; destination: Position }
@@ -1310,7 +1310,7 @@ export class GameState {
         const lost = applyDeathXpPenalty(target);
         if (lost > 0) {
           this.addLog(`${target.definition.name} perdeu ${lost} XP pela morte (penalidade de 10% da barra do nível).`, 'death');
-          this.onProgressionEvent?.({ eventId: crypto.randomUUID(), kind: 'death', classId: target.definition.id });
+          this.onProgressionEvent?.({ eventId: crypto.randomUUID(), kind: 'death', classId: target.definition.id, heroUid: target.uid });
         }
       }
       if (attacker && attacker.definition.team === 'hero' && target.definition.team === 'monster') {
@@ -1318,7 +1318,7 @@ export class GameState {
         if (gained > 0) {
           this.addLog(`${attacker.definition.name} recebeu ${gained} XP pelo golpe final.`, 'hero');
           const rank = target.definition.rank ?? 'normal';
-          this.onProgressionEvent?.({ eventId: crypto.randomUUID(), kind: 'kill', classId: attacker.definition.id, monsterMaxHp: target.definition.maxHp, monsterDamage: target.definition.damage, monsterRank: rank });
+          this.onProgressionEvent?.({ eventId: crypto.randomUUID(), kind: 'kill', classId: attacker.definition.id, heroUid: attacker.uid, monsterMaxHp: target.definition.maxHp, monsterDamage: target.definition.damage, monsterRank: rank });
         }
       }
       // Chefe morto não executa o golpe que tinha anunciado.
