@@ -91,7 +91,9 @@ export class SidePanel {
   private readonly monstersEl = el('div', 'unit-list');
   private readonly logEl = el('ol', 'log');
   private readonly passButton = el('button', 'btn-pass', 'Passar a vez');
-  private readonly devSettingsButton = el('button', 'btn-dev-settings', '⚙ Configurações');
+  private readonly devSettingsButton = el('button', 'btn-dev-settings', '👑');
+  private readonly boardActions = el('div', 'board-floor-actions');
+  private readonly isGameMaster: boolean;
   private readonly devPanel = el('section', 'dev-panel');
   private devUnlocked = false;
   private transitionScheduled = false;
@@ -104,9 +106,10 @@ export class SidePanel {
   private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>, isGameMaster = false) {
     this.campaign = campaign;
     this.state = campaign.battle;
+    this.isGameMaster = isGameMaster;
     this.onRestart = onRestart;
     this.onAllocateAttribute = onAllocateAttribute;
     this.onFloorChange = onFloorChange;
@@ -146,13 +149,12 @@ export class SidePanel {
     this.devPanel.hidden = true;
     this.devPanel.style.cssText = 'padding:12px;margin:8px 0;background:#111827;border:1px solid #a78bfa;border-radius:8px;color:#f8fafc;display:none;max-height:55vh;overflow:auto;';
     this.devSettingsButton.type = 'button';
-    this.devSettingsButton.style.cssText = 'width:100%;padding:9px;margin:6px 0;background:#25233d;border:1px solid #8b7be8;color:#fff;font-weight:800;cursor:pointer;';
+    this.devSettingsButton.title = 'Ferramentas de Game Master';
+    this.devSettingsButton.setAttribute('aria-label', 'Abrir ferramentas de Game Master');
+    this.devSettingsButton.hidden = !this.isGameMaster;
+    this.devSettingsButton.style.cssText = 'position:absolute;top:8px;right:8px;z-index:20;width:32px;height:32px;padding:0;margin:0;background:rgba(25,13,25,.88);border:1px solid #d6ad45;border-radius:50%;color:#ffe16b;font-size:15px;cursor:pointer;box-shadow:0 2px 8px #0009;';
     this.devSettingsButton.addEventListener('click', () => {
-      if (!this.devUnlocked) {
-        const password = window.prompt('Senha de desenvolvedor:');
-        if (password !== 'BeatrizL@nd1s!') { window.alert('Senha incorreta.'); return; }
-        this.devUnlocked = true;
-      }
+      if (!this.isGameMaster) return;
       this.devPanel.hidden = !this.devPanel.hidden;
       this.devPanel.style.display = this.devPanel.hidden ? 'none' : 'block';
       this.renderDevPanel();
@@ -186,8 +188,6 @@ export class SidePanel {
       this.telegraphBox,
       this.bannerEl,
       this.statusEl,
-      this.advanceButton,
-      this.extractButton,
       this.attributesButton,
       this.abilityBox,
       (() => { const monstersSection = section('Monstros', this.monstersEl, 'monsters-section'); monstersSection.append(actions); return monstersSection; })(),
@@ -195,6 +195,15 @@ export class SidePanel {
     );
 
     root.replaceChildren(leftRail, rightRail, this.attributesModal, this.specialConfirmModal);
+
+    const boardRoot = document.getElementById('game-container');
+    if (boardRoot) {
+      boardRoot.append(this.boardActions, this.devSettingsButton, this.devPanel);
+    } else {
+      root.append(this.boardActions, this.devSettingsButton, this.devPanel);
+    }
+    this.boardActions.append(this.advanceButton, this.extractButton);
+    this.boardActions.hidden = true;
 
     this.attributesButton.type = 'button';
     this.attributesButton.addEventListener('click', () => {
@@ -210,6 +219,9 @@ export class SidePanel {
   destroy(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    this.boardActions.remove();
+    this.devSettingsButton.remove();
+    this.devPanel.remove();
   }
 
   private buildDevPanel(): void {
@@ -378,6 +390,7 @@ export class SidePanel {
     this.renderCampaignEnd(status, floor);
     this.extractButton.hidden = !this.campaign.canExtract;
     this.advanceButton.hidden = status !== 'floor-cleared';
+    this.boardActions.hidden = this.advanceButton.hidden && this.extractButton.hidden;
     this.retreatButton.hidden = status === 'defeated' || status === 'completed';
     this.renderTelegraphs();
 
