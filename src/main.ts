@@ -26,6 +26,7 @@ let sidePanel: SidePanel | null = null;
 let activeUserId: string | null = null;
 let loadingUserId: string | null = null;
 let playerNickname = 'JOGADOR';
+let isGameMaster = false;
 let progressionSaveWarningShown = false;
 let activeExpeditionId: string | null = null;
 let expeditionFinishPending = false;
@@ -50,6 +51,7 @@ function showAuth(): void {
   destroyGame();
   activeExpeditionId = null;
   activeUserId = null;
+  isGameMaster = false;
   gameRoot.hidden = true;
   gameRoot.style.display = 'none';
   if (!isSupabaseConfigured) {
@@ -121,7 +123,7 @@ function showPreparation(resetCampaign = false): void {
     if (!supabase) return;
     const { error } = await supabase.auth.signOut();
     if (error) window.alert('Não foi possível sair: ' + error.message);
-  });
+  }, 0, undefined, isGameMaster);
 }
 
 const PROGRESSION_QUEUE_PREFIX = 'killcult:pending-progression:';
@@ -510,6 +512,9 @@ async function enterGame(userId: string): Promise<void> {
     const playerData = await loadPlayerData(userId);
     if (activeUserId !== userId) return;
     playerNickname = playerData.nickname;
+    const { data: gameMasterData, error: gameMasterError } = await supabase!.rpc('is_current_user_game_master');
+    if (gameMasterError) throw new Error('Não foi possível verificar as permissões de Game Master. Confira se a migration de permissões GM foi aplicada: ' + gameMasterError.message);
+    isGameMaster = gameMasterData === true;
     campaign = new Campaign(undefined, (event) => { void persistProgressionEvent(event); });
     campaign.loadPersistedCharacters(playerData.characters);
     campaign.loadPersistedInventory(playerData.inventory, playerData.gold, playerData.equipped);
