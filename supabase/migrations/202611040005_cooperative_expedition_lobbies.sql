@@ -48,34 +48,32 @@ alter table public.coop_expedition_rooms enable row level security;
 alter table public.coop_expedition_room_members enable row level security;
 alter table public.coop_expedition_invites enable row level security;
 
+create or replace function public.is_coop_expedition_room_member(p_room_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $
+  select exists (
+    select 1 from public.coop_expedition_room_members m
+    where m.room_id = p_room_id and m.user_id = auth.uid()
+  );
+$;
+
 create policy "Room participants can read cooperative rooms"
   on public.coop_expedition_rooms for select to authenticated
-  using (
-    exists (
-      select 1 from public.coop_expedition_room_members m
-      where m.room_id = coop_expedition_rooms.id and m.user_id = auth.uid()
-    )
-  );
+  using (public.is_coop_expedition_room_member(id));
 
 create policy "Room participants can read cooperative members"
   on public.coop_expedition_room_members for select to authenticated
-  using (
-    exists (
-      select 1 from public.coop_expedition_room_members mine
-      where mine.room_id = coop_expedition_room_members.room_id
-        and mine.user_id = auth.uid()
-    )
-  );
+  using (public.is_coop_expedition_room_member(room_id));
 
 create policy "Players can read their cooperative invitations"
   on public.coop_expedition_invites for select to authenticated
   using (
     invited_user_id = auth.uid()
-    or exists (
-      select 1 from public.coop_expedition_room_members m
-      where m.room_id = coop_expedition_invites.room_id
-        and m.user_id = auth.uid()
-    )
+    or public.is_coop_expedition_room_member(room_id)
   );
 
 create or replace function public.get_my_coop_lobby()
@@ -426,6 +424,9 @@ begin
   end if;
 end;
 $$;
+
+revoke all on function public.is_coop_expedition_room_member(uuid) from public, anon;
+grant execute on function public.is_coop_expedition_room_member(uuid) to authenticated;
 
 revoke all on function public.get_my_coop_lobby() from public, anon;
 revoke all on function public.create_coop_expedition_room() from public, anon;
