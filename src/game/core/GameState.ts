@@ -868,7 +868,7 @@ export class GameState {
    * Restaura o snapshot sobre o encontro-base já montado para o mesmo andar.
    * As definições de unidades vêm dos dados locais do jogo, nunca do JSON do cliente.
    */
-  restoreSnapshot(snapshot: unknown): boolean {
+  restoreSnapshot(snapshot: unknown, animate = false): boolean {
     if (!snapshot || typeof snapshot !== 'object') return false;
     const saved = snapshot as Record<string, unknown>;
     if (saved.version !== 1 || !Array.isArray(saved.units)) return false;
@@ -928,7 +928,7 @@ export class GameState {
     this.effect = saved.effect && typeof saved.effect === 'object' ? saved.effect as AbilityEffect : null;
     this.medusaProtectionUsed.clear();
     if (Array.isArray(saved.medusaProtectionUsed)) saved.medusaProtectionUsed.forEach((uid) => { if (typeof uid === 'string') this.medusaProtectionUsed.add(uid); });
-    this.emit('reset');
+    this.emit(animate ? 'sync' : 'reset');
     return true;
   }
 
