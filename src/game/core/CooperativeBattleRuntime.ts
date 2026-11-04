@@ -19,6 +19,7 @@ export class CooperativeBattleRuntime {
   private sceneReady = false;
   private disposed = false;
   private processingRound = false;
+  private submittingAction = false;
   private snapshotSignature = '';
   private readonly gameRoot: HTMLElement;
   private readonly panelRoot: HTMLElement;
@@ -261,12 +262,17 @@ export class CooperativeBattleRuntime {
 
   private async submitAction(action: CooperativeBattleAction): Promise<void> {
     const client = this.client;
-    if (!client || !client.canAct || this.disposed) return;
+    if (!client || !client.canAct || this.disposed || this.submittingAction) return;
+    this.submittingAction = true;
+    this.sidePanel?.updateCooperativeStatus(false, 'Enviando sua ação ao servidor...');
     try {
       await client.submitAction(action as CooperativeAction);
       this.updateStatus(client.session);
     } catch (error) {
       this.showError(error instanceof Error ? error.message : 'Não foi possível enviar sua ação.');
+    } finally {
+      this.submittingAction = false;
+      this.updateStatus(client.session);
     }
   }
 
