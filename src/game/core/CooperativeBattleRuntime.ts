@@ -121,7 +121,7 @@ export class CooperativeBattleRuntime {
       this.campaign,
       false,
       (action) => { void this.submitAction(action); },
-      () => Boolean(this.client?.canAct),
+      () => Boolean(this.client?.canAct && this.campaign?.status === 'fighting'),
       () => { void this.finishResolvedRound(); },
     );
     this.game = new Phaser.Game({
@@ -134,6 +134,12 @@ export class CooperativeBattleRuntime {
       scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
       scene: [this.scene],
     });
+    const back = document.createElement('button');
+    back.type = 'button';
+    back.textContent = '← Voltar à sala cooperativa';
+    back.style.cssText = 'position:fixed;top:10px;left:10px;z-index:2000;padding:8px 11px;border:1px solid #64748b;border-radius:7px;background:#172033;color:#fff;font-weight:700;cursor:pointer;';
+    back.addEventListener('click', () => this.leaveToLobby());
+    this.panelRoot.append(back);
     this.updateStatus(this.client.session);
   }
 
@@ -220,6 +226,11 @@ export class CooperativeBattleRuntime {
       this.snapshotSignature = JSON.stringify(this.campaign.exportSnapshot());
       this.updateStatus(this.client.session);
     } catch (error) {
+      const latest = await this.client.refresh().catch(() => null);
+      if (latest?.state_snapshot) {
+        this.campaign.restoreSnapshot(latest.state_snapshot);
+        this.snapshotSignature = JSON.stringify(latest.state_snapshot);
+      }
       this.showError(error instanceof Error ? error.message : 'Não foi possível avançar o grupo.');
     }
   }
@@ -238,17 +249,25 @@ export class CooperativeBattleRuntime {
     if (!this.sidePanel || !session || !this.client) return;
     const actor = session.members.find((member) => member.user_id === session.current_turn_user_id);
     const acted = session.submitted_actions.some((action) => action.actor_user_id === this.userId);
-    const status = session.resolution_pending
-      ? 'Todos enviaram suas ações. O líder está resolvendo os monstros.'
-      : this.client.canAct
-        ? 'Sua vez: escolha mover, atacar, usar a habilidade ou passar.'
-        : acted
-          ? 'Ação recebida. Aguarde os demais jogadores.'
-          : 'Vez de ' + (actor?.nickname ?? 'outro participante') + '.';
+    const campaignStatus = this.campaign?.status;
+    const canAct = this.client.canAct && campaignStatus === 'fighting';
+    const status = campaignStatus === 'floor-cleared'
+      ? (this.client.isLeader ? 'Andar concluído. O líder pode avançar o grupo.' : 'Andar concluído. Aguardando o líder avançar o grupo.')
+      : campaignStatus === 'completed'
+        ? 'Expedição concluída! O grupo venceu o último andar.'
+        : campaignStatus === 'defeated'
+          ? 'Derrota. Todos os heróis foram derrotados.'
+          : session.resolution_pending
+            ? 'Todos enviaram suas ações. O líder está resolvendo os monstros.'
+            : canAct
+              ? 'Sua vez: escolha mover, atacar, usar a habilidade ou passar.'
+              : acted
+                ? 'Ação recebida. Aguarde os demais jogadores.'
+                : 'Vez de ' + (actor?.nickname ?? 'outro participante') + '.';
     this.sidePanel.updateCooperativeStatus(
-      this.client.canAct,
+      canAct,
       status,
-      this.client.isLeader && this.campaign?.status === 'floor-cleared',
+      this.client.isLeader && campaignStatus === 'floor-cleared',
     );
   }
 
