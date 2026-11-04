@@ -6,8 +6,11 @@ import type { CooperativeAction, CooperativeSessionState } from './CooperativeSe
 import type { CooperativeBattleAction } from './GameState';
 import { BattleScene } from '../scenes/BattleScene';
 import { SidePanel } from '../../ui/SidePanel';
+import { supabase } from '../../lib/supabase';
+import type { ProgressionPersistenceEvent } from './GameState';
 
 type RuntimeMember = CooperativeSessionState['members'][number];
+type CooperativeProgressionEvent = ProgressionPersistenceEvent & { character_id: string };
 
 export class CooperativeBattleRuntime {
   private campaign: Campaign | null = null;
@@ -21,6 +24,9 @@ export class CooperativeBattleRuntime {
   private processingRound = false;
   private submittingAction = false;
   private snapshotSignature = '';
+  private readonly progressionEvents: CooperativeProgressionEvent[] = [];
+  private readonly processedProgressionEvents = new Set<string>();
+  private readonly progressionEventsInFlight = new Set<string>();
   private readonly gameRoot: HTMLElement;
   private readonly panelRoot: HTMLElement;
   private readonly userId: string;
@@ -46,7 +52,12 @@ export class CooperativeBattleRuntime {
 
   async start(): Promise<void> {
     this.panelRoot.replaceChildren(this.message('Conectando à expedição cooperativa...'));
-    const campaign = new Campaign(undefined, undefined, true);
+    const campaign = new Campaign(undefined, (event) => {
+      if (!event.heroUid.startsWith('coop-')) return;
+      const characterId = event.heroUid.slice('coop-'.length);
+      if (!characterId || this.progressionEvents.some((queued) => queued.eventId === event.eventId)) return;
+      this.progressionEvents.push({ ...event, character_id: characterId });
+    }, true);
     this.campaign = campaign;
     const client = new CooperativeSessionClient(
       this.sessionId,
@@ -64,6 +75,7 @@ export class CooperativeBattleRuntime {
         throw new Error('O estado compartilhado não corresponde aos personagens desta sala. A sessão foi mantida intacta.');
       }
       this.snapshotSignature = JSON.stringify(session.state_snapshot);
+      this.loadCooperativeProgressionEvents(session.state_snapshot);
     } else if (client.isLeader) {
       await client.initializeSnapshot(campaign.exportSnapshot());
       const initialized = client.session;
@@ -71,6 +83,7 @@ export class CooperativeBattleRuntime {
         throw new Error('O líder não conseguiu publicar ou restaurar o tabuleiro inicial.');
       }
       this.snapshotSignature = JSON.stringify(initialized.state_snapshot);
+      this.loadCooperativeProgressionEvents(initialized.state_snapshot);
     } else {
       throw new Error('O líder ainda está inicializando o tabuleiro. Volte à sala e tente entrar novamente em alguns segundos.');
     }
@@ -174,6 +187,7 @@ export class CooperativeBattleRuntime {
       }
       this.snapshotSignature = signature;
     }
+    if (session.state_snapshot) await this.processCooperativeProgressionEvents(session.state_snapshot);
 
     this.updateStatus(session);
     if (client.isLeader && session.resolution_pending && !this.processingRound) {
@@ -224,9 +238,10 @@ export class CooperativeBattleRuntime {
     try {
       const result = campaign.status;
       const sessionStatus = result === 'defeated' ? 'defeated' : result === 'completed' ? 'completed' : 'active';
-      const snapshot = campaign.exportSnapshot();
+      const snapshot = this.exportSharedSnapshot();
       await client.resolveRound(campaign.floorNumber, snapshot, sessionStatus);
       this.snapshotSignature = JSON.stringify(snapshot);
+      await this.processCooperativeProgressionEvents(snapshot);
       this.processingRound = false;
 
       // Andares comuns avançam automaticamente; nos marcos de extração, o grupo decide continuar.
@@ -246,7 +261,7 @@ export class CooperativeBattleRuntime {
     const client = this.client;
     if (!campaign || !client || !client.isLeader) return;
     try {
-      const snapshot = campaign.exportSnapshot();
+      const snapshot = this.exportSharedSnapshot();
       await client.advanceFloor(floor, snapshot);
       this.snapshotSignature = JSON.stringify(snapshot);
       this.updateStatus(client.session);
@@ -257,6 +272,54 @@ export class CooperativeBattleRuntime {
         this.snapshotSignature = JSON.stringify(latest.state_snapshot);
       }
       this.showError(error instanceof Error ? error.message : 'Não foi possível avançar o grupo.');
+    }
+  }
+
+  private exportSharedSnapshot(): Record<string, unknown> {
+    const campaign = this.campaign;
+    if (!campaign) throw new Error('Campanha cooperativa indisponível.');
+    return {
+      ...campaign.exportSnapshot(),
+      cooperativeProgressionEvents: [...this.progressionEvents],
+    };
+  }
+
+  private loadCooperativeProgressionEvents(snapshot: Record<string, unknown>): void {
+    const saved = snapshot.cooperativeProgressionEvents;
+    if (!Array.isArray(saved)) return;
+    for (const raw of saved) {
+      if (!raw || typeof raw !== 'object') continue;
+      const event = raw as CooperativeProgressionEvent;
+      if (typeof event.eventId !== 'string' || typeof event.character_id !== 'string') continue;
+      if (!this.progressionEvents.some((queued) => queued.eventId === event.eventId)) {
+        this.progressionEvents.push(event);
+      }
+    }
+  }
+
+  private async processCooperativeProgressionEvents(snapshot: Record<string, unknown>): Promise<void> {
+    if (!supabase || this.disposed) return;
+    this.loadCooperativeProgressionEvents(snapshot);
+    const ownEvents = this.progressionEvents.filter((event) => event.character_id === this.characterId);
+    for (const event of ownEvents) {
+      if (this.processedProgressionEvents.has(event.eventId) || this.progressionEventsInFlight.has(event.eventId)) continue;
+      this.progressionEventsInFlight.add(event.eventId);
+      try {
+        const { error } = await supabase.rpc('apply_character_xp_event', {
+          p_character_id: this.characterId,
+          p_event_id: event.eventId,
+          p_event_kind: event.kind,
+          p_monster_max_hp: event.kind === 'kill' ? event.monsterMaxHp : null,
+          p_monster_damage: event.kind === 'kill' ? event.monsterDamage : null,
+          p_monster_rank: event.kind === 'kill' ? event.monsterRank : null,
+        });
+        if (error) throw new Error(error.message);
+        this.processedProgressionEvents.add(event.eventId);
+      } catch (error) {
+        console.error('Falha ao persistir progressão cooperativa; o evento será tentado novamente:', error);
+      } finally {
+        this.progressionEventsInFlight.delete(event.eventId);
+      }
     }
   }
 
