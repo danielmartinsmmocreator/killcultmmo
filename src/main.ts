@@ -442,7 +442,7 @@ function launchExpeditionBattle(restored = false): void {
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn, retreatExpeditionAndReturn);
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn, retreatExpeditionAndReturn, isGameMaster);
   unsubscribeSnapshot?.();
   unsubscribeSnapshot = campaign.battle.subscribe(() => persistCampaignSnapshot());
   game = new Phaser.Game({
