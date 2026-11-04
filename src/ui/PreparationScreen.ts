@@ -107,8 +107,10 @@ export class PreparationScreen {
     heading.style.cssText = 'font-size:clamp(2rem,4vw,3rem);margin:0;';
     const devButton = document.createElement('button');
     devButton.type = 'button';
-    devButton.textContent = '⚙ Dev Mode';
-    devButton.style.cssText = 'padding:9px 13px;border:1px solid #8b7be8;border-radius:8px;background:#25233d;color:#fff;font-weight:800;cursor:pointer;';
+    devButton.textContent = '👑';
+    devButton.className = 'prep-gm-crown';
+    devButton.title = 'Ferramentas de Game Master';
+    devButton.setAttribute('aria-label', 'Abrir ferramentas de Game Master');
     headingRow.append(heading);
     if (this.isGameMaster) headingRow.append(devButton);
     const subtitle = document.createElement('p');
