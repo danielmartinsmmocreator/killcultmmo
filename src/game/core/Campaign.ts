@@ -108,6 +108,10 @@ export class Campaign {
         vitality: Math.max(0, record.vitality),
         defense: Math.max(0, record.defense),
       };
+      // Reconstitui os bônus permanentes ao carregar a conta na base.
+      hero.damage += hero.progression.attributes.strength;
+      hero.maxHp += hero.progression.attributes.vitality * 5;
+      hero.hp = hero.maxHp;
     }
   }
 
