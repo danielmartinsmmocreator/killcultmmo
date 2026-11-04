@@ -146,7 +146,9 @@ export class CooperativeBattleRuntime {
   }
 
   private async handleSessionUpdate(session: CooperativeSessionState): Promise<void> {
-    if (!this.mounted || this.disposed || !this.campaign || !this.client) return;
+    const campaign = this.campaign;
+    const client = this.client;
+    if (!this.mounted || this.disposed || !campaign || !client) return;
     if (session.status !== 'active') {
       this.updateStatus(session);
       return;
@@ -154,7 +156,7 @@ export class CooperativeBattleRuntime {
 
     const signature = session.state_snapshot ? JSON.stringify(session.state_snapshot) : '';
     if (signature && signature !== this.snapshotSignature && !this.processingRound) {
-      if (!this.campaign.restoreSnapshot(session.state_snapshot)) {
+      if (!campaign.restoreSnapshot(session.state_snapshot)) {
         this.showError('O servidor publicou um estado incompatível. A batalha foi pausada para proteger o progresso.');
         return;
       }
@@ -162,16 +164,17 @@ export class CooperativeBattleRuntime {
     }
 
     this.updateStatus(session);
-    if (this.client.isLeader && session.resolution_pending && !this.processingRound) {
+    if (client.isLeader && session.resolution_pending && !this.processingRound) {
       await this.resolveSubmittedActions(session);
     }
   }
 
   private async resolveSubmittedActions(session: CooperativeSessionState): Promise<void> {
-    if (!this.campaign || !this.client || !session.state_snapshot || this.processingRound) return;
+    const campaign = this.campaign;
+    if (!campaign || !this.client || !session.state_snapshot || this.processingRound) return;
     this.processingRound = true;
     try {
-      if (!this.campaign.restoreSnapshot(session.state_snapshot)) {
+      if (!campaign.restoreSnapshot(session.state_snapshot)) {
         throw new Error('Não foi possível restaurar o estado anterior à rodada.');
       }
       this.snapshotSignature = JSON.stringify(session.state_snapshot);
@@ -182,7 +185,7 @@ export class CooperativeBattleRuntime {
       }
       for (const submitted of actions) {
         const heroUid = Campaign.cooperativeHeroUid(submitted.character_id);
-        const accepted = this.campaign.battle.applyCooperativeAction(
+        const accepted = campaign.battle.applyCooperativeAction(
           heroUid,
           submitted.action_payload as CooperativeAction,
         );
@@ -191,9 +194,9 @@ export class CooperativeBattleRuntime {
 
       // A simulação percorre os heróis de todos os participantes; ao terminar,
       // devolve a seleção local ao personagem que pertence a este cliente.
-      this.campaign.battle.setCooperativeActor(Campaign.cooperativeHeroUid(this.characterId));
+      campaign.battle.setCooperativeActor(Campaign.cooperativeHeroUid(this.characterId));
       this.scene?.markCooperativeResolutionStarted();
-      if (!this.campaign.battle.resolveCooperativeRound()) {
+      if (!campaign.battle.resolveCooperativeRound()) {
         throw new Error('O motor de batalha não conseguiu iniciar a fase dos monstros.');
       }
     } catch (error) {
@@ -203,20 +206,22 @@ export class CooperativeBattleRuntime {
   }
 
   private async finishResolvedRound(): Promise<void> {
-    if (!this.processingRound || !this.campaign || !this.client) return;
+    const campaign = this.campaign;
+    const client = this.client;
+    if (!this.processingRound || !campaign || !client) return;
     try {
-      const result = this.campaign.status;
+      const result = campaign.status;
       const sessionStatus = result === 'defeated' ? 'defeated' : result === 'completed' ? 'completed' : 'active';
-      const snapshot = this.campaign.exportSnapshot();
-      await this.client.resolveRound(this.campaign.floorNumber, snapshot, sessionStatus);
+      const snapshot = campaign.exportSnapshot();
+      await client.resolveRound(campaign.floorNumber, snapshot, sessionStatus);
       this.snapshotSignature = JSON.stringify(snapshot);
       this.processingRound = false;
 
       // Andares comuns avançam automaticamente; nos marcos de extração, o grupo decide continuar.
-      if (this.campaign.status === 'floor-cleared' && !this.campaign.canExtract) {
-        if (this.campaign.advance()) await this.publishFloorTransition(this.campaign.floorNumber);
+      if (campaign.status === 'floor-cleared' && !campaign.canExtract) {
+        if (campaign.advance()) await this.publishFloorTransition(campaign.floorNumber);
       }
-      const latest = this.client.session;
+      const latest = client.session;
       this.updateStatus(latest);
     } catch (error) {
       this.processingRound = false;
@@ -225,15 +230,18 @@ export class CooperativeBattleRuntime {
   }
 
   private async publishFloorTransition(floor: number): Promise<void> {
-    if (!this.campaign || !this.client || !this.client.isLeader) return;
+    const campaign = this.campaign;
+    const client = this.client;
+    if (!campaign || !client || !client.isLeader) return;
     try {
-      await this.client.advanceFloor(floor, this.campaign.exportSnapshot());
-      this.snapshotSignature = JSON.stringify(this.campaign.exportSnapshot());
-      this.updateStatus(this.client.session);
+      const snapshot = campaign.exportSnapshot();
+      await client.advanceFloor(floor, snapshot);
+      this.snapshotSignature = JSON.stringify(snapshot);
+      this.updateStatus(client.session);
     } catch (error) {
-      const latest = await this.client.refresh().catch(() => null);
+      const latest = await client.refresh().catch(() => null);
       if (latest?.state_snapshot) {
-        this.campaign.restoreSnapshot(latest.state_snapshot);
+        campaign.restoreSnapshot(latest.state_snapshot);
         this.snapshotSignature = JSON.stringify(latest.state_snapshot);
       }
       this.showError(error instanceof Error ? error.message : 'Não foi possível avançar o grupo.');
@@ -241,23 +249,26 @@ export class CooperativeBattleRuntime {
   }
 
   private async submitAction(action: CooperativeBattleAction): Promise<void> {
-    if (!this.client || !this.client.canAct || this.disposed) return;
+    const client = this.client;
+    if (!client || !client.canAct || this.disposed) return;
     try {
-      await this.client.submitAction(action as CooperativeAction);
-      this.updateStatus(this.client.session);
+      await client.submitAction(action as CooperativeAction);
+      this.updateStatus(client.session);
     } catch (error) {
       this.showError(error instanceof Error ? error.message : 'Não foi possível enviar sua ação.');
     }
   }
 
   private updateStatus(session: CooperativeSessionState | null | undefined): void {
-    if (!this.sidePanel || !session || !this.client) return;
+    const sidePanel = this.sidePanel;
+    const client = this.client;
+    if (!sidePanel || !session || !client) return;
     const actor = session.members.find((member) => member.user_id === session.current_turn_user_id);
     const acted = session.submitted_actions.some((action) => action.actor_user_id === this.userId);
     const campaignStatus = this.campaign?.status;
-    const canAct = this.client.canAct && campaignStatus === 'fighting';
+    const canAct = client.canAct && campaignStatus === 'fighting';
     const status = campaignStatus === 'floor-cleared'
-      ? (this.client.isLeader ? 'Andar concluído. O líder pode avançar o grupo.' : 'Andar concluído. Aguardando o líder avançar o grupo.')
+      ? (client.isLeader ? 'Andar concluído. O líder pode avançar o grupo.' : 'Andar concluído. Aguardando o líder avançar o grupo.')
       : campaignStatus === 'completed'
         ? 'Expedição concluída! O grupo venceu o último andar.'
         : campaignStatus === 'defeated'
@@ -269,10 +280,10 @@ export class CooperativeBattleRuntime {
               : acted
                 ? 'Ação recebida. Aguarde os demais jogadores.'
                 : 'Vez de ' + (actor?.nickname ?? 'outro participante') + '.';
-    this.sidePanel.updateCooperativeStatus(
+    sidePanel.updateCooperativeStatus(
       canAct,
       status,
-      this.client.isLeader && campaignStatus === 'floor-cleared',
+      client.isLeader && campaignStatus === 'floor-cleared',
     );
   }
 
