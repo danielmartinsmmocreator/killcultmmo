@@ -1,5 +1,5 @@
 import type { Campaign, CampaignStatus } from '../game/core/Campaign';
-import type { GameState } from '../game/core/GameState';
+import type { CooperativeBattleAction, GameState } from '../game/core/GameState';
 import type { BattlePhase, EncounterType, Unit } from '../game/types';
 import { xpRequiredForNextLevel } from '../game/core/progression';
 import type { AttributeName } from '../game/core/progression';
@@ -91,6 +91,7 @@ export class SidePanel {
   private readonly monstersEl = el('div', 'unit-list');
   private readonly logEl = el('ol', 'log');
   private readonly passButton = el('button', 'btn-pass', 'Passar a vez');
+  private readonly attackButton = el('button', 'btn-attack', 'Atacar');
   private readonly devSettingsButton = el('button', 'btn-dev-settings', '👑');
   private readonly boardActions = el('div', 'board-floor-actions');
   private readonly isGameMaster: boolean;
@@ -105,8 +106,11 @@ export class SidePanel {
   private readonly onRetreat?: () => Promise<void>;
   private attributeSavePending = false;
   private unsubscribe: (() => void) | null = null;
+  private readonly onCooperativeAction?: (action: CooperativeBattleAction) => void;
+  private cooperativeCanAct: boolean | null = null;
+  private cooperativeStatusText = '';
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>, isGameMaster = false) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>, isGameMaster = false, onCooperativeAction?: (action: CooperativeBattleAction) => void) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.isGameMaster = isGameMaster;
@@ -116,6 +120,7 @@ export class SidePanel {
     this.onActivity = onActivity;
     this.onExtract = onExtract;
     this.onRetreat = onRetreat;
+    this.onCooperativeAction = onCooperativeAction;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -165,10 +170,17 @@ export class SidePanel {
     this.buildSpecialConfirmModal();
 
     this.passButton.type = 'button';
-    this.passButton.addEventListener('click', () => this.state.passTurn());
+    this.passButton.addEventListener('click', () => {
+      if (this.onCooperativeAction) this.onCooperativeAction({ type: 'pass' });
+      else this.state.passTurn();
+    });
+    this.attackButton.type = 'button';
+    this.attackButton.addEventListener('click', () => {
+      if (this.onCooperativeAction) this.onCooperativeAction({ type: 'attack' });
+    });
 
     const actions = el('div', 'actions');
-    actions.append(this.passButton);
+    actions.append(this.attackButton, this.passButton);
     actions.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:1200;width:min(260px,calc(100vw - 36px));padding:6px;background:#111827;border:1px solid #334155;box-shadow:0 8px 24px #0009;';
 
     this.goldEl.style.cssText = 'padding:8px 10px;margin:8px 0;border:1px solid #a16207;border-radius:6px;background:#422006;color:#fde68a;font-weight:800;';
@@ -291,7 +303,12 @@ export class SidePanel {
         button.addEventListener(eventName, (event) => event.stopPropagation());
       }
     }
-    this.confirmButton.addEventListener('click', () => this.state.confirmAbility());
+    this.confirmButton.addEventListener('click', () => {
+      if (this.onCooperativeAction) {
+        const action = this.state.getCooperativeAbilityAction();
+        if (action) this.onCooperativeAction(action);
+      } else this.state.confirmAbility();
+    });
     this.cancelButton.addEventListener('click', () => this.state.cancelAbility());
 
     const head = el('div', 'ability-head');
@@ -349,6 +366,12 @@ export class SidePanel {
     dialog.append(actions);
     this.specialConfirmModal.append(dialog);
   }
+  updateCooperativeStatus(canAct: boolean, statusText: string): void {
+    this.cooperativeCanAct = canAct;
+    this.cooperativeStatusText = statusText;
+    this.render();
+  }
+
   private render(): void {
     this.onActivity?.(this.campaign.floorNumber);
     const phase = this.state.phase;
@@ -370,7 +393,7 @@ export class SidePanel {
         }
       }, 1200);
     }
-    const canAct = phase === 'player';
+    const canAct = phase === 'player' && (this.cooperativeCanAct ?? true);
     const floor = this.campaign.floorNumber;
     this.goldEl.textContent = `🪙 Ouro: ${this.campaign.gold}`;
 
@@ -386,6 +409,8 @@ export class SidePanel {
     this.phaseEl.dataset.phase = phase;
     this.phaseEl.hidden = status !== 'fighting';
     this.passButton.disabled = !canAct;
+    this.attackButton.hidden = !this.onCooperativeAction;
+    this.attackButton.disabled = !canAct || !this.state.selectedUnit;
 
     this.renderCampaignEnd(status, floor);
     this.extractButton.hidden = !this.campaign.canExtract;
@@ -403,7 +428,7 @@ export class SidePanel {
     } else if (status === 'defeated') {
       this.statusEl.textContent = 'Todos os heróis caíram. Retornando à base de operações…';
     } else if (!canAct) {
-      this.statusEl.textContent = 'Aguarde: o turno está sendo resolvido.';
+      this.statusEl.textContent = this.cooperativeStatusText || 'Aguarde: o turno está sendo resolvido.';
     } else if (targeting && selected) {
       this.statusEl.textContent = `${selected.definition.name}: escolhendo o alvo da habilidade.`;
     } else if (selected) {
