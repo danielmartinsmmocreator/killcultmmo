@@ -203,6 +203,22 @@ export class CooperativeSessionClient {
     return Number(data);
   }
 
+  async advanceFloor(floor: number, snapshot: Record<string, unknown>): Promise<number> {
+    if (!supabase) throw new Error('Supabase não está configurado.');
+    const session = this.current ?? await this.refresh();
+    if (!session) throw new Error('Sessão cooperativa indisponível.');
+    if (!this.isLeader) throw new Error('Somente o líder pode avançar o andar.');
+    const { data, error } = await supabase.rpc('advance_coop_expedition_floor', {
+      p_session_id: this.sessionId,
+      p_expected_version: session.state_version,
+      p_current_floor: floor,
+      p_state_snapshot: snapshot,
+    });
+    if (error) throw new Error(error.message);
+    await this.refresh();
+    return Number(data);
+  }
+
   dispose(): void {
     this.disposed = true;
     if (this.channel && supabase) void supabase.removeChannel(this.channel);
