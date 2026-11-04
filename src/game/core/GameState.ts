@@ -195,15 +195,18 @@ export class GameState {
       return this.passTurn();
     }
     if (!this.beginAbility()) return this.passTurn();
-    if (!this.targetingState) return true;
+    // beginAbility() define o alvo internamente; a leitura local evita que o
+    // TypeScript trate a propriedade como null após o reset feito no início da ação.
+    const targeting = this.targetingState as AbilityTargeting | null;
+    if (!targeting) return true;
 
-    if (this.targetingState.id === 'ambush') {
+    if (targeting.id === 'ambush')
       const target = action.targetUid ? this.findUnit(action.targetUid) : null;
       if (!target || !isAlive(target) || !action.destination || !this.chooseAbilityCell(target.position) || !this.chooseAbilityCell(action.destination)) {
         this.cancelAbility();
         return this.passTurn();
       }
-    } else if (this.targetingState.id === 'exura') {
+    } else if (targeting.id === 'exura') {
       const target = action.targetUid ? this.findUnit(action.targetUid) : null;
       if (!target || !isAlive(target) || !this.chooseAbilityCell(target.position)) {
         this.cancelAbility();
