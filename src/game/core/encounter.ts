@@ -44,7 +44,20 @@ export function spawnPositions(count: number): Position[] {
  * monstros novos, com PV cheio, nas casas de surgimento. Os uids dos monstros incluem o andar,
  * então nunca se confundem com os de outro andar.
  */
-export function buildEncounter(config: FloorConfig, party: readonly Unit[]): BattleSetup {
+export interface MonsterStatMultipliers {
+  readonly hp: number;
+  readonly damage: number;
+}
+
+/**
+ * Monta o encontro. Multiplicadores são aplicados somente aos monstros desta instância;
+ * as definições globais da campanha permanecem intactas para partidas solo.
+ */
+export function buildEncounter(
+  config: FloorConfig,
+  party: readonly Unit[],
+  monsterMultipliers: MonsterStatMultipliers = { hp: 1, damage: 1 },
+): BattleSetup {
   spawnPositions(config.monsters.length); // erro claro se houver monstros demais
   // A formação pode ser personalizada e persistir entre andares. Se um obstáculo fixo
   // coincidir com um herói, prevalece a posição do herói e o obstáculo é omitido neste encontro.
@@ -68,7 +81,23 @@ export function buildEncounter(config: FloorConfig, party: readonly Unit[]): Bat
     });
     if (!slot) throw new RangeError(`Sem espaço para posicionar ${definition.name} no andar ${config.floor}.`);
     for (const cell of footprintCells(slot, size)) taken.add(positionKey(cell));
-    return createUnit(definition, slot, `f${config.floor}-${definition.id}-${index}`);
+    const scaledDefinition = monsterMultipliers.hp === 1 && monsterMultipliers.damage === 1
+      ? definition
+      : {
+          ...definition,
+          maxHp: Math.max(1, Math.round(definition.maxHp * monsterMultipliers.hp)),
+          damage: Math.max(1, Math.round(definition.damage * monsterMultipliers.damage)),
+          ...(definition.telegraph ? {
+            telegraph: {
+              ...definition.telegraph,
+              attacks: definition.telegraph.attacks.map((attack) => ({
+                ...attack,
+                damage: Math.max(1, Math.round(attack.damage * monsterMultipliers.damage)),
+              })),
+            },
+          } : {}),
+        };
+    return createUnit(scaledDefinition, slot, `f${config.floor}-${definition.id}-${index}`);
   });
 
   return {
