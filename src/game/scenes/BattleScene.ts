@@ -479,6 +479,13 @@ export class BattleScene extends Phaser.Scene {
       case 'encounter':
         this.rebuildUnits();
         break;
+      case 'sync':
+        // Snapshot do mesmo andar: preserva as posições visuais anteriores e interpola
+        // monstros/heróis até as novas casas, em vez de destruir e recriar as peças.
+        this.refresh(true);
+        this.playEffects();
+        this.pulseActor();
+        break;
       case 'resolving':
         // O jogador acabou de agir (moveu ou usou habilidade): mostra o resultado e agenda o
         // primeiro passo. Os efeitos da habilidade já estão em lastDamage/lastHealing/lastEffect.
@@ -749,8 +756,15 @@ export class BattleScene extends Phaser.Scene {
   /** Sincroniza peças, resultado e destaques com o estado atual. */
   private refresh(animate: boolean): void {
     for (const unit of this.gameState.roster) {
-      const view = this.unitViews.get(unit.uid);
-      if (!view) continue;
+      let view = this.unitViews.get(unit.uid);
+      if (!view) {
+        view = this.createUnitView(unit);
+        this.unitViews.set(unit.uid, view);
+        if (animate && unit.hp > 0) {
+          view.container.setAlpha(0);
+          this.tweens.add({ targets: view.container, alpha: 1, duration: 220, ease: 'Cubic.Out' });
+        }
+      }
 
       const container = view.container;
       const { x, y } = footprintCenterPixel(unit.position, sizeOf(unit.definition));
