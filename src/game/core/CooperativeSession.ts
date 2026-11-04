@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase';
 export type CooperativeAction =
   | { type: 'move'; destination: { col: number; row: number } }
   | { type: 'attack' }
-  | { type: 'ability'; abilityId: string; target?: { col: number; row: number }; targetUid?: string }
+  | { type: 'ability'; abilityId: string; target?: { col: number; row: number }; destination?: { col: number; row: number }; targetUid?: string }
   | { type: 'pass' };
 
 export type CooperativeSubmittedAction = {
