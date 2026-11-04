@@ -434,7 +434,9 @@ export class SidePanel {
     const selected = this.state.selectedUnit;
     const targeting = this.state.targeting;
     if (status === 'floor-cleared') {
-      this.statusEl.textContent = `Andar ${floor} concluído. Próximo andar em instantes…`;
+      this.statusEl.textContent = this.cooperativeMode
+        ? (this.cooperativeLeader ? 'Andar concluído. Continue quando o grupo estiver pronto.' : 'Andar concluído. Aguardando o líder continuar.')
+        : `Andar ${floor} concluído. Próximo andar em instantes…`;
     } else if (status === 'completed') {
       this.statusEl.textContent = 'Campanha concluída! Retornando à base de operações…';
     } else if (status === 'defeated') {
