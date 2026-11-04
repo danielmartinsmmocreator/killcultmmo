@@ -333,7 +333,7 @@ begin
   from public.coop_expedition_room_members m
   join public.coop_expedition_rooms r on r.id = m.room_id
   where m.user_id = v_user_id and r.status = 'lobby'
-  limit 1;
+  limit 1 for update of r;
   if v_room_id is null then raise exception 'Você não está em uma sala que aceita alterações.'; end if;
 
   if not exists (select 1 from public.characters c where c.id = p_character_id and c.user_id = v_user_id) then
@@ -369,7 +369,7 @@ begin
   from public.coop_expedition_room_members m
   join public.coop_expedition_rooms r on r.id = m.room_id
   where m.user_id = v_user_id and r.status = 'lobby'
-  limit 1;
+  limit 1 for update of r;
   if v_room_id is null then raise exception 'Você não está em uma sala em preparação.'; end if;
 
   if p_ready and not exists (
@@ -398,7 +398,7 @@ begin
 
   select r.id into v_room_id from public.coop_expedition_rooms r
   where r.leader_user_id = v_user_id and r.status = 'lobby'
-  order by r.created_at desc limit 1;
+  order by r.created_at desc limit 1 for update of r;
   if v_room_id is null then raise exception 'Somente o líder pode preparar essa sala.'; end if;
 
   select count(*), count(*) filter (where m.is_ready and m.character_id is not null)
@@ -430,7 +430,7 @@ begin
   from public.coop_expedition_room_members m
   join public.coop_expedition_rooms r on r.id = m.room_id
   where m.user_id = v_user_id and r.status in ('lobby', 'prepared')
-  limit 1;
+  limit 1 for update of r;
   if v_room_id is null then raise exception 'Você não participa de uma sala ativa.'; end if;
 
   if v_user_id = v_leader_id then
