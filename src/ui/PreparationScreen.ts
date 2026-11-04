@@ -56,7 +56,7 @@ export class PreparationScreen {
   private inventorySort: 'floor-asc' | 'floor-desc' | 'rarity-desc' | 'rarity-asc' = 'floor-desc';
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>, isGameMaster = false) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>, isGameMaster = false, onAllocateBaseAttribute?: (classId: string, attribute: 'strength' | 'vitality' | 'defense') => Promise<boolean>, onResetBaseAttributes?: (classId: string) => Promise<boolean>, onBuyBaseAttributePoint?: (classId: string) => Promise<boolean>) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
