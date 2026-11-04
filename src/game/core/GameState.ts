@@ -165,7 +165,7 @@ export class GameState {
   applyCooperativeAction(
     heroUid: string,
     action: {
-      type: 'move' | 'ability' | 'pass';
+      type: 'move' | 'attack' | 'ability' | 'pass';
       destination?: Position;
       abilityId?: string;
       target?: Position;
@@ -181,6 +181,11 @@ export class GameState {
 
     if (action.type === 'move') {
       return action.destination ? this.moveSelectedUnit(action.destination) : false;
+    }
+    if (action.type === 'attack') {
+      if (this.performAttack(hero) <= 0) return false;
+      this.beginResolution();
+      return true;
     }
     if (action.type === 'pass') return this.passTurn();
     if (action.type !== 'ability' || !action.abilityId || hero.definition.ability?.id !== action.abilityId) return false;
