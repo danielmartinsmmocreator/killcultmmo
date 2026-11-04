@@ -92,8 +92,8 @@ create policy "Guild members can read their guild"
   using (public.current_guild_role(id) is not null);
 
 create policy "Guild members can read roster"
-  on public.guild_members as target for select to authenticated
-  using (public.current_guild_role(target.guild_id) is not null);
+  on public.guild_members for select to authenticated
+  using (public.current_guild_role(guild_id) is not null);
 
 create policy "Players can read received guild invites"
   on public.guild_invites for select to authenticated
@@ -102,27 +102,20 @@ create policy "Players can read received guild invites"
 create policy "Members with bank access can view guild items"
   on public.guild_bank_items for select to authenticated
   using (
-    exists (
-      select 1
-      from public.guild_members gm
-      join public.guilds g on g.id = gm.guild_id
-      where gm.guild_id = guild_bank_items.guild_id
-        and gm.user_id = (select auth.uid())
-        and (
-          g.bank_view_access = 'all_members'
-          or gm.role in ('leader', 'admin')
-        )
+    public.current_guild_role(guild_id) in ('leader', 'admin')
+    or (
+      public.current_guild_role(guild_id) = 'member'
+      and exists (
+        select 1 from public.guilds g
+        where g.id = guild_bank_items.guild_id
+          and g.bank_view_access = 'all_members'
+      )
     )
   );
 
 create policy "Guild leaders and admins can read bank logs"
   on public.guild_bank_logs for select to authenticated
-  using (exists (
-    select 1 from public.guild_members gm
-    where gm.guild_id = guild_bank_logs.guild_id
-      and gm.user_id = (select auth.uid())
-      and gm.role in ('leader', 'admin')
-  ));
+  using (public.current_guild_role(guild_id) in ('leader', 'admin'));
 
 create or replace function public.get_my_guild_data()
 returns jsonb
