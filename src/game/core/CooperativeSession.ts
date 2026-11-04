@@ -32,6 +32,7 @@ export type CooperativeSessionMember = {
   defense: number | null;
   equipment: CooperativeEquippedItem[];
   is_ready: boolean;
+  is_eliminated?: boolean;
 };
 
 export type CooperativeSessionState = {
