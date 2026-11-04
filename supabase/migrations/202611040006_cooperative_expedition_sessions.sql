@@ -201,6 +201,15 @@ begin
     and s.leader_user_id = v_user_id
     and s.status = 'active'
     and s.state_version = p_expected_version
+    and p_current_floor >= s.current_floor
+    and (
+      p_current_turn_user_id is null
+      or exists (
+        select 1 from public.coop_expedition_room_members turn_member
+        where turn_member.room_id = s.room_id
+          and turn_member.user_id = p_current_turn_user_id
+      )
+    )
     and exists (
       select 1 from public.coop_expedition_room_members m
       where m.room_id = s.room_id and m.user_id = v_user_id
