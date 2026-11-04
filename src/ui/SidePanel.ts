@@ -109,8 +109,10 @@ export class SidePanel {
   private readonly onCooperativeAction?: (action: CooperativeBattleAction) => void;
   private cooperativeCanAct: boolean | null = null;
   private cooperativeStatusText = '';
+  private readonly cooperativeMode: boolean;
+  private cooperativeLeader = true;
 
-  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>, isGameMaster = false, onCooperativeAction?: (action: CooperativeBattleAction) => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onRestart?: () => void, onAllocateAttribute?: (classId: string, attribute: AttributeName, points: number) => Promise<boolean>, onFloorChange?: (floor: number) => void, onActivity?: (floor: number) => void, onExtract?: () => Promise<void>, onRetreat?: () => Promise<void>, isGameMaster = false, onCooperativeAction?: (action: CooperativeBattleAction) => void, cooperativeMode = false) {
     this.campaign = campaign;
     this.state = campaign.battle;
     this.isGameMaster = isGameMaster;
@@ -121,6 +123,7 @@ export class SidePanel {
     this.onExtract = onExtract;
     this.onRetreat = onRetreat;
     this.onCooperativeAction = onCooperativeAction;
+    this.cooperativeMode = cooperativeMode;
 
     const title = el('h1', undefined, 'Roguelike Alfa');
 
@@ -366,9 +369,10 @@ export class SidePanel {
     dialog.append(actions);
     this.specialConfirmModal.append(dialog);
   }
-  updateCooperativeStatus(canAct: boolean, statusText: string): void {
+  updateCooperativeStatus(canAct: boolean, statusText: string, isLeader = true): void {
     this.cooperativeCanAct = canAct;
     this.cooperativeStatusText = statusText;
+    this.cooperativeLeader = isLeader;
     this.render();
   }
 
@@ -413,8 +417,10 @@ export class SidePanel {
     this.attackButton.disabled = !canAct || !this.state.selectedUnit;
 
     this.renderCampaignEnd(status, floor);
-    this.extractButton.hidden = !this.campaign.canExtract;
+    this.extractButton.hidden = this.cooperativeMode || !this.campaign.canExtract;
     this.advanceButton.hidden = status !== 'floor-cleared';
+    this.advanceButton.disabled = this.cooperativeMode && !this.cooperativeLeader;
+    if (this.cooperativeMode && status === 'floor-cleared') this.advanceButton.textContent = this.cooperativeLeader ? 'Continuar para o próximo andar' : 'Aguardando o líder avançar';
     this.boardActions.hidden = this.advanceButton.hidden && this.extractButton.hidden;
     this.retreatButton.hidden = status === 'defeated' || status === 'completed';
     this.renderTelegraphs();
