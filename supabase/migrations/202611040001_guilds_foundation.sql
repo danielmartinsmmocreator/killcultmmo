@@ -80,7 +80,7 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $$
   select gm.role
   from public.guild_members gm
   where gm.guild_id = p_guild_id and gm.user_id = auth.uid()
