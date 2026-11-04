@@ -637,7 +637,7 @@ export class SidePanel {
       attributes.append(row);
     }
 
-    this.attributesButton.hidden = false;
+    this.attributesButton.hidden = this.cooperativeMode;
     this.attributesButton.textContent = 'Atributos · ' + selected.definition.name;
     this.attributesButton.style.cssText = 'width:100%;padding:9px;background:#342c57;border:1px solid #8b7be8;color:#fff;font-weight:800;cursor:pointer;';
     this.characterStatsBox.hidden = false;
