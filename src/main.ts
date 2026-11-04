@@ -350,6 +350,33 @@ async function extractExpeditionAndReturn(): Promise<void> {
   window.location.reload();
 }
 
+async function retreatExpeditionAndReturn(): Promise<void> {
+  if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
+  const userId = activeUserId;
+  const expeditionId = activeExpeditionId;
+  if (!userId || !expeditionId) return;
+
+  expeditionFinishPending = true;
+  try {
+    // Garante que o último andar alcançado seja registrado antes de encerrar a incursão.
+    await flushPendingExpeditionProgress();
+    const { error } = await supabase.rpc('finish_player_expedition', {
+      p_expedition_id: expeditionId,
+      p_result: 'combat_defeat',
+    });
+    if (error) throw error;
+
+    clearPendingExpeditionFloor(userId, expeditionId);
+    activeExpeditionId = null;
+    expeditionFinishPending = false;
+    showPreparation(true);
+  } catch (error) {
+    console.error('Falha ao bater em retirada:', error);
+    expeditionFinishPending = false;
+    window.alert('Não foi possível registrar a retirada. Seus itens e ouro temporários continuam protegidos. Verifique a conexão e tente novamente.');
+  }
+}
+
 async function finishExpeditionAndReturn(): Promise<void> {
   if (!campaign || !supabase || !activeExpeditionId || expeditionFinishPending) return;
   if (campaign.status !== 'defeated' || campaign.lastExpeditionResult !== 'combat_defeat') {
@@ -415,7 +442,7 @@ function launchExpeditionBattle(restored = false): void {
   panel.replaceChildren();
   gameRoot.hidden = false;
   gameRoot.style.display = '';
-  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn);
+  sidePanel = new SidePanel(panel, campaign, () => { void finishExpeditionAndReturn(); }, persistAttributeAllocation, (floor) => { void persistExpeditionFloor(floor); }, syncExpeditionActivity, extractExpeditionAndReturn, retreatExpeditionAndReturn);
   unsubscribeSnapshot?.();
   unsubscribeSnapshot = campaign.battle.subscribe(() => persistCampaignSnapshot());
   game = new Phaser.Game({
