@@ -8,6 +8,12 @@ type CoopMember = {
   character_id: string | null;
   class_id: string | null;
   character_level: number | null;
+  character_xp?: number | null;
+  unspent_attribute_points?: number | null;
+  strength?: number | null;
+  vitality?: number | null;
+  defense?: number | null;
+  equipment?: { slot: string; item_definition_id: string }[];
   is_ready: boolean;
   joined_at: string;
 };
@@ -48,6 +54,7 @@ export class ExpeditionLobbyScreen {
   private readonly root: HTMLElement;
   private readonly userId: string;
   private readonly onBack: () => void;
+  private readonly onEnterSession?: (sessionId: string, characterId: string) => void;
   private payload: CoopPayload = { room: null, invites: [], characters: [] };
   private session: CoopSession | null = null;
   private busy = false;
@@ -55,10 +62,11 @@ export class ExpeditionLobbyScreen {
   private channel: RealtimeChannel | null = null;
   private channelKey = '';
 
-  constructor(root: HTMLElement, userId: string, onBack: () => void) {
+  constructor(root: HTMLElement, userId: string, onBack: () => void, onEnterSession?: (sessionId: string, characterId: string) => void) {
     this.root = root;
     this.userId = userId;
     this.onBack = onBack;
+    this.onEnterSession = onEnterSession;
     void this.refresh();
   }
 
@@ -320,8 +328,17 @@ export class ExpeditionLobbyScreen {
         lobby.append(start);
       }
 
+      if (this.session?.status === 'active' && ownMember?.character_id) {
+        const enter = this.button('Entrar no combate compartilhado', () => {
+          this.dispose();
+          this.onEnterSession?.(this.session!.id, ownMember.character_id!);
+        });
+        enter.style.cssText += 'border-color:#16a34a;background:#14532d;';
+        lobby.append(enter);
+      }
+
       if (isLeader && this.session) {
-        lobby.append(this.button('Encerrar sessão de teste', () => this.perform(async () => {
+        lobby.append(this.button('Encerrar expedição cooperativa', () => this.perform(async () => {
           await this.rpc('abandon_coop_expedition_session');
         }, 'Sessão encerrada.')));
       }
@@ -344,7 +361,7 @@ export class ExpeditionLobbyScreen {
         lobby.append(invite);
         const prepare = this.button('Confirmar grupo preparado', () => this.perform(async () => {
           await this.rpc('prepare_coop_expedition_room');
-        }, 'Grupo preparado! A entrada no combate será implementada na próxima etapa.'));
+        }, 'Grupo preparado! Inicie a sessão para liberar o combate compartilhado.'));
         prepare.style.cssText += 'border-color:#16a34a;background:#14532d;';
         lobby.append(prepare);
       }
@@ -359,7 +376,7 @@ export class ExpeditionLobbyScreen {
 
     const note = document.createElement('p');
     note.textContent = this.session
-      ? 'A sessão já possui registro persistente, controle de versão e sincronização em tempo real. O tabuleiro e as ações de combate ainda serão conectados na próxima etapa.'
+      ? 'Entre no combate compartilhado para controlar apenas o herói escolhido. As ações são validadas pelo servidor e os monstros agem depois de todos os jogadores.'
       : 'As salas, convites, seleção de heróis, prontidão e criação da sessão são persistidos no servidor. O combate será conectado à sessão na próxima etapa.';
     note.style.cssText = 'margin:0;color:#64748b;font-size:.82rem;line-height:1.5;';
     page.append(note);
