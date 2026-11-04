@@ -19,10 +19,10 @@ add('tier-1-warrior-weapon-2-epic','Machado Abissal','weapon',1,'epic',['warrior
 add('tier-1-warrior-offhand-common','Escudo de Couro','off-hand',1,'common',['warrior'],{defense:8},18);
 add('tier-1-warrior-offhand-rare','Escudo de Ferro','off-hand',1,'rare',['warrior'],{defense:12},27);
 add('tier-1-warrior-offhand-epic','Escudo Abissal','off-hand',1,'epic',['warrior'],{defense:18},45);
-add('tier-1-assassin-weapon-1-common','Adaga de Ferro','weapon',1,'common',['assassin'],{strength:10},20);
+add('tier-1-assassin-weapon-1-common','Adaga de Pedra','weapon',1,'common',['assassin'],{strength:10},20);
 add('tier-1-assassin-weapon-1-rare','Adaga de Ferro','weapon',1,'rare',['assassin'],{strength:15},30);
 add('tier-1-assassin-weapon-1-epic','Adaga Abissal','weapon',1,'epic',['assassin'],{strength:30},50);
-add('tier-1-assassin-weapon-2-common','Punhal de Ferro','weapon',1,'common',['assassin'],{strength:12},20);
+add('tier-1-assassin-weapon-2-common','Punhal de Pedra','weapon',1,'common',['assassin'],{strength:12},20);
 add('tier-1-assassin-weapon-2-rare','Punhal de Ferro','weapon',1,'rare',['assassin'],{strength:18},30);
 add('tier-1-assassin-weapon-2-epic','Punhal Abissal','weapon',1,'epic',['assassin'],{strength:33},50);
 add('tier-1-assassin-offhand-epic','Segunda Adaga Abissal','off-hand',1,'epic',['assassin'],{strength:18},45);
