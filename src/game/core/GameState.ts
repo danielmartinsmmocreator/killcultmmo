@@ -422,6 +422,7 @@ export class GameState {
           ? { type: 'ability', abilityId, target: { col: hero.position.col + targeting.direction.col, row: hero.position.row + targeting.direction.row } }
           : null;
     }
+    return null;
   }
 
   /** Último aviso para o jogador (ação inválida, motivo de recusa...). */
