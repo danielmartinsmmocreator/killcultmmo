@@ -223,7 +223,7 @@ export class Campaign {
   }
 
   /** Restaura a campanha antes de abrir a cena Phaser. */
-  restoreSnapshot(snapshot: unknown): boolean {
+  restoreSnapshot(snapshot: unknown, animate = false): boolean {
     if (!snapshot || typeof snapshot !== 'object') return false;
     const saved = snapshot as Record<string, unknown>;
     if (saved.version !== 1 || !Number.isInteger(saved.floorIndex)) return false;
@@ -247,7 +247,7 @@ export class Campaign {
     this.rewardDrops.splice(0, this.rewardDrops.length, ...(Array.isArray(saved.rewardDrops) ? saved.rewardDrops.filter((item): item is string => typeof item === 'string') : []));
 
     this.battle.loadEncounter(this.createEncounter(), false);
-    return this.battle.restoreSnapshot(saved.battle);
+    return this.battle.restoreSnapshot(saved.battle, animate);
   }
 
   /** Recompensas temporárias que serão consolidadas se a extração for aceita pelo servidor. */
