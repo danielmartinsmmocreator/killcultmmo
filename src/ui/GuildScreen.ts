@@ -58,6 +58,8 @@ export class GuildScreen {
   private publicGuilds: PublicGuild[] = [];
   private joinRequests: GuildJoinRequest[] = [];
   private activity: GuildActivity[] = [];
+  private activityError = '';
+  private bankError = '';
   private busy = false;
   private message = '';
   private chatChannel: RealtimeChannel | null = null;
@@ -141,15 +143,30 @@ export class GuildScreen {
       this.publicGuilds = [];
       this.joinRequests = this.payload.guild && this.payload.guild.my_role !== 'member'
         ? await this.rpc<GuildJoinRequest[]>('get_guild_join_requests') : [];
-      this.activity = this.payload.guild ? await this.rpc<GuildActivity[]>('get_guild_activity', { p_limit: 50 }) : [];
+      this.activity = [];
+      this.activityError = '';
+      this.bankError = '';
       if (this.payload.guild) {
+        // Histórico e cofre são carregados de forma independente: uma falha no
+        // RPC do histórico não pode interromper o carregamento do cofre.
+        try {
+          this.activity = await this.rpc<GuildActivity[]>('get_guild_activity', { p_limit: 50 });
+        } catch (error) {
+          this.activityError = error instanceof Error ? error.message : 'Falha ao carregar o histórico.';
+          console.error('Falha ao carregar histórico da guilda:', error);
+        }
         const { data: items, error } = await supabase
           .from('guild_bank_items')
           .select('id,item_definition_id,obtained_at_floor,deposited_at')
           .eq('guild_id', this.payload.guild.id)
           .order('deposited_at', { ascending: false });
-        if (error && !error.message.toLowerCase().includes('permission')) throw error;
-        this.bankItems = (items ?? []) as BankItem[];
+        if (error) {
+          this.bankError = error.message;
+          this.bankItems = [];
+          console.error('Falha ao carregar cofre da guilda:', error);
+        } else {
+          this.bankItems = (items ?? []) as BankItem[];
+        }
         await this.loadChatMessages();
         this.ensureChatSubscription(this.payload.guild.id);
       } else {
@@ -500,6 +517,12 @@ export class GuildScreen {
       }
 
       const bank = this.section('Cofre comunitário');
+      if (this.bankError) {
+        const error = document.createElement('p');
+        error.textContent = 'Falha ao carregar o cofre: ' + this.bankError;
+        error.style.cssText = 'margin:0;color:#fca5a5;';
+        bank.append(error);
+      }
       const isOfficer = guild.my_role === 'leader' || guild.my_role === 'admin';
       const canView = guild.bank_view_access === 'all_members' || isOfficer;
       const canDeposit = guild.bank_deposit_access === 'all_members' || isOfficer;
@@ -591,7 +614,12 @@ export class GuildScreen {
         bank_deposit: 'depositou um item no cofre',
         bank_withdraw: 'retirou um item do cofre',
       };
-      if (!this.activity.length) {
+      if (this.activityError) {
+        const error = document.createElement('p');
+        error.textContent = 'Falha ao carregar o histórico: ' + this.activityError;
+        error.style.cssText = 'margin:0;color:#fca5a5;';
+        activitySection.append(error);
+      } else if (!this.activity.length) {
         const empty = document.createElement('p');
         empty.textContent = 'Ainda não há atividades registradas.';
         empty.style.cssText = 'margin:0;color:#94a3b8;';
