@@ -1302,3 +1302,25 @@ button {
   cursor: pointer !important;
   box-shadow: 0 2px 8px #0008 !important;
 }
+
+
+/* Nome da classe e nível sempre ocupam duas linhas, sem depender do tamanho do nome. */
+.prep-hero-title {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 5px 2px !important;
+  color: #ffe16b !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: clamp(7px, .62vw, 10px) !important;
+  line-height: 1.7 !important;
+  text-align: center !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+
+.prep-hero-title span {
+  display: inline-block !important;
+  max-width: 100% !important;
+}
