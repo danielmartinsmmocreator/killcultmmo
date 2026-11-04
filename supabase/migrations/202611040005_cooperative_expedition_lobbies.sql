@@ -231,7 +231,8 @@ begin
   select r.id, r.guild_id, r.status into v_room_id, v_guild_id, v_status
   from public.coop_expedition_rooms r
   where r.leader_user_id = v_user_id and r.status = 'lobby'
-  order by r.created_at desc limit 1;
+  order by r.created_at desc limit 1
+  for update of r;
   if v_room_id is null then raise exception 'Somente o líder de uma sala em preparação pode convidar jogadores.'; end if;
 
   select p.id into v_target_id from public.profiles p
@@ -249,8 +250,11 @@ begin
     where m.user_id = v_target_id and r.status in ('lobby', 'prepared')
   ) then raise exception 'Esse jogador já participa de uma sala cooperativa.'; end if;
 
-  select count(*) into v_count from public.coop_expedition_room_members m where m.room_id = v_room_id;
-  if v_count >= 3 then raise exception 'A sala já está cheia.'; end if;
+  select
+    (select count(*) from public.coop_expedition_room_members m where m.room_id = v_room_id)
+    + (select count(*) from public.coop_expedition_invites i where i.room_id = v_room_id and i.status = 'pending')
+    into v_count;
+  if v_count >= 3 then raise exception 'A sala já está cheia ou possui convites pendentes para todas as vagas.'; end if;
 
   insert into public.coop_expedition_invites (room_id, invited_user_id, invited_by, status)
   values (v_room_id, v_target_id, v_user_id, 'pending')
