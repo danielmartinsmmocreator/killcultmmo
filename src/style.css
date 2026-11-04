@@ -1237,3 +1237,68 @@ button {
 .board-floor-actions .btn-advance { background: rgba(16, 54, 130, .97); border-color: #4d78cf; color: #fff; }
 .board-floor-actions .btn-extract { background: rgba(111, 28, 31, .97); border-color: #bd5555; color: #fff; }
 .board-floor-actions button[hidden] { display: none !important; }
+
+
+/* Controles dos personagens: coluna única, marrom e tipografia pixelada. */
+.prep-hero-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 4px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 5px !important;
+  box-sizing: border-box !important;
+}
+
+.prep-hero-actions button {
+  display: block !important;
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  margin: 0 !important;
+  padding: 4px 2px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #80664e !important;
+  border-radius: 0 !important;
+  background: #49301f !important;
+  color: #ffe16b !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: clamp(7px, .58vw, 9px) !important;
+  font-weight: 400 !important;
+  line-height: 1.15 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.prep-hero-actions button:first-child {
+  border-color: #a98532 !important;
+  background: #5a3922 !important;
+  color: #ffe16b !important;
+}
+
+.prep-hero-actions button:disabled {
+  opacity: .42 !important;
+  cursor: not-allowed !important;
+}
+
+.prep-gm-crown {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border: 1px solid #d6ad45 !important;
+  border-radius: 50% !important;
+  background: #24170f !important;
+  color: #ffe16b !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 8px #0008 !important;
+}
