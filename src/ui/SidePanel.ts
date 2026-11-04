@@ -384,7 +384,7 @@ export class SidePanel {
 
     // Avança automaticamente nos andares comuns; marcos divisíveis por 5 aguardam decisão de extração.
     if (status === 'fighting') this.transitionScheduled = false;
-    if (!this.transitionScheduled && status !== 'fighting' && !(status === 'floor-cleared' && this.campaign.canExtract) && !(status === 'completed' && this.campaign.canExtract)) {
+    if (!this.cooperativeMode && !this.transitionScheduled && status !== 'fighting' && !(status === 'floor-cleared' && this.campaign.canExtract) && !(status === 'completed' && this.campaign.canExtract)) {
       this.transitionScheduled = true;
       const completedFloor = this.campaign.floorNumber;
       window.setTimeout(() => {
@@ -422,7 +422,7 @@ export class SidePanel {
     this.advanceButton.disabled = this.cooperativeMode && !this.cooperativeLeader;
     if (this.cooperativeMode && status === 'floor-cleared') this.advanceButton.textContent = this.cooperativeLeader ? 'Continuar para o próximo andar' : 'Aguardando o líder avançar';
     this.boardActions.hidden = this.advanceButton.hidden && this.extractButton.hidden;
-    this.retreatButton.hidden = status === 'defeated' || status === 'completed';
+    this.retreatButton.hidden = this.cooperativeMode || status === 'defeated' || status === 'completed';
     this.renderTelegraphs();
 
     const selected = this.state.selectedUnit;
