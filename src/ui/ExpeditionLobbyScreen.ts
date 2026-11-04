@@ -30,6 +30,7 @@ type CoopRoom = {
   created_at: string;
   members: CoopMember[];
 };
+type CoopSession = { id: string; room_id: string; leader_user_id: string; status: 'active' | 'completed' | 'defeated' | 'abandoned'; current_floor: number; turn_number: number; current_turn_user_id: string | null; state_snapshot: Record<string, unknown> | null; state_version: number; members: CoopMember[] };
 type CoopPayload = { room: CoopRoom | null; invites: CoopInvite[]; characters: CoopCharacter[] };
 
 const CLASS_NAMES: Record<string, string> = {
@@ -48,6 +49,7 @@ export class ExpeditionLobbyScreen {
   private readonly userId: string;
   private readonly onBack: () => void;
   private payload: CoopPayload = { room: null, invites: [], characters: [] };
+  private session: CoopSession | null = null;
   private busy = false;
   private message = '';
   private channel: RealtimeChannel | null = null;
@@ -105,6 +107,9 @@ export class ExpeditionLobbyScreen {
       filter: 'invited_user_id=eq.' + this.userId,
     }, () => { void this.refresh(); });
     if (roomId) {
+      channel = channel.on('postgres_changes', {
+        event: '*', schema: 'public', table: 'coop_expedition_sessions',
+      }, () => { void this.refresh(); });
       channel = channel
         .on('postgres_changes', {
           event: '*', schema: 'public', table: 'coop_expedition_rooms', filter: 'id=eq.' + roomId,
@@ -128,9 +133,14 @@ export class ExpeditionLobbyScreen {
     try {
       const data = await this.rpc<CoopPayload>('get_my_coop_lobby');
       this.payload = data ?? { room: null, invites: [], characters: [] };
+      this.session = await this.rpc<CoopSession | null>('get_my_coop_expedition_session').catch((error) => {
+        console.error('Falha ao consultar sessão cooperativa:', error);
+        return null;
+      });
       this.ensureSubscription(this.payload.room?.id ?? null);
       this.message = '';
     } catch (error) {
+      this.session = null;
       this.message = error instanceof Error ? error.message : 'Não foi possível carregar a sala cooperativa.';
     }
     this.render();
@@ -214,9 +224,11 @@ export class ExpeditionLobbyScreen {
       const ownMember = room.members.find((member) => member.user_id === this.userId);
       const lobby = this.section('[' + room.guild_tag + '] ' + room.guild_name);
       const status = document.createElement('p');
-      status.textContent = room.status === 'prepared'
-        ? 'GRUPO PREPARADO · A integração com o combate será ativada na próxima etapa.'
-        : 'SALA EM PREPARAÇÃO · ' + room.members.length + ' de 3 jogadores';
+      status.textContent = this.session
+        ? 'SESSÃO COOPERATIVA ATIVA · Andar ' + this.session.current_floor + ' · Turno ' + this.session.turn_number + ' · revisão ' + this.session.state_version
+        : room.status === 'prepared'
+          ? 'GRUPO PREPARADO · pronto para iniciar a sessão compartilhada.'
+          : 'SALA EM PREPARAÇÃO · ' + room.members.length + ' de 3 jogadores';
       status.style.cssText = 'margin:0;color:' + (room.status === 'prepared' ? '#86efac' : '#cbd5e1') + ';font-weight:800;';
       lobby.append(status);
 
@@ -274,6 +286,20 @@ export class ExpeditionLobbyScreen {
         }, ownMember.is_ready ? 'Prontidão cancelada.' : 'Prontidão confirmada.')));
       }
 
+      if (isLeader && room.status === 'prepared' && !this.session) {
+        const start = this.button('Iniciar expedição cooperativa', () => this.perform(async () => {
+          await this.rpc('start_coop_expedition_session');
+        }, 'Sessão cooperativa criada no servidor. O tabuleiro compartilhado será conectado na próxima etapa.'));
+        start.style.cssText += 'border-color:#16a34a;background:#14532d;';
+        lobby.append(start);
+      }
+
+      if (isLeader && this.session) {
+        lobby.append(this.button('Encerrar sessão de teste', () => this.perform(async () => {
+          await this.rpc('abandon_coop_expedition_session');
+        }, 'Sessão encerrada.')));
+      }
+
       if (isLeader && room.status === 'lobby') {
         const invite = document.createElement('div');
         invite.style.cssText = 'display:grid;gap:8px;padding-top:8px;border-top:1px solid #334155;';
@@ -297,14 +323,18 @@ export class ExpeditionLobbyScreen {
         lobby.append(prepare);
       }
 
-      lobby.append(this.button(isLeader ? 'Cancelar sala' : 'Sair da sala', () => this.perform(async () => {
-        await this.rpc('leave_coop_expedition_room');
-      }, isLeader ? 'Sala cancelada.' : 'Você saiu da sala.')));
+      if (!this.session) {
+        lobby.append(this.button(isLeader ? 'Cancelar sala' : 'Sair da sala', () => this.perform(async () => {
+          await this.rpc('leave_coop_expedition_room');
+        }, isLeader ? 'Sala cancelada.' : 'Você saiu da sala.')));
+      }
       page.append(lobby);
     }
 
     const note = document.createElement('p');
-    note.textContent = 'Nesta etapa, as salas, convites, seleção de heróis e prontidão já são persistidos no servidor. O combate cooperativo ainda não começa: a sincronização do tabuleiro será implementada na etapa seguinte.';
+    note.textContent = this.session
+      ? 'A sessão já possui registro persistente, controle de versão e sincronização em tempo real. O tabuleiro e as ações de combate ainda serão conectados na próxima etapa.'
+      : 'As salas, convites, seleção de heróis, prontidão e criação da sessão são persistidos no servidor. O combate será conectado à sessão na próxima etapa.';
     note.style.cssText = 'margin:0;color:#64748b;font-size:.82rem;line-height:1.5;';
     page.append(note);
     this.root.replaceChildren(page);
