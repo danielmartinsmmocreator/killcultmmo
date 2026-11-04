@@ -49,6 +49,7 @@ export class PreparationScreen {
   private readonly isGameMaster: boolean;
   private readonly highestFloor: number;
   private readonly onOpenGuilds?: () => void;
+  private readonly onOpenExpeditions?: () => void;
   private readonly onAllocateBaseAttribute?: (classId: string, attribute: 'strength' | 'vitality' | 'defense') => Promise<boolean>;
   private readonly onResetBaseAttributes?: (classId: string) => Promise<boolean>;
   private readonly onBuyBaseAttributePoint?: (classId: string) => Promise<boolean>;
@@ -61,7 +62,7 @@ export class PreparationScreen {
   private inventorySort: 'floor-asc' | 'floor-desc' | 'rarity-desc' | 'rarity-asc' = 'floor-desc';
   private devPanelOpen = false;
 
-  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>, isGameMaster = false, onAllocateBaseAttribute?: (classId: string, attribute: 'strength' | 'vitality' | 'defense') => Promise<boolean>, onResetBaseAttributes?: (classId: string) => Promise<boolean>, onBuyBaseAttributePoint?: (classId: string) => Promise<boolean>, highestFloor = 1, onOpenGuilds?: () => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onStart: () => void, playerNickname = 'JOGADOR', onEquipmentChange?: () => Promise<boolean>, onSellItem?: (instanceId: string) => Promise<number>, onSignOut?: () => Promise<void>, maxUnlockedSkipRange = 0, onSkipRange?: (range: number, cost: number) => Promise<boolean>, isGameMaster = false, onAllocateBaseAttribute?: (classId: string, attribute: 'strength' | 'vitality' | 'defense') => Promise<boolean>, onResetBaseAttributes?: (classId: string) => Promise<boolean>, onBuyBaseAttributePoint?: (classId: string) => Promise<boolean>, highestFloor = 1, onOpenGuilds?: () => void, onOpenExpeditions?: () => void) {
     this.root = root;
     this.campaign = campaign;
     this.onStart = onStart;
@@ -74,6 +75,7 @@ export class PreparationScreen {
     this.isGameMaster = isGameMaster;
     this.highestFloor = Math.max(1, Math.min(100, Math.floor(highestFloor)));
     this.onOpenGuilds = onOpenGuilds;
+    this.onOpenExpeditions = onOpenExpeditions;
     this.onAllocateBaseAttribute = onAllocateBaseAttribute;
     this.onResetBaseAttributes = onResetBaseAttributes;
     this.onBuyBaseAttributePoint = onBuyBaseAttributePoint;
@@ -327,7 +329,7 @@ export class PreparationScreen {
     const roster = document.createElement('div');
     roster.className = 'prep-menu-grid';
     roster.style.cssText='';
-    for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Guildas'){this.onOpenGuilds?.();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
+    for (const label of ['Guildas','Expedições','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Guildas'){this.onOpenGuilds?.();}else if(label==='Expedições'){this.onOpenExpeditions?.();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
     const skipRange = document.createElement('section');
     skipRange.className = 'prep-skip-range';
     let selectedSkipRange = Math.max(1, this.maxUnlockedSkipRange);
