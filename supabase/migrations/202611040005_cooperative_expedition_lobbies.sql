@@ -45,7 +45,7 @@ create index coop_expedition_invites_recipient_idx
   on public.coop_expedition_invites (invited_user_id, status, created_at desc);
 
 -- Habilita atualizações em tempo real para que a sala reflita escolhas e prontidão.
-do $
+do $block$
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
     if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = 'coop_expedition_rooms') then
@@ -59,7 +59,7 @@ begin
     end if;
   end if;
 end;
-$;
+$block$;
 
 alter table public.coop_expedition_rooms enable row level security;
 alter table public.coop_expedition_room_members enable row level security;
@@ -71,12 +71,12 @@ language sql
 stable
 security definer
 set search_path = ''
-as $
+as $function$
   select exists (
     select 1 from public.coop_expedition_room_members m
     where m.room_id = p_room_id and m.user_id = auth.uid()
   );
-$;
+$function$;
 
 create policy "Room participants can read cooperative rooms"
   on public.coop_expedition_rooms for select to authenticated
