@@ -228,7 +228,7 @@ export class GuildScreen {
         const metric = document.createElement('div');
         metric.style.cssText = 'padding:9px 12px;border:1px solid #475569;border-radius:8px;background:#0f172a;';
         const caption = document.createElement('small');
-        caption.textContent = label;
+        caption.textContent = String(label);
         caption.style.cssText = 'display:block;color:#94a3b8;font-size:.68rem;font-weight:700;';
         const valueText = document.createElement('strong');
         valueText.textContent = String(value);
