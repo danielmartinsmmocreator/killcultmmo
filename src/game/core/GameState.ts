@@ -200,7 +200,7 @@ export class GameState {
     const targeting = this.targetingState as AbilityTargeting | null;
     if (!targeting) return true;
 
-    if (targeting.id === 'ambush')
+    if (targeting.id === 'ambush') {
       const target = action.targetUid ? this.findUnit(action.targetUid) : null;
       if (!target || !isAlive(target) || !action.destination || !this.chooseAbilityCell(target.position) || !this.chooseAbilityCell(action.destination)) {
         this.cancelAbility();
