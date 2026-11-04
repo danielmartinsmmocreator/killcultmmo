@@ -121,6 +121,9 @@ export class GameState {
   private effect: AbilityEffect | null = null;
   private readonly listeners = new Set<Listener>();
   private readonly onProgressionEvent?: (event: ProgressionPersistenceEvent) => void;
+  /** No modo cooperativo, uma ação individual não inicia automaticamente a fase dos monstros. */
+  private cooperativeMode = false;
+  private cooperativeControlledHeroUid: string | null = null;
 
   constructor(
     createBattle: BattleFactory = createInitialBattle,
@@ -131,6 +134,86 @@ export class GameState {
     this.specialBonusesFor = specialBonusesFor;
     this.onProgressionEvent = onProgressionEvent;
     this.setup();
+  }
+
+  /** Ativa o fluxo de rodada compartilhada e limita a seleção ao herói controlado pelo usuário. */
+  configureCooperativeMode(controlledHeroUid: string): boolean {
+    const hero = this.allUnits.find((unit) => unit.uid === controlledHeroUid && unit.definition.team === 'hero');
+    if (!hero) return false;
+    this.cooperativeMode = true;
+    this.cooperativeControlledHeroUid = controlledHeroUid;
+    this.selectedUnitUid = null;
+    this.targetingState = null;
+    this.currentPhase = 'player';
+    this.pendingActors = [];
+    this.emit('select');
+    return true;
+  }
+
+  /** O cliente líder troca temporariamente o ator ao reproduzir a ação enviada por outro jogador. */
+  setCooperativeActor(heroUid: string): boolean {
+    if (!this.cooperativeMode) return false;
+    const hero = this.allUnits.find((unit) => unit.uid === heroUid && unit.definition.team === 'hero');
+    if (!hero) return false;
+    this.cooperativeControlledHeroUid = heroUid;
+    this.selectedUnitUid = null;
+    this.targetingState = null;
+    return true;
+  }
+
+  /** Aplica no motor local uma ação já validada pelo RPC do servidor. */
+  applyCooperativeAction(
+    heroUid: string,
+    action: {
+      type: 'move' | 'ability' | 'pass';
+      destination?: Position;
+      abilityId?: string;
+      target?: Position;
+      targetUid?: string;
+    },
+  ): boolean {
+    if (!this.cooperativeMode || this.currentPhase !== 'player' || this.isOver) return false;
+    const hero = this.allUnits.find((unit) => unit.uid === heroUid && unit.definition.team === 'hero');
+    if (!hero || !isAlive(hero)) return false;
+    this.cooperativeControlledHeroUid = heroUid;
+    this.selectedUnitUid = heroUid;
+    this.targetingState = null;
+
+    if (action.type === 'move') {
+      return action.destination ? this.moveSelectedUnit(action.destination) : false;
+    }
+    if (action.type === 'pass') return this.passTurn();
+    if (action.type !== 'ability' || !action.abilityId || hero.definition.ability?.id !== action.abilityId) return false;
+    if (!this.beginAbility()) return false;
+    if (!this.targetingState) return true;
+
+    if (this.targetingState.id === 'ambush') {
+      const target = action.targetUid ? this.findUnit(action.targetUid) : null;
+      if (!target || !isAlive(target) || !action.destination) return false;
+      if (!this.chooseAbilityCell(target.position)) return false;
+      if (!this.chooseAbilityCell(action.destination)) return false;
+    } else if (this.targetingState.id === 'exura') {
+      const target = action.targetUid ? this.findUnit(action.targetUid) : null;
+      if (!target || !isAlive(target)) return false;
+      if (!this.chooseAbilityCell(target.position)) return false;
+    } else {
+      if (!action.target || !this.chooseAbilityCell(action.target)) return false;
+    }
+    return this.confirmAbility();
+  }
+
+  /** Depois de todos os jogadores agirem, inicia uma única fase de chefes telegrafados e monstros. */
+  resolveCooperativeRound(): boolean {
+    if (!this.cooperativeMode || this.currentPhase !== 'player' || this.isOver) return false;
+    this.resetEffects();
+    this.selectedUnitUid = null;
+    this.targetingState = null;
+    this.noticeText = null;
+    this.currentPhase = 'telegraphs';
+    this.pendingActors = this.pendingTelegraphs.map((intent) => intent.id);
+    this.addLog('Todos os jogadores agiram. Os monstros começam a rodada.', 'info');
+    this.emit('resolving');
+    return true;
   }
 
   // ---------- Consultas ----------
@@ -392,6 +475,7 @@ export class GameState {
     }
     const unit = this.allUnits.find((candidate) => candidate.uid === uid);
     if (!unit || !isAlive(unit) || unit.definition.team !== 'hero') return;
+    if (this.cooperativeMode && unit.uid !== this.cooperativeControlledHeroUid) return;
     this.selectedUnitUid = uid;
     this.targetingState = null;
     this.noticeText = null;
@@ -805,6 +889,15 @@ export class GameState {
 
   private beginResolution(): void {
     this.selectedUnitUid = null;
+    if (this.cooperativeMode) {
+      this.targetingState = null;
+      this.lastActorUid = null;
+      this.pendingActors = [];
+      this.currentPhase = 'player';
+      this.addLog('Ação enviada. Aguardando os demais jogadores.', 'info');
+      this.emit('turn');
+      return;
+    }
     this.targetingState = null;
     this.lastActorUid = null;
     this.currentPhase = 'heroes';
