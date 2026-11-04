@@ -37,6 +37,7 @@ type GuildData = {
   invites: GuildInvite[];
 };
 
+type GuildActivity = { id: number; actor_nickname: string; event_type: string; details: Record<string, unknown>; created_at: string };
 type GuildJoinRequest = { id: string; user_id: string; nickname: string; global_level: number; created_at: string };
 type PublicGuild = { id: string; name: string; tag: string; description: string; member_count: number; global_level: number; leader_nickname: string; has_requested: boolean };
 type GuildPayload = { guild: GuildData | null; invites: GuildInvite[]; join_requests?: GuildJoinRequest[] };
@@ -56,6 +57,7 @@ export class GuildScreen {
   private bankItems: BankItem[] = [];
   private publicGuilds: PublicGuild[] = [];
   private joinRequests: GuildJoinRequest[] = [];
+  private activity: GuildActivity[] = [];
   private busy = false;
   private message = '';
   private chatChannel: RealtimeChannel | null = null;
@@ -138,6 +140,7 @@ export class GuildScreen {
       this.bankItems = [];
       this.publicGuilds = [];
       this.joinRequests = this.payload.guild ? await this.rpc<GuildJoinRequest[]>('get_guild_join_requests') : [];
+      this.activity = this.payload.guild ? await this.rpc<GuildActivity[]>('get_guild_activity', { p_limit: 50 }) : [];
       if (this.payload.guild) {
         const { data: items, error } = await supabase
           .from('guild_bank_items')
@@ -577,6 +580,42 @@ export class GuildScreen {
         }
       }
       page.append(bank);
+
+      const activitySection = this.section('Histórico da guilda');
+      const activityLabels: Record<string, string> = {
+        member_joined: 'entrou na guilda',
+        member_left: 'saiu da guilda',
+        member_removed: 'removeu um membro',
+        role_changed: 'alterou um cargo',
+        bank_deposit: 'depositou um item no cofre',
+        bank_withdraw: 'retirou um item do cofre',
+      };
+      if (!this.activity.length) {
+        const empty = document.createElement('p');
+        empty.textContent = 'Ainda não há atividades registradas.';
+        empty.style.cssText = 'margin:0;color:#94a3b8;';
+        activitySection.append(empty);
+      }
+      for (const event of this.activity) {
+        const row = document.createElement('div');
+        row.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:9px;border-radius:8px;background:#0f172a;';
+        const description = document.createElement('span');
+        let detail = '';
+        if (event.event_type === 'role_changed') {
+          detail = ' (' + String(event.details.old_role ?? '') + ' → ' + String(event.details.new_role ?? '') + ')';
+        } else if (event.event_type === 'bank_deposit' || event.event_type === 'bank_withdraw') {
+          const itemId = String(event.details.item_definition_id ?? '');
+          detail = ': ' + (ITEM_DEFINITIONS[itemId]?.name ?? itemId);
+        }
+        description.textContent = event.actor_nickname + ' ' + (activityLabels[event.event_type] ?? 'realizou uma atividade') + detail;
+        const time = document.createElement('time');
+        const date = new Date(event.created_at);
+        time.textContent = Number.isNaN(date.getTime()) ? '' : date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        time.style.cssText = 'flex-shrink:0;color:#64748b;font-size:.7rem;';
+        row.append(description, time);
+        activitySection.append(row);
+      }
+      page.append(activitySection);
 
       if (guild.my_role !== 'leader') {
         page.append(this.button('Sair da guilda', () => this.perform(async () => {
