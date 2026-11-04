@@ -59,13 +59,25 @@ export class CooperativeSessionClient {
   private refreshInFlight: Promise<CooperativeSessionState | null> | null = null;
   private current: CooperativeSessionState | null = null;
 
+  readonly sessionId: string;
+  readonly userId: string;
+  readonly characterId: string;
+  private readonly onUpdate: (session: CooperativeSessionState) => void;
+  private readonly onError: (message: string) => void;
+
   constructor(
-    readonly sessionId: string,
-    readonly userId: string,
-    readonly characterId: string,
-    private readonly onUpdate: (session: CooperativeSessionState) => void,
-    private readonly onError: (message: string) => void = console.error,
-  ) {}
+    sessionId: string,
+    userId: string,
+    characterId: string,
+    onUpdate: (session: CooperativeSessionState) => void,
+    onError: (message: string) => void = console.error,
+  ) {
+    this.sessionId = sessionId;
+    this.userId = userId;
+    this.characterId = characterId;
+    this.onUpdate = onUpdate;
+    this.onError = onError;
+  }
 
   get session(): CooperativeSessionState | null {
     return this.current;
