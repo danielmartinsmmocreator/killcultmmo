@@ -30,6 +30,6 @@ $$;
 
 drop trigger if exists sync_expedition_highest_floor on public.expeditions;
 create trigger sync_expedition_highest_floor
-after insert or update of current_floor on public.expeditions
+after insert or update on public.expeditions
 for each row
 execute function public.sync_profile_highest_floor();
