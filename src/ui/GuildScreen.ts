@@ -1,4 +1,5 @@
 import type { Campaign } from '../game/core/Campaign';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 import { ITEM_DEFINITIONS } from '../game/data/items';
 import { supabase } from '../lib/supabase';
 
@@ -38,6 +39,7 @@ type GuildData = {
 
 type GuildPayload = { guild: GuildData | null; invites: GuildInvite[] };
 type BankItem = { id: string; item_definition_id: string; obtained_at_floor: number | null; deposited_at: string };
+type GuildChatMessage = { id: string; guild_id: string; sender_user_id: string | null; sender_nickname: string; sender_role: 'leader' | 'admin' | 'member'; content: string; created_at: string };
 
 const cardStyle = 'padding:14px;border:1px solid #394150;border-radius:10px;background:#151d2b;color:#f3f4f6;';
 const buttonStyle = 'padding:9px 12px;border:1px solid #64748b;border-radius:7px;background:#202b3d;color:#f8fafc;cursor:pointer;font-weight:700;';
@@ -52,6 +54,10 @@ export class GuildScreen {
   private bankItems: BankItem[] = [];
   private busy = false;
   private message = '';
+  private chatChannel: RealtimeChannel | null = null;
+  private chatGuildId: string | null = null;
+  private chatMessages: GuildChatMessage[] = [];
+  private chatMessagesRoot: HTMLElement | null = null;
 
   constructor(root: HTMLElement, campaign: Campaign, onBack: () => void) {
     this.root = root;
@@ -134,12 +140,94 @@ export class GuildScreen {
           .order('deposited_at', { ascending: false });
         if (error && !error.message.toLowerCase().includes('permission')) throw error;
         this.bankItems = (items ?? []) as BankItem[];
+        await this.loadChatMessages();
+        this.ensureChatSubscription(this.payload.guild.id);
+      } else {
+        this.chatMessages = [];
+        this.chatMessagesRoot = null;
+        this.disposeChatSubscription();
       }
       this.message = '';
     } catch (error) {
       this.message = error instanceof Error ? error.message : 'Não foi possível carregar as guildas.';
     }
     this.render();
+  }
+
+  private disposeChatSubscription(): void {
+    if (this.chatChannel && supabase) void supabase.removeChannel(this.chatChannel);
+    this.chatChannel = null;
+    this.chatGuildId = null;
+  }
+
+  dispose(): void {
+    this.disposeChatSubscription();
+    this.chatMessagesRoot = null;
+  }
+
+  private ensureChatSubscription(guildId: string): void {
+    if (!supabase || this.chatGuildId === guildId) return;
+    this.disposeChatSubscription();
+    this.chatGuildId = guildId;
+    this.chatChannel = supabase
+      .channel('guild-chat-' + guildId)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'guild_chat_messages',
+        filter: 'guild_id=eq.' + guildId,
+      }, () => { void this.loadChatMessages(); })
+      .subscribe();
+  }
+
+  private async loadChatMessages(): Promise<void> {
+    if (!supabase || !this.payload.guild) return;
+    const { data, error } = await supabase
+      .from('guild_chat_messages')
+      .select('id,guild_id,sender_user_id,sender_nickname,sender_role,content,created_at')
+      .eq('guild_id', this.payload.guild.id)
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if (error) {
+      console.error('Falha ao carregar chat da guilda:', error);
+      return;
+    }
+    this.chatMessages = ((data ?? []) as GuildChatMessage[]).reverse();
+    if (this.chatMessagesRoot) this.renderChatMessages(this.chatMessagesRoot);
+  }
+
+  private renderChatMessages(container: HTMLElement): void {
+    container.replaceChildren();
+    if (!this.chatMessages.length) {
+      const empty = document.createElement('p');
+      empty.textContent = 'Nenhuma mensagem ainda. Comece a conversa com sua guilda!';
+      empty.style.cssText = 'margin:0;color:#94a3b8;text-align:center;padding:16px 6px;';
+      container.append(empty);
+      return;
+    }
+    for (const message of this.chatMessages) {
+      const row = document.createElement('article');
+      row.style.cssText = 'padding:8px 10px;border-radius:8px;background:#0f172a;overflow-wrap:anywhere;';
+      const meta = document.createElement('div');
+      meta.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:4px;';
+      const author = document.createElement('strong');
+      author.textContent = message.sender_nickname;
+      author.style.cssText = 'color:#e2e8f0;font-size:.88rem;';
+      const role = document.createElement('small');
+      role.textContent = message.sender_role === 'leader' ? '👑 LÍDER' : message.sender_role === 'admin' ? '◆ ADMIN' : 'MEMBRO';
+      role.style.cssText = 'color:' + (message.sender_role === 'leader' ? '#facc15' : message.sender_role === 'admin' ? '#a78bfa' : '#94a3b8') + ';font-size:.65rem;font-weight:800;';
+      const time = document.createElement('time');
+      const date = new Date(message.created_at);
+      time.textContent = Number.isNaN(date.getTime()) ? '' : date.toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      time.style.cssText = 'margin-left:auto;color:#64748b;font-size:.68rem;';
+      const body = document.createElement('p');
+      body.textContent = message.content;
+      body.style.cssText = 'margin:0;color:#f1f5f9;font-size:.9rem;white-space:pre-wrap;';
+      meta.append(author, role, time);
+      row.append(meta, body);
+      container.append(row);
+    }
+    container.scrollTop = container.scrollHeight;
   }
 
   private async perform(action: () => Promise<void>, successMessage = 'Operação concluída.'): Promise<void> {
@@ -172,7 +260,7 @@ export class GuildScreen {
     title.textContent = 'GUILDAS';
     title.style.cssText = 'margin:0;font-size:clamp(1.7rem,4vw,2.5rem);';
     titleWrap.append(eyebrow, title);
-    header.append(titleWrap, this.button('← Voltar à base', this.onBack));
+    header.append(titleWrap, this.button('← Voltar à base', () => { this.dispose(); this.onBack(); }));
     page.append(header);
 
     if (this.message) {
@@ -238,6 +326,50 @@ export class GuildScreen {
       }
       summary.append(description, stats);
       page.append(summary);
+
+      const chat = this.section('Chat da guilda');
+      const chatMessages = document.createElement('div');
+      chatMessages.style.cssText = 'display:grid;gap:7px;max-height:340px;overflow-y:auto;padding:4px;';
+      this.chatMessagesRoot = chatMessages;
+      this.renderChatMessages(chatMessages);
+      const composer = document.createElement('form');
+      composer.style.cssText = 'display:flex;gap:8px;align-items:stretch;';
+      const messageInput = document.createElement('input');
+      messageInput.type = 'text';
+      messageInput.maxLength = 500;
+      messageInput.placeholder = 'Escreva uma mensagem...';
+      messageInput.style.cssText = inputStyle + 'flex:1;min-width:0;';
+      const send = document.createElement('button');
+      send.type = 'submit';
+      send.textContent = 'Enviar';
+      send.style.cssText = buttonStyle;
+      composer.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const text = messageInput.value.trim();
+        if (!text || this.busy || !supabase) return;
+        send.disabled = true;
+        try {
+          const { error } = await supabase.from('guild_chat_messages').insert({
+            guild_id: guild.id,
+            content: text,
+          });
+          if (error) throw error;
+          messageInput.value = '';
+          await this.loadChatMessages();
+        } catch (error) {
+          this.message = error instanceof Error ? error.message : 'Não foi possível enviar a mensagem.';
+          this.render();
+        } finally {
+          send.disabled = false;
+          messageInput.focus();
+        }
+      });
+      composer.append(messageInput, send);
+      const hint = document.createElement('small');
+      hint.textContent = 'Mensagens visíveis somente para membros da guilda · até 500 caracteres';
+      hint.style.cssText = 'color:#64748b;';
+      chat.append(chatMessages, composer, hint);
+      page.append(chat);
 
       const roster = this.section('Membros');
       for (const member of guild.members) {
