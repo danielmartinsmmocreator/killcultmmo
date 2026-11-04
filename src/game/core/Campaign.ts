@@ -19,6 +19,9 @@ import { ITEM_DEFINITIONS } from '../data/items';
  */
 export type CampaignStatus = 'fighting' | 'floor-cleared' | 'defeated' | 'completed';
 
+/** Multiplicadores fixos de dificuldade para expedições cooperativas. */
+export const COOPERATIVE_MONSTER_SCALING = Object.freeze({ hp: 10, damage: 3 });
+
 /**
  * Estado da campanha: andar atual, grupo de heróis e o combate do andar. Não depende do Phaser
  * nem do DOM. A cena e o painel observam `battle` (todo avanço ou reinício passa por ele, via os
@@ -385,7 +388,7 @@ export class Campaign {
     // A configuração customizada é validada pelo construtor do encontro; o tipo acompanha o chefe escolhido.
     try {
       const setup = buildEncounter(config, this.activeParty, this.cooperativeMode
-      ? { hp: 10, damage: 3 }
+      ? COOPERATIVE_MONSTER_SCALING
       : { hp: 1, damage: 1 });
       this.battle.loadEncounter({ ...setup, title: `DEV — Andar ${this.floorNumber}: encontro personalizado` });
       return true;
