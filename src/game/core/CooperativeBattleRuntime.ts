@@ -76,6 +76,11 @@ export class CooperativeBattleRuntime {
       }
       this.snapshotSignature = JSON.stringify(session.state_snapshot);
       this.loadCooperativeProgressionEvents(session.state_snapshot);
+      if (!this.isOwnHeroAlive()) {
+        this.dispose();
+        this.onBack();
+        return;
+      }
     } else if (client.isLeader) {
       await client.initializeSnapshot(campaign.exportSnapshot());
       const initialized = client.session;
@@ -84,6 +89,11 @@ export class CooperativeBattleRuntime {
       }
       this.snapshotSignature = JSON.stringify(initialized.state_snapshot);
       this.loadCooperativeProgressionEvents(initialized.state_snapshot);
+      if (!this.isOwnHeroAlive()) {
+        this.dispose();
+        this.onBack();
+        return;
+      }
     } else {
       throw new Error('O líder ainda está inicializando o tabuleiro. Volte à sala e tente entrar novamente em alguns segundos.');
     }
@@ -181,13 +191,18 @@ export class CooperativeBattleRuntime {
 
     const signature = session.state_snapshot ? JSON.stringify(session.state_snapshot) : '';
     if (signature && signature !== this.snapshotSignature && !this.processingRound) {
-      if (!campaign.restoreSnapshot(session.state_snapshot)) {
+      const sameFloor = campaign.floorNumber === session.current_floor;
+      if (!campaign.restoreSnapshot(session.state_snapshot, sameFloor)) {
         this.showError('O servidor publicou um estado incompatível. A batalha foi pausada para proteger o progresso.');
         return;
       }
       this.snapshotSignature = signature;
     }
     if (session.state_snapshot) await this.processCooperativeProgressionEvents(session.state_snapshot);
+    if (session.status === 'active' && !this.isOwnHeroAlive()) {
+      this.leaveToLobby();
+      return;
+    }
 
     this.updateStatus(session);
     if (client.isLeader && session.resolution_pending && !this.processingRound) {
@@ -206,8 +221,9 @@ export class CooperativeBattleRuntime {
       this.snapshotSignature = JSON.stringify(session.state_snapshot);
 
       const actions = [...session.submitted_actions];
-      if (actions.length !== session.members.length) {
-        throw new Error('A rodada foi marcada como completa, mas a lista de ações está incompleta.');
+      const livingMembers = session.members.filter((member) => !member.is_eliminated);
+      if (actions.length !== livingMembers.length) {
+        throw new Error('A rodada foi marcada como completa, mas a lista de ações dos heróis vivos está incompleta.');
       }
       for (const submitted of actions) {
         const heroUid = Campaign.cooperativeHeroUid(submitted.character_id);
@@ -243,6 +259,11 @@ export class CooperativeBattleRuntime {
       this.snapshotSignature = JSON.stringify(snapshot);
       await this.processCooperativeProgressionEvents(snapshot);
       this.processingRound = false;
+      if (this.disposed) return;
+      if (!this.isOwnHeroAlive()) {
+        this.leaveToLobby();
+        return;
+      }
 
       // Andares comuns avançam automaticamente; nos marcos de extração, o grupo decide continuar.
       if (campaign.status === 'floor-cleared' && !campaign.canExtract) {
@@ -337,6 +358,12 @@ export class CooperativeBattleRuntime {
       this.submittingAction = false;
       this.updateStatus(client.session);
     }
+  }
+
+  private isOwnHeroAlive(): boolean {
+    const heroUid = Campaign.cooperativeHeroUid(this.characterId);
+    const hero = this.campaign?.battle.roster.find((unit) => unit.uid === heroUid);
+    return Boolean(hero && hero.hp > 0);
   }
 
   private updateStatus(session: CooperativeSessionState | null | undefined): void {
