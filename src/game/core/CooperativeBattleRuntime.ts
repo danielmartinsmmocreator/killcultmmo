@@ -189,6 +189,9 @@ export class CooperativeBattleRuntime {
         if (!accepted) console.warn('Ação cooperativa não aplicada (herói indisponível ou ação inválida):', submitted);
       }
 
+      // A simulação percorre os heróis de todos os participantes; ao terminar,
+      // devolve a seleção local ao personagem que pertence a este cliente.
+      this.campaign.battle.setCooperativeActor(Campaign.cooperativeHeroUid(this.characterId));
       this.scene?.markCooperativeResolutionStarted();
       if (!this.campaign.battle.resolveCooperativeRound()) {
         throw new Error('O motor de batalha não conseguiu iniciar a fase dos monstros.');
