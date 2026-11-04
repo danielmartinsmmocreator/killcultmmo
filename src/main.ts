@@ -362,7 +362,7 @@ async function retreatExpeditionAndReturn(): Promise<void> {
     await flushPendingExpeditionProgress();
     const { error } = await supabase.rpc('finish_player_expedition', {
       p_expedition_id: expeditionId,
-      p_result: 'combat_defeat',
+      p_result: 'retreat',
     });
     if (error) throw error;
 
