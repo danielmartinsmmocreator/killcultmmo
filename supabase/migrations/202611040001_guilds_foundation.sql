@@ -85,7 +85,7 @@ as $$
   from public.guild_members gm
   where gm.guild_id = p_guild_id and gm.user_id = auth.uid()
   limit 1;
-$;
+$$;
 
 create policy "Guild members can read their guild"
   on public.guilds for select to authenticated
