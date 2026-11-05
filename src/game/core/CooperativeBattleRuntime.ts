@@ -254,6 +254,9 @@ export class CooperativeBattleRuntime {
         pending.action_payload as CooperativeAction,
       );
       if (!accepted) throw new Error('A ação do jogador não pôde ser aplicada ao herói selecionado.');
+      // A simulação do líder pode aplicar a ação de outro participante; devolve
+      // imediatamente o controle local ao personagem deste cliente.
+      campaign.battle.setCooperativeActor(Campaign.cooperativeHeroUid(this.characterId));
 
       // Aguarda a animação do movimento/efeito terminar antes de liberar o próximo herói.
       await new Promise<void>((resolve) => window.setTimeout(resolve, 560));
