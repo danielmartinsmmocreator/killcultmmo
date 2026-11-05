@@ -411,6 +411,10 @@ export class CooperativeBattleRuntime {
     const client = this.client;
     if (!sidePanel || !session || !client) return;
     const actor = session.members.find((member) => member.user_id === session.current_turn_user_id);
+    const pendingAction = session.submitted_actions.find((action) => !action.processed_at);
+    const animatingMember = pendingAction
+      ? session.members.find((member) => member.character_id === pendingAction.character_id)
+      : undefined;
     const livingMembers = session.members.filter((member) => !member.is_eliminated);
     const turnPosition = Math.min(session.submitted_actions.filter((action) => action.processed_at).length + 1, Math.max(1, livingMembers.length));
     const classLabels: Record<string, string> = {
@@ -434,7 +438,7 @@ export class CooperativeBattleRuntime {
           : session.resolution_pending
             ? 'Todos os heróis agiram. Ataques automáticos dos heróis; depois os monstros se movimentam e atacam.'
             : session.action_processing
-              ? 'Ação em animação. Aguarde a liberação do próximo herói.'
+              ? `Animação do turno de ${animatingMember?.class_id ? classLabels[animatingMember.class_id] ?? animatingMember.class_id : 'herói'}. Aguarde a liberação do próximo.`
               : canAct
                 ? `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass}. Sua vez: escolha uma ação ou passe.`
                 : `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass} (${actor?.nickname ?? 'outro jogador'}).`;
