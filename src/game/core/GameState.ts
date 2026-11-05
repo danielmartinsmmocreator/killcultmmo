@@ -981,6 +981,9 @@ export class GameState {
         this.finishTelegraphPhase();
       } else if (this.currentPhase === 'monsters-move') {
         this.finishMonsterMovePhase();
+        // Emite um passo próprio para os clientes animarem todos os movimentos
+        // antes de qualquer dano da fase de ataques.
+        return true;
       } else {
         this.finishMonsterPhase();
       }
