@@ -253,7 +253,7 @@ export interface AbilityPreview {
  * - 'monsters': os monstros andam e atacam, e os chefes anunciam o próximo golpe (travadas);
  * - 'over': vitória ou derrota.
  */
-export type BattlePhase = 'player' | 'heroes' | 'telegraphs' | 'monsters' | 'over';
+export type BattlePhase = 'player' | 'heroes' | 'telegraphs' | 'monsters' | 'monsters-move' | 'monsters-attack' | 'over';
 
 /**
  * - 'select': a seleção mudou;
