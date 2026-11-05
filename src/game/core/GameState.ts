@@ -197,7 +197,9 @@ export class GameState {
       return this.passTurn();
     }
     if (action.type === 'attack') {
-      this.performAttack(hero);
+      // Atacar consome a ação individual; o dano é aplicado na fase automática
+      // dos heróis, junto com os ataques dos demais participantes.
+      this.addLog(`${hero.definition.name} escolheu atacar.`, 'hero');
       this.beginResolution();
       return true;
     }
@@ -235,16 +237,16 @@ export class GameState {
     return this.passTurn();
   }
 
-  /** Depois de todos os jogadores agirem, inicia uma única fase de chefes telegrafados e monstros. */
+  /** Depois das ações individuais, resolve os ataques automáticos dos heróis e a resposta dos inimigos. */
   resolveCooperativeRound(): boolean {
     if (!this.cooperativeMode || this.currentPhase !== 'player' || this.isOver) return false;
     this.resetEffects();
     this.selectedUnitUid = null;
     this.targetingState = null;
     this.noticeText = null;
-    this.currentPhase = 'telegraphs';
-    this.pendingActors = this.pendingTelegraphs.map((intent) => intent.id);
-    this.addLog('Todos os jogadores agiram. Os monstros começam a rodada.', 'info');
+    this.currentPhase = 'heroes';
+    this.pendingActors = this.heroes.map((hero) => hero.uid);
+    this.addLog('Todos os jogadores agiram. Os heróis atacam!', 'hero');
     this.emit('resolving');
     return true;
   }
