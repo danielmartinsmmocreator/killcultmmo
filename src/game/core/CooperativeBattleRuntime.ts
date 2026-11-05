@@ -386,6 +386,18 @@ export class CooperativeBattleRuntime {
     if (!sidePanel || !session || !client) return;
     const actor = session.members.find((member) => member.user_id === session.current_turn_user_id);
     const acted = session.submitted_actions.some((action) => action.actor_user_id === this.userId);
+    const livingMembers = session.members.filter((member) => !member.is_eliminated);
+    const turnPosition = Math.min(session.submitted_actions.length + 1, Math.max(1, livingMembers.length));
+    const classLabels: Record<string, string> = {
+      warrior: 'Guerreiro',
+      mage: 'Mago',
+      cleric: 'Clérigo',
+      assassin: 'Assassino',
+      archer: 'Arqueiro',
+    };
+    const actorClass = actor?.class_id
+      ? classLabels[actor.class_id] ?? actor.class_id
+      : 'Herói';
     const campaignStatus = this.campaign?.status;
     const canAct = client.canAct && campaignStatus === 'fighting';
     const status = campaignStatus === 'floor-cleared'
@@ -395,12 +407,12 @@ export class CooperativeBattleRuntime {
         : campaignStatus === 'defeated'
           ? 'Derrota. Todos os heróis foram derrotados.'
           : session.resolution_pending
-            ? 'Todos enviaram suas ações. Os heróis atacam e os monstros respondem.'
+            ? 'Todos os heróis agiram. Os heróis atacam; depois os monstros se movimentam e atacam.'
             : canAct
-              ? 'Sua vez: escolha mover, atacar, usar a habilidade ou passar.'
+              ? `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass}. Sua vez: escolha uma ação ou passe.`
               : acted
-                ? 'Ação recebida. Aguarde os demais jogadores.'
-                : 'Vez de ' + (actor?.nickname ?? 'outro participante') + '.';
+                ? 'Sua ação foi registrada. Aguarde o próximo herói.'
+                : `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass} (${actor?.nickname ?? 'outro jogador'}).`;
     sidePanel.updateCooperativeStatus(
       canAct,
       status,
