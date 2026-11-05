@@ -377,7 +377,7 @@ export class CooperativeBattleRuntime {
         : campaignStatus === 'defeated'
           ? 'Derrota. Todos os heróis foram derrotados.'
           : session.resolution_pending
-            ? 'Todos enviaram suas ações. O líder está resolvendo os monstros.'
+            ? 'Todos enviaram suas ações. Os heróis atacam e os monstros respondem.'
             : canAct
               ? 'Sua vez: escolha mover, atacar, usar a habilidade ou passar.'
               : acted
