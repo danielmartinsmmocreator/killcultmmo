@@ -12,6 +12,7 @@ export type CooperativeSubmittedAction = {
   character_id: string;
   action_payload: CooperativeAction;
   created_at: string;
+  processed_at?: string | null;
 };
 
 export type CooperativeEquippedItem = {
@@ -44,6 +45,7 @@ export type CooperativeSessionState = {
   turn_number: number;
   current_turn_user_id: string | null;
   resolution_pending: boolean;
+  action_processing?: boolean;
   state_snapshot: Record<string, unknown> | null;
   state_version: number;
   submitted_actions: CooperativeSubmittedAction[];
@@ -106,6 +108,7 @@ export class CooperativeSessionClient {
     return Boolean(
       this.current?.status === 'active' &&
       !this.current.resolution_pending &&
+      !this.current.action_processing &&
       this.current.current_turn_user_id === this.userId &&
       !this.current.submitted_actions.some((action) => action.actor_user_id === this.userId),
     );
@@ -197,6 +200,25 @@ export class CooperativeSessionClient {
     const { data, error } = await supabase.rpc('initialize_coop_expedition_snapshot', {
       p_session_id: this.sessionId,
       p_expected_version: session.state_version,
+      p_state_snapshot: snapshot,
+    });
+    if (error) throw new Error(error.message);
+    await this.refresh();
+    return Number(data);
+  }
+
+  async completePlayerAction(
+    characterId: string,
+    snapshot: Record<string, unknown>,
+  ): Promise<number> {
+    if (!supabase) throw new Error('Supabase não está configurado.');
+    const session = this.current ?? await this.refresh();
+    if (!session) throw new Error('Sessão cooperativa indisponível.');
+    if (!this.isLeader) throw new Error('Somente o líder pode confirmar a animação da ação.');
+    const { data, error } = await supabase.rpc('complete_coop_expedition_player_action', {
+      p_session_id: this.sessionId,
+      p_expected_version: session.state_version,
+      p_character_id: characterId,
       p_state_snapshot: snapshot,
     });
     if (error) throw new Error(error.message);
