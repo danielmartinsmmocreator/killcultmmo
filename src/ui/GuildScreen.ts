@@ -281,8 +281,22 @@ export class GuildScreen {
     const page = document.createElement('main');
     page.className = 'guild-screen';
     const theme = document.createElement('style');
-    theme.textContent = ".guild-screen, .guild-screen * { box-sizing:border-box; }\n.guild-screen { color:#ffe16b !important; }
-.guild-screen h1,.guild-screen h2,.guild-screen h3,.guild-screen strong,.guild-screen label,.guild-screen small,.guild-screen p,.guild-screen span { color:#ffe16b !important; }\n.guild-screen h1,.guild-screen h2,.guild-screen h3,.guild-screen strong,.guild-screen label,.guild-screen small,.guild-screen p,.guild-screen span,.guild-screen time { font-family:'Press Start 2P',monospace !important; }\n.guild-screen h2 { color:#ffe16b !important; font-size:10px !important; line-height:2 !important; text-shadow:2px 2px #382016; }\n.guild-screen p,.guild-screen span,.guild-screen small,.guild-screen time { line-height:1.9; }\n.guild-screen section { background:rgba(48,29,24,.94) !important; border:2px solid #9a7042 !important; border-radius:4px !important; box-shadow:0 5px 18px #0009; }\n.guild-screen article,.guild-screen [style*='background:#0f172a'],.guild-screen [style*='background:#151d2b'],.guild-screen [style*='background:#1e293b'] { background:rgba(35,21,18,.94) !important; border-color:#76502f !important; border-radius:3px !important; }\n.guild-screen button { border:0 !important; border-radius:0 !important; background:#68452d url(${guildButton}) center/100% 100% no-repeat !important; color:#ffe16b !important; font-family:'Press Start 2P',monospace !important; font-size:8px !important; line-height:1.8 !important; text-shadow:1px 2px #382016; padding:10px 13px !important; min-height:36px; box-shadow:none !important; }\n.guild-screen button:disabled { filter:grayscale(.65) brightness(.72); cursor:not-allowed !important; }\n.guild-screen input,.guild-screen select,.guild-screen textarea { background:#241714 !important; color:#ffe16b !important; border:2px solid #9a7042 !important; border-radius:2px !important; font-family:monospace !important; font-size:13px !important; }\n.guild-screen input::placeholder { color:#b99a68 !important; }\n.guild-screen option { background:#241714; color:#ffe16b; }\n.guild-screen time { color:#d4b77d !important; }".replace('${guildButton}', guildButton);
+    theme.textContent = `
+      .guild-screen, .guild-screen * { box-sizing:border-box; }
+      .guild-screen { color:#ffe16b !important; }
+      .guild-screen h1,.guild-screen h2,.guild-screen h3,.guild-screen strong,.guild-screen label,.guild-screen small,.guild-screen p,.guild-screen span { color:#ffe16b !important; }
+      .guild-screen h1,.guild-screen h2,.guild-screen h3,.guild-screen strong,.guild-screen label,.guild-screen small,.guild-screen p,.guild-screen span,.guild-screen time { font-family:'Press Start 2P',monospace !important; }
+      .guild-screen h2 { color:#ffe16b !important; font-size:10px !important; line-height:2 !important; text-shadow:2px 2px #382016; }
+      .guild-screen p,.guild-screen span,.guild-screen small,.guild-screen time { line-height:1.9; }
+      .guild-screen section { background:rgba(48,29,24,.94) !important; border:2px solid #9a7042 !important; border-radius:4px !important; box-shadow:0 5px 18px #0009; }
+      .guild-screen article,.guild-screen [style*='background:#0f172a'],.guild-screen [style*='background:#151d2b'],.guild-screen [style*='background:#1e293b'] { background:rgba(35,21,18,.94) !important; border-color:#76502f !important; border-radius:3px !important; }
+      .guild-screen button { border:0 !important; border-radius:0 !important; background:#68452d url(${guildButton}) center/100% 100% no-repeat !important; color:#ffe16b !important; font-family:'Press Start 2P',monospace !important; font-size:8px !important; line-height:1.8 !important; text-shadow:1px 2px #382016; padding:10px 13px !important; min-height:36px; box-shadow:none !important; }
+      .guild-screen button:disabled { filter:grayscale(.65) brightness(.72); cursor:not-allowed !important; }
+      .guild-screen input,.guild-screen select,.guild-screen textarea { background:#241714 !important; color:#ffe16b !important; border:2px solid #9a7042 !important; border-radius:2px !important; font-family:monospace !important; font-size:13px !important; }
+      .guild-screen input::placeholder { color:#b99a68 !important; }
+      .guild-screen option { background:#241714; color:#ffe16b; }
+      .guild-screen time { color:#d4b77d !important; }
+    `;
     page.append(theme);
     page.style.cssText = `min-height:100dvh;box-sizing:border-box;padding:clamp(14px,3vw,30px);background:linear-gradient(rgba(13,8,9,.68),rgba(13,8,9,.78)),url(${guildBackground}) center center / cover fixed no-repeat;color:#ffe16b;font-family:'Press Start 2P',monospace;display:grid;align-content:start;gap:14px;`;
     const header = document.createElement('header');
