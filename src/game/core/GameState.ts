@@ -926,6 +926,7 @@ export class GameState {
     this.targetingState = saved.targeting && typeof saved.targeting === 'object' ? saved.targeting as AbilityTargeting : null;
     this.noticeText = typeof saved.notice === 'string' ? saved.notice : null;
     this.pendingActors = Array.isArray(saved.pendingActors) ? saved.pendingActors.filter((uid): uid is string => typeof uid === 'string') : [];
+    this.cooperativeMonsterAttackQueue = Array.isArray(saved.cooperativeMonsterAttackQueue) ? saved.cooperativeMonsterAttackQueue.filter((uid): uid is string => typeof uid === 'string') : [];
     this.lastActorUid = typeof saved.lastActorUid === 'string' ? saved.lastActorUid : null;
     this.intents = Array.isArray(saved.intents) ? saved.intents as TelegraphIntent[] : [];
     this.intentCounter = Number.isInteger(saved.intentCounter) ? Number(saved.intentCounter) : 0;
