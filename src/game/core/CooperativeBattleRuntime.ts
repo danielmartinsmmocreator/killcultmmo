@@ -22,6 +22,7 @@ export class CooperativeBattleRuntime {
   private sceneReady = false;
   private disposed = false;
   private processingRound = false;
+  private processingPlayerAction = false;
   private submittingAction = false;
   private snapshotSignature = '';
   private readonly progressionEvents: CooperativeProgressionEvent[] = [];
@@ -219,41 +220,65 @@ export class CooperativeBattleRuntime {
 
     this.updateStatus(session);
     if (session.status !== 'active') return;
+    if (client.isLeader && session.action_processing && !this.processingPlayerAction && !this.processingRound) {
+      await this.processSubmittedPlayerAction(session);
+      return;
+    }
     if (client.isLeader && session.resolution_pending && !this.processingRound) {
       await this.resolveSubmittedActions(session);
     }
   }
 
+  /** O líder executa e anima uma única ação antes de liberar o próximo jogador. */
+  private async processSubmittedPlayerAction(session: CooperativeSessionState): Promise<void> {
+    const campaign = this.campaign;
+    const client = this.client;
+    if (!campaign || !client || this.processingPlayerAction || !session.state_snapshot) return;
+    const pending = session.submitted_actions.find((action) => !action.processed_at);
+    if (!pending) {
+      this.showError('O servidor marcou uma ação em processamento, mas não encontrou a ação pendente.');
+      return;
+    }
+
+    this.processingPlayerAction = true;
+    try {
+      if (!campaign.restoreSnapshot(session.state_snapshot)) {
+        throw new Error('Não foi possível restaurar o estado antes da ação individual.');
+      }
+      this.snapshotSignature = JSON.stringify(session.state_snapshot);
+      const heroUid = Campaign.cooperativeHeroUid(pending.character_id);
+      campaign.battle.setCooperativeActor(heroUid);
+      const accepted = campaign.battle.applyCooperativeAction(
+        heroUid,
+        pending.action_payload as CooperativeAction,
+      );
+      if (!accepted) throw new Error('A ação do jogador não pôde ser aplicada ao herói selecionado.');
+
+      // Dá tempo para o líder e os clientes visitantes exibirem a animação da ação.
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 320));
+      const snapshot = this.exportSharedSnapshot();
+      await client.completePlayerAction(pending.character_id, snapshot);
+      this.snapshotSignature = JSON.stringify(snapshot);
+    } catch (error) {
+      this.showError(error instanceof Error ? error.message : 'Falha ao executar a ação individual.');
+    } finally {
+      this.processingPlayerAction = false;
+    }
+  }
+
+  /** Após o último herói agir, começa a fase automática de ataques e resposta dos monstros. */
   private async resolveSubmittedActions(session: CooperativeSessionState): Promise<void> {
     const campaign = this.campaign;
     if (!campaign || !this.client || !session.state_snapshot || this.processingRound) return;
     this.processingRound = true;
     try {
       if (!campaign.restoreSnapshot(session.state_snapshot)) {
-        throw new Error('Não foi possível restaurar o estado anterior à rodada.');
+        throw new Error('Não foi possível restaurar o estado após as ações individuais.');
       }
       this.snapshotSignature = JSON.stringify(session.state_snapshot);
-
-      const actions = [...session.submitted_actions];
-      const livingMembers = session.members.filter((member) => !member.is_eliminated);
-      if (actions.length !== livingMembers.length) {
-        throw new Error('A rodada foi marcada como completa, mas a lista de ações dos heróis vivos está incompleta.');
-      }
-      for (const submitted of actions) {
-        const heroUid = Campaign.cooperativeHeroUid(submitted.character_id);
-        const accepted = campaign.battle.applyCooperativeAction(
-          heroUid,
-          submitted.action_payload as CooperativeAction,
-        );
-        if (!accepted) console.warn('Ação cooperativa não aplicada (herói indisponível ou ação inválida):', submitted);
-      }
-
-      // A simulação percorre os heróis de todos os participantes; ao terminar,
-      // devolve a seleção local ao personagem que pertence a este cliente.
-      campaign.battle.setCooperativeActor(Campaign.cooperativeHeroUid(this.characterId));
       this.scene?.markCooperativeResolutionStarted();
       if (!campaign.battle.resolveCooperativeRound()) {
-        throw new Error('O motor de batalha não conseguiu iniciar a fase dos monstros.');
+        throw new Error('O motor de batalha não conseguiu iniciar os ataques automáticos.');
       }
     } catch (error) {
       this.processingRound = false;
@@ -385,9 +410,8 @@ export class CooperativeBattleRuntime {
     const client = this.client;
     if (!sidePanel || !session || !client) return;
     const actor = session.members.find((member) => member.user_id === session.current_turn_user_id);
-    const acted = session.submitted_actions.some((action) => action.actor_user_id === this.userId);
     const livingMembers = session.members.filter((member) => !member.is_eliminated);
-    const turnPosition = Math.min(session.submitted_actions.length + 1, Math.max(1, livingMembers.length));
+    const turnPosition = Math.min(session.submitted_actions.filter((action) => action.processed_at).length + 1, Math.max(1, livingMembers.length));
     const classLabels: Record<string, string> = {
       warrior: 'Guerreiro',
       mage: 'Mago',
@@ -407,11 +431,11 @@ export class CooperativeBattleRuntime {
         : campaignStatus === 'defeated'
           ? 'Derrota. Todos os heróis foram derrotados.'
           : session.resolution_pending
-            ? 'Todos os heróis agiram. Os heróis atacam; depois os monstros se movimentam e atacam.'
-            : canAct
-              ? `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass}. Sua vez: escolha uma ação ou passe.`
-              : acted
-                ? 'Sua ação foi registrada. Aguarde o próximo herói.'
+            ? 'Todos os heróis agiram. Ataques automáticos dos heróis; depois os monstros se movimentam e atacam.'
+            : session.action_processing
+              ? 'Ação em animação. Aguarde a liberação do próximo herói.'
+              : canAct
+                ? `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass}. Sua vez: escolha uma ação ou passe.`
                 : `TURNO ${turnPosition}/${livingMembers.length} — ${actorClass} (${actor?.nickname ?? 'outro jogador'}).`;
     sidePanel.updateCooperativeStatus(
       canAct,
