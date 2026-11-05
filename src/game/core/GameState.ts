@@ -859,6 +859,7 @@ export class GameState {
       targeting: this.targetingState,
       notice: this.noticeText,
       pendingActors: [...this.pendingActors],
+      cooperativeMonsterAttackQueue: [...this.cooperativeMonsterAttackQueue],
       lastActorUid: this.lastActorUid,
       intents: this.intents.map((intent) => ({ ...intent, cells: intent.cells.map((cell) => ({ ...cell })) })),
       intentCounter: this.intentCounter,
@@ -1882,6 +1883,7 @@ export class GameState {
     this.targetingState = null;
     this.noticeText = null;
     this.pendingActors = [];
+    this.cooperativeMonsterAttackQueue = [];
     this.lastActorUid = null;
     // Nada anunciado antes sobrevive a um reinício ou à troca de andar.
     this.intents = [];
