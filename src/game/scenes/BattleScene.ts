@@ -505,6 +505,14 @@ export class BattleScene extends Phaser.Scene {
         this.pulseActor();
         break;
       case 'turn':
+        this.refresh(true);
+        this.playEffects();
+        this.pulseActor();
+        if (this.cooperativeResolutionStarted && !this.gameState.isResolving) {
+          this.cooperativeResolutionStarted = false;
+          this.onCooperativeRoundComplete?.();
+        }
+        break;
       case 'over':
         this.refresh(true);
         if (this.cooperativeResolutionStarted && !this.gameState.isResolving) {
