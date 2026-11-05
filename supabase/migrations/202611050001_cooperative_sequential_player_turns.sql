@@ -250,7 +250,7 @@ begin
           and a.round_number = v_round
           and a.actor_user_id = m.user_id
       )
-    order by m.joined_at
+    order by case when m.user_id = v_user_id then 0 else 1 end, m.joined_at
     limit 1;
     if v_next_user_id is null then
       raise exception 'Não foi possível determinar o próximo herói da rodada.';
