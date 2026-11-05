@@ -3,7 +3,6 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { ITEM_DEFINITIONS } from '../game/data/items';
 import { supabase } from '../lib/supabase';
 import guildBackground from '../assets/backgrounds/cenario.jfif';
-import guildButton from '../assets/backgrounds/button.png';
 
 type GuildMember = {
   user_id: string;
@@ -47,7 +46,7 @@ type BankItem = { id: string; item_definition_id: string; obtained_at_floor: num
 type GuildChatMessage = { id: string; guild_id: string; sender_user_id: string | null; sender_nickname: string; sender_role: 'leader' | 'admin' | 'member'; content: string; created_at: string };
 
 const cardStyle = 'padding:14px;border:2px solid #9a7042;border-radius:4px;background:rgba(48,29,24,.94);color:#ffe16b;';
-const buttonStyle = 'padding:10px 14px;border:0;border-radius:0;background:#68452d;color:#ffe16b;cursor:pointer;font-family:monospace;font-size:9px;line-height:1.6;text-shadow:1px 2px #382016;';
+const buttonStyle = 'padding:10px 14px;border:0;border-radius:0;background:#4b2e20;color:#ffe16b;cursor:pointer;font-family:monospace;font-size:9px;line-height:1.6;text-shadow:1px 2px #382016;';
 const inputStyle = 'box-sizing:border-box;width:100%;padding:10px;border:2px solid #9a7042;border-radius:2px;background:#241714;color:#ffe16b;font-family:monospace;';
 const labelStyle = "display:grid;gap:7px;color:#ffe16b;font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.8;";
 
@@ -290,7 +289,7 @@ export class GuildScreen {
       .guild-screen p,.guild-screen span,.guild-screen small,.guild-screen time { line-height:1.9; }
       .guild-screen section { background:rgba(48,29,24,.94) !important; border:2px solid #9a7042 !important; border-radius:4px !important; box-shadow:0 5px 18px #0009; }
       .guild-screen article,.guild-screen [style*='background:#0f172a'],.guild-screen [style*='background:#151d2b'],.guild-screen [style*='background:#1e293b'] { background:rgba(35,21,18,.94) !important; border-color:#76502f !important; border-radius:3px !important; }
-      .guild-screen button { border:0 !important; border-radius:0 !important; background:#68452d url(${guildButton}) center/100% 100% no-repeat !important; color:#ffe16b !important; font-family:'Press Start 2P',monospace !important; font-size:8px !important; line-height:1.8 !important; text-shadow:1px 2px #382016; padding:10px 13px !important; min-height:36px; box-shadow:none !important; }
+      .guild-screen button { border:0 !important; border-radius:0 !important; background:#4b2e20 !important; color:#ffe16b !important; font-family:'Press Start 2P',monospace !important; font-size:8px !important; line-height:1.8 !important; text-shadow:1px 2px #382016; padding:10px 13px !important; min-height:36px; box-shadow:none !important; }
       .guild-screen button:disabled { filter:grayscale(.65) brightness(.72); cursor:not-allowed !important; }
       .guild-screen input,.guild-screen select,.guild-screen textarea { background:#241714 !important; color:#ffe16b !important; border:2px solid #9a7042 !important; border-radius:2px !important; font-family:monospace !important; font-size:13px !important; }
       .guild-screen input::placeholder { color:#b99a68 !important; }
