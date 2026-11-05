@@ -329,7 +329,7 @@ export class PreparationScreen {
     const roster = document.createElement('div');
     roster.className = 'prep-menu-grid';
     roster.style.cssText='';
-    for (const label of ['Guildas','Expedições','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Guildas'){this.onOpenGuilds?.();}else if(label==='Expedições'){this.onOpenExpeditions?.();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
+    for (const label of ['Guildas','Itens','PVP','Mercado Global','Eventos','Configuração']) { const button=document.createElement('button'); button.type='button'; button.textContent=label; button.addEventListener('click',()=>{if(label==='Itens'){this.inventoryOpen=true;this.render();}else if(label==='Guildas'){this.onOpenGuilds?.();}else if(label==='Expedições'){this.onOpenExpeditions?.();}else if(label==='Configuração'){settingsModal.hidden=false;}else{this.message=label+' · EM BREVE';this.render();}}); roster.append(button); }
     const skipRange = document.createElement('section');
     skipRange.className = 'prep-skip-range';
     let selectedSkipRange = Math.max(1, this.maxUnlockedSkipRange);
