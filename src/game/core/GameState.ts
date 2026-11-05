@@ -117,6 +117,8 @@ export class GameState {
   private noticeText: string | null = null;
   /** Fila (por uid) de quem ainda age na fase atual. */
   private pendingActors: string[] = [];
+  /** Na rodada cooperativa, monstros que concluíram o movimento e ainda devem atacar. */
+  private cooperativeMonsterAttackQueue: string[] = [];
   private lastActorUid: string | null = null;
   /** Intenções de ataque dos chefes neste encontro (pendentes, resolvidas e canceladas). */
   private intents: TelegraphIntent[] = [];
@@ -300,7 +302,9 @@ export class GameState {
     return (
       this.currentPhase === 'heroes' ||
       this.currentPhase === 'telegraphs' ||
-      this.currentPhase === 'monsters'
+      this.currentPhase === 'monsters' ||
+      this.currentPhase === 'monsters-move' ||
+      this.currentPhase === 'monsters-attack'
     );
   }
 
@@ -973,6 +977,8 @@ export class GameState {
         this.finishHeroPhase();
       } else if (this.currentPhase === 'telegraphs') {
         this.finishTelegraphPhase();
+      } else if (this.currentPhase === 'monsters-move') {
+        this.finishMonsterMovePhase();
       } else {
         this.finishMonsterPhase();
       }
@@ -988,7 +994,13 @@ export class GameState {
     const actor = this.allUnits.find((unit) => unit.uid === uid);
     if (!actor || !isAlive(actor)) return false;
 
-    const acted = this.currentPhase === 'heroes' ? this.heroAct(actor) : this.monsterAct(actor);
+    const acted = this.currentPhase === 'heroes'
+      ? this.heroAct(actor)
+      : this.currentPhase === 'monsters-move'
+        ? this.cooperativeMonsterMoveAct(actor)
+        : this.currentPhase === 'monsters-attack'
+          ? this.cooperativeMonsterAttackAct(actor)
+          : this.monsterAct(actor);
     if (acted) this.lastActorUid = actor.uid;
     return acted;
   }
@@ -1003,9 +1015,93 @@ export class GameState {
   private finishTelegraphPhase(): void {
     this.updateOutcome();
     if (this.isOver) return;
-    this.currentPhase = 'monsters';
+    this.cooperativeMonsterAttackQueue = [];
+    this.currentPhase = this.cooperativeMode ? 'monsters-move' : 'monsters';
     this.pendingActors = this.monsters.map((monster) => monster.uid);
-    this.addLog('Os monstros agem.', 'info');
+    this.addLog(this.cooperativeMode ? 'Os monstros se movimentam.' : 'Os monstros agem.', 'info');
+  }
+
+  /** Na cooperação, todos os monstros primeiro se movimentam; os ataques vêm em outra fase animada. */
+  private finishMonsterMovePhase(): void {
+    this.updateOutcome();
+    if (this.isOver) return;
+    this.currentPhase = 'monsters-attack';
+    this.pendingActors = [...this.cooperativeMonsterAttackQueue];
+    this.addLog('Os monstros agora atacam!', 'monster');
+  }
+
+  private cooperativeMonsterMoveAct(monster: Unit): boolean {
+    if (monster.stunned) {
+      monster.stunned = false;
+      this.addLog(`${monster.definition.name} está atordoado e perde a ação. Já se recuperou.`, 'monster');
+      return true;
+    }
+
+    if (monster.definition.id === 'medusa') {
+      monster.medusaCycle = (monster.medusaCycle ?? 0) + 1;
+      if (monster.medusaCycle % 2 === 0) {
+        const directions = [
+          { col: 0, row: -1 }, { col: 1, row: 0 },
+          { col: 0, row: 1 }, { col: -1, row: 0 },
+        ];
+        const gazeDirection = directions[(2 + Math.floor(monster.medusaCycle / 2) - 1) % directions.length];
+        monster.facing = { ...gazeDirection };
+        const body = unitCells(monster);
+        const affected = this.heroes.filter((hero) =>
+          unitCells(hero).some((heroCell) =>
+            body.some((bodyCell) => {
+              const dx = heroCell.col - bodyCell.col;
+              const dy = heroCell.row - bodyCell.row;
+              if (gazeDirection.col === 1) return dy === 0 && dx > 0;
+              if (gazeDirection.col === -1) return dy === 0 && dx < 0;
+              if (gazeDirection.row === 1) return dx === 0 && dy > 0;
+              return dx === 0 && dy < 0;
+            }),
+          ),
+        );
+        for (const hero of affected) {
+          hero.petrified = true;
+          this.addLog(`${hero.definition.name} foi petrificado pelo olhar da Medusa e perderá sua próxima ação!`, 'monster');
+        }
+        this.effect = { id: 'telegraph', cells: affected.flatMap((hero) => unitCells(hero)) };
+        this.addLog(affected.length ? 'Medusa lançou seu olhar petrificante!' : 'Medusa lançou seu olhar petrificante, mas não atingiu ninguém.', 'monster');
+        return true;
+      }
+    }
+
+    if (monster.definition.id === 'cheshire-cat') {
+      const cycle = (this.cheshireCycles.get(monster.uid) ?? 0) + 1;
+      this.cheshireCycles.set(monster.uid, cycle);
+      if (cycle % 2 === 0) {
+        this.teleportCheshireCat(monster);
+        return true;
+      }
+    }
+
+    if (monster.definition.id === 'yamata-no-orochi') {
+      const stage = ((this.specialBossCycles.get(monster.uid) ?? 0) % 3) + 1;
+      this.specialBossCycles.set(monster.uid, stage);
+      this.yamataSwordSweep(monster, stage);
+      return true;
+    }
+
+    if (this.tryAnnounceTelegraph(monster)) return true;
+
+    const move = chooseMonsterMove(monster, this.combatContext());
+    if (move) {
+      const from = positionLabel(monster.position);
+      monster.facing = directionBetween(monster.position, move.position);
+      monster.position = { col: move.position.col, row: move.position.row };
+      this.addLog(`${monster.definition.name} avançou de ${from} para ${positionLabel(monster.position)}.`, 'monster');
+    }
+    this.cooperativeMonsterAttackQueue.push(monster.uid);
+    return Boolean(move);
+  }
+
+  private cooperativeMonsterAttackAct(monster: Unit): boolean {
+    let acted = this.performAttack(monster) > 0;
+    if (monster.definition.id === 'cuca' && this.resurrectCucaMinions(monster)) acted = true;
+    return acted;
   }
 
   private finishMonsterPhase(): void {
