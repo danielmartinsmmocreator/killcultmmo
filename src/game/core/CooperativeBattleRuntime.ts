@@ -164,7 +164,7 @@ export class CooperativeBattleRuntime {
       },
       () => {
         if (this.client?.isLeader && this.campaign) {
-          void this.client.broadcastBattleState(this.campaign.exportSnapshot());
+          void this.client.broadcastBattleState(this.exportSharedSnapshot());
         }
       },
     );
