@@ -195,6 +195,7 @@ export class CooperativeBattleRuntime {
       console.warn('Atualização visual cooperativa ignorada: snapshot incompatível.');
       return;
     }
+    this.snapshotSignature = JSON.stringify(snapshot);
     this.loadCooperativeProgressionEvents(snapshot);
     this.updateStatus(this.client?.session);
   }
