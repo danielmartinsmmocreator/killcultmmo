@@ -65,6 +65,7 @@ export class CooperativeBattleRuntime {
       this.characterId,
       (session) => { void this.handleSessionUpdate(session); },
       (message) => console.error('Sessão cooperativa:', message),
+      (snapshot) => this.applyBroadcastBattleState(snapshot),
     );
     this.client = client;
 
@@ -160,6 +161,11 @@ export class CooperativeBattleRuntime {
         this.sceneReady = true;
         if (this.mounted) void this.refreshSessionAfterSceneReady();
       },
+      () => {
+        if (this.client?.isLeader && this.campaign) {
+          void this.client.broadcastBattleState(this.campaign.exportSnapshot());
+        }
+      },
     );
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
@@ -178,6 +184,18 @@ export class CooperativeBattleRuntime {
     back.addEventListener('click', () => this.leaveToLobby());
     this.panelRoot.append(back);
     this.updateStatus(this.client.session);
+  }
+
+  /** Aplica no cliente visitante cada passo enviado pelo líder, preservando a animação das peças. */
+  private applyBroadcastBattleState(snapshot: Record<string, unknown>): void {
+    const campaign = this.campaign;
+    if (!this.mounted || this.disposed || !campaign || this.processingRound) return;
+    if (!campaign.restoreSnapshot(snapshot, true)) {
+      console.warn('Atualização visual cooperativa ignorada: snapshot incompatível.');
+      return;
+    }
+    this.loadCooperativeProgressionEvents(snapshot);
+    this.updateStatus(this.client?.session);
   }
 
   private async handleSessionUpdate(session: CooperativeSessionState): Promise<void> {
