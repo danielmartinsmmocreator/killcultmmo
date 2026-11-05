@@ -124,6 +124,7 @@ export class BattleScene extends Phaser.Scene {
   private readonly canCooperativeAct?: () => boolean;
   private readonly onCooperativeRoundComplete?: () => void;
   private readonly onCooperativeReady?: () => void;
+  private readonly onCooperativeStateChange?: () => void;
   private cooperativeResolutionStarted = false;
   private readonly unitViews = new Map<string, UnitView>();
   private obstacleObjects: Phaser.GameObjects.Rectangle[] = [];
@@ -151,6 +152,7 @@ export class BattleScene extends Phaser.Scene {
     canCooperativeAct?: () => boolean,
     onCooperativeRoundComplete?: () => void,
     onCooperativeReady?: () => void,
+    onCooperativeStateChange?: () => void,
   ) {
     super({ key: 'BattleScene' });
     this.campaign = campaign;
@@ -160,6 +162,7 @@ export class BattleScene extends Phaser.Scene {
     this.canCooperativeAct = canCooperativeAct;
     this.onCooperativeRoundComplete = onCooperativeRoundComplete;
     this.onCooperativeReady = onCooperativeReady;
+    this.onCooperativeStateChange = onCooperativeStateChange;
   }
 
   /** O líder chama antes de iniciar a fase dos monstros; o callback dispara ao terminar a animação. */
@@ -222,6 +225,9 @@ export class BattleScene extends Phaser.Scene {
       // Ignore notifications delivered while Phaser is shutting this scene down.
       if (this.disposed || !this.sys.isActive() || !this.outcomeTitle?.active) return;
       this.onStateChange(event);
+      if (this.onCooperativeStateChange && (event === 'resolving' || event === 'step' || event === 'turn' || event === 'over' || event === 'sync')) {
+        this.onCooperativeStateChange();
+      }
     });
     // ESC cancela a escolha de alvo de uma habilidade.
     this.input.keyboard?.on('keydown-ESC', this.handleEscape, this);
