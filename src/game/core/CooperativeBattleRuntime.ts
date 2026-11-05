@@ -255,8 +255,8 @@ export class CooperativeBattleRuntime {
       );
       if (!accepted) throw new Error('A ação do jogador não pôde ser aplicada ao herói selecionado.');
 
-      // Dá tempo para o líder e os clientes visitantes exibirem a animação da ação.
-      await new Promise<void>((resolve) => window.setTimeout(resolve, 320));
+      // Aguarda a animação do movimento/efeito terminar antes de liberar o próximo herói.
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 560));
       const snapshot = this.exportSharedSnapshot();
       await client.completePlayerAction(pending.character_id, snapshot);
       this.snapshotSignature = JSON.stringify(snapshot);
