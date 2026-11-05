@@ -89,12 +89,25 @@ export class SidePanel {
 
   /** Espaço executa exatamente a mesma ação do botão de habilidade, sem interferir em campos de texto. */
   private readonly handleAbilityShortcut = (event: KeyboardEvent): void => {
-    if (event.code !== 'Space' || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
     const target = event.target;
     if (target instanceof HTMLElement && (
       target.isContentEditable ||
       target.closest('input, textarea, select, button, [contenteditable="true"]')
     )) return;
+
+    // 1, 2 e 3 selecionam os heróis na ordem em que aparecem no grupo.
+    if (['1', '2', '3'].includes(event.key)) {
+      if (this.state.phase !== 'player' || this.campaign.status !== 'fighting') return;
+      const heroIndex = Number(event.key) - 1;
+      const hero = this.campaign.activeParty[heroIndex];
+      if (!hero || hero.hp <= 0) return;
+      event.preventDefault();
+      this.state.toggleSelection(hero.uid);
+      return;
+    }
+
+    if (event.code !== 'Space') return;
     if (this.useButton.hidden || this.useButton.disabled || this.abilityBox.hidden) return;
     event.preventDefault();
     this.useButton.click();
