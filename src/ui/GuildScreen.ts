@@ -67,6 +67,7 @@ export class GuildScreen {
   private chatGuildId: string | null = null;
   private chatMessages: GuildChatMessage[] = [];
   private chatMessagesRoot: HTMLElement | null = null;
+  private activeGuildTab = 'chat';
 
   constructor(root: HTMLElement, campaign: Campaign, onBack: () => void) {
     this.root = root;
@@ -295,6 +296,9 @@ export class GuildScreen {
       .guild-screen input::placeholder { color:#b99a68 !important; }
       .guild-screen option { background:#241714; color:#ffe16b; }
       .guild-screen time { color:#d4b77d !important; }
+      .guild-screen section[data-guild-tab][hidden] { display:none !important; }
+      .guild-screen .guild-tabs { display:flex;flex-wrap:wrap;gap:7px;padding:8px;background:rgba(35,21,18,.92);border:1px solid #76502f; }
+      .guild-screen .guild-tabs button { flex:1 1 130px; }
     `;
     page.append(theme);
     page.style.cssText = `min-height:100dvh;box-sizing:border-box;padding:clamp(14px,3vw,30px);background:linear-gradient(rgba(13,8,9,.68),rgba(13,8,9,.78)),url(${guildBackground}) center center / cover fixed no-repeat;color:#ffe16b;font-family:'Press Start 2P',monospace;display:grid;align-content:start;gap:14px;`;
@@ -422,7 +426,43 @@ export class GuildScreen {
       summary.append(description, stats);
       page.append(summary);
 
+      const isOfficerForTabs = guild.my_role === 'leader' || guild.my_role === 'admin';
+      const tabDefinitions = [
+        { id: 'chat', label: 'CHAT' },
+        { id: 'members', label: 'MEMBROS' },
+        ...(isOfficerForTabs ? [{ id: 'invite', label: 'CONVIDAR' }] : []),
+        { id: 'bank', label: 'COFRE' },
+        { id: 'history', label: 'HISTÓRICO' },
+      ];
+      if (!tabDefinitions.some((tab) => tab.id === this.activeGuildTab)) this.activeGuildTab = 'chat';
+      const tabs = document.createElement('nav');
+      tabs.className = 'guild-tabs';
+      tabs.setAttribute('aria-label', 'Seções da guilda');
+      const updateTabs = (): void => {
+        for (const panel of page.querySelectorAll<HTMLElement>('[data-guild-tab]')) {
+          panel.hidden = panel.dataset.guildTab !== this.activeGuildTab;
+        }
+        for (const tabButton of tabs.querySelectorAll<HTMLButtonElement>('button[data-tab]')) {
+          const active = tabButton.dataset.tab === this.activeGuildTab;
+          tabButton.style.cssText = 'border:2px solid ' + (active ? '#d7a84d' : '#76502f') + ';background:' + (active ? '#68452d' : '#352119') + ';color:#ffe16b;padding:10px 12px;cursor:pointer;font-size:8px;min-height:38px;';
+          tabButton.setAttribute('aria-pressed', String(active));
+        }
+      };
+      for (const tab of tabDefinitions) {
+        const tabButton = document.createElement('button');
+        tabButton.type = 'button';
+        tabButton.textContent = tab.label;
+        tabButton.dataset.tab = tab.id;
+        tabButton.addEventListener('click', () => {
+          this.activeGuildTab = tab.id;
+          updateTabs();
+        });
+        tabs.append(tabButton);
+      }
+      page.append(tabs);
+
       const chat = this.section('Chat da guilda');
+      chat.dataset.guildTab = 'chat';
       const chatMessages = document.createElement('div');
       chatMessages.style.cssText = 'display:grid;gap:7px;max-height:340px;overflow-y:auto;padding:4px;';
       this.chatMessagesRoot = chatMessages;
@@ -467,6 +507,7 @@ export class GuildScreen {
       page.append(chat);
 
       const roster = this.section('Membros');
+      roster.dataset.guildTab = 'members';
       for (const member of guild.members) {
         const row = document.createElement('div');
         row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px;border-radius:8px;background:#0f172a;';
@@ -502,6 +543,7 @@ export class GuildScreen {
 
       if (guild.my_role !== 'member' && this.joinRequests.length) {
         const requests = this.section('Solicitações para entrar');
+        requests.dataset.guildTab = 'members';
         for (const request of this.joinRequests) {
           const row = document.createElement('div');
           row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px;border-radius:8px;background:#0f172a;';
@@ -522,6 +564,7 @@ export class GuildScreen {
 
       if (guild.my_role !== 'member') {
         const invite = this.section('Convidar jogador');
+        invite.dataset.guildTab = 'invite';
         const nickname = this.input('Nickname exato', 'Digite o nickname do jogador');
         invite.append(nickname.wrapper, this.button('Enviar convite', () => this.perform(async () => {
           await this.rpc('invite_guild_member', { p_nickname: nickname.field.value });
@@ -537,6 +580,7 @@ export class GuildScreen {
       }
 
       const bank = this.section('Cofre comunitário');
+      bank.dataset.guildTab = 'bank';
       if (this.bankError) {
         const error = document.createElement('p');
         error.textContent = 'Falha ao carregar o cofre: ' + this.bankError;
@@ -626,6 +670,7 @@ export class GuildScreen {
       page.append(bank);
 
       const activitySection = this.section('Histórico da guilda');
+      activitySection.dataset.guildTab = 'history';
       const activityLabels: Record<string, string> = {
         member_joined: 'entrou na guilda',
         member_left: 'saiu da guilda',
@@ -665,6 +710,8 @@ export class GuildScreen {
         activitySection.append(row);
       }
       page.append(activitySection);
+
+      updateTabs();
 
       if (guild.my_role !== 'leader') {
         page.append(this.button('Sair da guilda', () => this.perform(async () => {
