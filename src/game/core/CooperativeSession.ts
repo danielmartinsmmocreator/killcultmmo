@@ -75,6 +75,7 @@ export class CooperativeSessionClient {
   readonly userId: string;
   readonly characterId: string;
   private readonly onUpdate: (session: CooperativeSessionState) => void;
+  private readonly onBattleState: (snapshot: Record<string, unknown>) => void;
   private readonly onError: (message: string) => void;
 
   constructor(
@@ -83,12 +84,14 @@ export class CooperativeSessionClient {
     characterId: string,
     onUpdate: (session: CooperativeSessionState) => void,
     onError: (message: string) => void = console.error,
+    onBattleState: (snapshot: Record<string, unknown>) => void = () => undefined,
   ) {
     this.sessionId = sessionId;
     this.userId = userId;
     this.characterId = characterId;
     this.onUpdate = onUpdate;
     this.onError = onError;
+    this.onBattleState = onBattleState;
   }
 
   get session(): CooperativeSessionState | null {
@@ -122,6 +125,14 @@ export class CooperativeSessionClient {
           event: '*', schema: 'public', table: 'coop_expedition_actions',
           filter: 'session_id=eq.' + this.sessionId,
         }, () => { void this.refresh(); })
+        .on('broadcast', { event: 'battle_state' }, ({ payload }) => {
+          if (!this.isLeader && payload && typeof payload === 'object') {
+            const snapshot = (payload as { snapshot?: unknown }).snapshot;
+            if (snapshot && typeof snapshot === 'object' && !Array.isArray(snapshot)) {
+              this.onBattleState(snapshot as Record<string, unknown>);
+            }
+          }
+        })
         .subscribe();
     }
     const session = await this.refresh();
@@ -146,6 +157,17 @@ export class CooperativeSessionClient {
       throw error;
     }).finally(() => { this.refreshInFlight = null; });
     return this.refreshInFlight;
+  }
+
+  /** Envia estados transitórios da simulação para que os demais clientes animem cada passo. */
+  async broadcastBattleState(snapshot: Record<string, unknown>): Promise<void> {
+    if (!this.channel || this.disposed || !this.isLeader) return;
+    const result = await this.channel.send({
+      type: 'broadcast',
+      event: 'battle_state',
+      payload: { snapshot },
+    });
+    if (result !== 'ok') this.onError('Não foi possível transmitir uma atualização visual da batalha.');
   }
 
   async submitAction(action: CooperativeAction): Promise<SubmitResult> {
