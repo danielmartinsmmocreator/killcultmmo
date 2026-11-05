@@ -87,6 +87,19 @@ export class SidePanel {
   private readonly confirmButton = el('button', 'btn-confirm', 'Confirmar');
   private readonly cancelButton = el('button', 'btn-cancel', 'Cancelar');
 
+  /** Espaço executa exatamente a mesma ação do botão de habilidade, sem interferir em campos de texto. */
+  private readonly handleAbilityShortcut = (event: KeyboardEvent): void => {
+    if (event.code !== 'Space' || event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target;
+    if (target instanceof HTMLElement && (
+      target.isContentEditable ||
+      target.closest('input, textarea, select, button, [contenteditable="true"]')
+    )) return;
+    if (this.useButton.hidden || this.useButton.disabled || this.abilityBox.hidden) return;
+    event.preventDefault();
+    this.useButton.click();
+  };
+
   private readonly heroesEl = el('div', 'unit-list');
   private readonly monstersEl = el('div', 'unit-list');
   private readonly logEl = el('ol', 'log');
@@ -228,10 +241,12 @@ export class SidePanel {
     });
 
     this.unsubscribe = this.state.subscribe(() => this.render());
+    window.addEventListener('keydown', this.handleAbilityShortcut);
     this.render();
   }
 
   destroy(): void {
+    window.removeEventListener('keydown', this.handleAbilityShortcut);
     this.unsubscribe?.();
     this.unsubscribe = null;
     this.boardActions.remove();
