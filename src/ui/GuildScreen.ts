@@ -2,6 +2,8 @@ import type { Campaign } from '../game/core/Campaign';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { ITEM_DEFINITIONS } from '../game/data/items';
 import { supabase } from '../lib/supabase';
+import guildBackground from '../assets/backgrounds/cenario.jfif';
+import guildButton from '../assets/backgrounds/button.png';
 
 type GuildMember = {
   user_id: string;
@@ -44,10 +46,10 @@ type GuildPayload = { guild: GuildData | null; invites: GuildInvite[]; join_requ
 type BankItem = { id: string; item_definition_id: string; obtained_at_floor: number | null; deposited_at: string };
 type GuildChatMessage = { id: string; guild_id: string; sender_user_id: string | null; sender_nickname: string; sender_role: 'leader' | 'admin' | 'member'; content: string; created_at: string };
 
-const cardStyle = 'padding:14px;border:1px solid #394150;border-radius:10px;background:#151d2b;color:#f3f4f6;';
-const buttonStyle = 'padding:9px 12px;border:1px solid #64748b;border-radius:7px;background:#202b3d;color:#f8fafc;cursor:pointer;font-weight:700;';
-const inputStyle = 'box-sizing:border-box;width:100%;padding:10px;border:1px solid #475569;border-radius:7px;background:#0f172a;color:#f8fafc;';
-const labelStyle = 'display:grid;gap:5px;color:#cbd5e1;font-size:.86rem;';
+const cardStyle = 'padding:14px;border:2px solid #9a7042;border-radius:4px;background:rgba(48,29,24,.94);color:#ffe16b;';
+const buttonStyle = 'padding:10px 14px;border:0;border-radius:0;background:#68452d;color:#ffe16b;cursor:pointer;font-family:monospace;font-size:9px;line-height:1.6;text-shadow:1px 2px #382016;';
+const inputStyle = 'box-sizing:border-box;width:100%;padding:10px;border:2px solid #9a7042;border-radius:2px;background:#241714;color:#ffe16b;font-family:monospace;';
+const labelStyle = "display:grid;gap:7px;color:#ffe16b;font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.8;";
 
 export class GuildScreen {
   private readonly root: HTMLElement;
@@ -277,16 +279,20 @@ export class GuildScreen {
 
   private render(): void {
     const page = document.createElement('main');
-    page.style.cssText = 'min-height:100dvh;box-sizing:border-box;padding:clamp(14px,3vw,30px);background:#10131d;color:#f8fafc;font-family:Arial,sans-serif;display:grid;align-content:start;gap:14px;';
+    page.className = 'guild-screen';
+    const theme = document.createElement('style');
+    theme.textContent = ".guild-screen, .guild-screen * { box-sizing:border-box; }\n.guild-screen { color:#ffe16b !important; }\n.guild-screen h1,.guild-screen h2,.guild-screen h3,.guild-screen strong,.guild-screen label,.guild-screen small,.guild-screen p,.guild-screen span,.guild-screen time { font-family:'Press Start 2P',monospace !important; }\n.guild-screen h2 { color:#ffe16b !important; font-size:10px !important; line-height:2 !important; text-shadow:2px 2px #382016; }\n.guild-screen p,.guild-screen span,.guild-screen small,.guild-screen time { line-height:1.9; }\n.guild-screen section { background:rgba(48,29,24,.94) !important; border:2px solid #9a7042 !important; border-radius:4px !important; box-shadow:0 5px 18px #0009; }\n.guild-screen article,.guild-screen [style*='background:#0f172a'],.guild-screen [style*='background:#151d2b'],.guild-screen [style*='background:#1e293b'] { background:rgba(35,21,18,.94) !important; border-color:#76502f !important; border-radius:3px !important; }\n.guild-screen button { border:0 !important; border-radius:0 !important; background:#68452d url(${guildButton}) center/100% 100% no-repeat !important; color:#ffe16b !important; font-family:'Press Start 2P',monospace !important; font-size:8px !important; line-height:1.8 !important; text-shadow:1px 2px #382016; padding:10px 13px !important; min-height:36px; box-shadow:none !important; }\n.guild-screen button:disabled { filter:grayscale(.65) brightness(.72); cursor:not-allowed !important; }\n.guild-screen input,.guild-screen select,.guild-screen textarea { background:#241714 !important; color:#ffe16b !important; border:2px solid #9a7042 !important; border-radius:2px !important; font-family:monospace !important; font-size:13px !important; }\n.guild-screen input::placeholder { color:#b99a68 !important; }\n.guild-screen option { background:#241714; color:#ffe16b; }\n.guild-screen time { color:#d4b77d !important; }".replace('${guildButton}', guildButton);
+    page.append(theme);
+    page.style.cssText = `min-height:100dvh;box-sizing:border-box;padding:clamp(14px,3vw,30px);background:linear-gradient(rgba(13,8,9,.68),rgba(13,8,9,.78)),url(${guildBackground}) center center / cover fixed no-repeat;color:#ffe16b;font-family:'Press Start 2P',monospace;display:grid;align-content:start;gap:14px;`;
     const header = document.createElement('header');
     header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;';
     const titleWrap = document.createElement('div');
     const eyebrow = document.createElement('p');
     eyebrow.textContent = 'KILLCULT MMO · COMUNIDADE';
-    eyebrow.style.cssText = 'margin:0 0 5px;color:#a78bfa;font-size:.72rem;font-weight:800;letter-spacing:.15em;';
+    eyebrow.style.cssText = 'margin:0 0 8px;color:#e7b95b;font-size:9px;font-weight:800;letter-spacing:.08em;line-height:1.8;';
     const title = document.createElement('h1');
     title.textContent = 'GUILDAS';
-    title.style.cssText = 'margin:0;font-size:clamp(1.7rem,4vw,2.5rem);';
+    title.style.cssText = 'margin:0;color:#ffe16b;font-size:clamp(16px,3vw,24px);line-height:1.8;text-shadow:3px 3px #382016;';
     titleWrap.append(eyebrow, title);
     header.append(titleWrap, this.button('← Voltar à base', () => { this.dispose(); this.onBack(); }));
     page.append(header);
