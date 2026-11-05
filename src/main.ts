@@ -116,15 +116,15 @@ async function persistInventorySale(instanceId: string): Promise<number> {
 
 function showGuilds(): void {
   if (!campaign || !activeUserId) return;
-  new GuildScreen(panel, campaign, () => showPreparation());
+  new GuildScreen(panel, campaign, () => showPreparation(), () => showExpeditions(() => showGuilds()));
 }
 
-function showExpeditions(): void {
+function showExpeditions(onBack: () => void = () => showPreparation()): void {
   if (!campaign || !activeUserId) return;
   new ExpeditionLobbyScreen(
     panel,
     activeUserId,
-    () => showPreparation(),
+    onBack,
     (sessionId, characterId) => {
       if (!activeUserId) return;
       cooperativeBattle?.dispose();
@@ -137,7 +137,7 @@ function showExpeditions(): void {
         characterId,
         () => {
           cooperativeBattle = null;
-          showExpeditions();
+          showExpeditions(onBack);
         },
       );
       void cooperativeBattle.start().catch((error) => {
@@ -145,7 +145,7 @@ function showExpeditions(): void {
         cooperativeBattle?.dispose();
         cooperativeBattle = null;
         window.alert(error instanceof Error ? error.message : 'Não foi possível entrar no combate cooperativo.');
-        showExpeditions();
+        showExpeditions(onBack);
       });
     },
   );
