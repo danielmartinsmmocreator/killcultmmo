@@ -25,6 +25,8 @@ const PHASE_LABEL: Record<BattlePhase, string> = {
   heroes: 'Resolvendo: heróis atacando…',
   telegraphs: 'Resolvendo: golpe do chefe…',
   monsters: 'Resolvendo: monstros agindo…',
+  'monsters-move': 'Resolvendo: monstros se movimentando…',
+  'monsters-attack': 'Resolvendo: monstros atacando…',
   over: 'Combate encerrado',
 };
 
