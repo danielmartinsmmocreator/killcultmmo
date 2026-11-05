@@ -64,7 +64,7 @@ type SubmitResult = {
 
 /**
  * Transporte da sessão cooperativa. O banco decide a ordem e valida o dono da ação;
- * o líder é o único cliente autorizado a publicar o snapshot após resolver a rodada.
+ * o líder aplica cada ação individual, publica o snapshot animado e só então libera o próximo turno.
  * A classe não simula combate: ela transporta ações e estado entre os clientes.
  */
 export class CooperativeSessionClient {
