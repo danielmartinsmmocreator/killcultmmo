@@ -54,6 +54,7 @@ export class GuildScreen {
   private readonly root: HTMLElement;
   private readonly campaign: Campaign;
   private readonly onBack: () => void;
+  private readonly onOpenExpeditions: () => void;
   private payload: GuildPayload = { guild: null, invites: [] };
   private bankItems: BankItem[] = [];
   private publicGuilds: PublicGuild[] = [];
@@ -69,10 +70,11 @@ export class GuildScreen {
   private chatMessagesRoot: HTMLElement | null = null;
   private activeGuildTab = 'chat';
 
-  constructor(root: HTMLElement, campaign: Campaign, onBack: () => void) {
+  constructor(root: HTMLElement, campaign: Campaign, onBack: () => void, onOpenExpeditions: () => void) {
     this.root = root;
     this.campaign = campaign;
     this.onBack = onBack;
+    this.onOpenExpeditions = onOpenExpeditions;
     void this.refresh();
   }
 
@@ -433,6 +435,7 @@ export class GuildScreen {
         ...(isOfficerForTabs ? [{ id: 'invite', label: 'CONVIDAR' }] : []),
         { id: 'bank', label: 'COFRE' },
         { id: 'history', label: 'HISTÓRICO' },
+        { id: 'expeditions', label: 'EXPEDIÇÕES' },
       ];
       if (!tabDefinitions.some((tab) => tab.id === this.activeGuildTab)) this.activeGuildTab = 'chat';
       const tabs = document.createElement('nav');
@@ -454,6 +457,10 @@ export class GuildScreen {
         tabButton.textContent = tab.label;
         tabButton.dataset.tab = tab.id;
         tabButton.addEventListener('click', () => {
+          if (tab.id === 'expeditions') {
+            this.onOpenExpeditions();
+            return;
+          }
           this.activeGuildTab = tab.id;
           updateTabs();
         });
